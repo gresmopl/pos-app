@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:ui.shadcn.com)",
+      "WebFetch(domain:mantine.dev)",
+      "Bash(git init:*)",
+      "Bash(git remote:*)",
+      "Bash(git fetch:*)",
+      "Bash(git checkout:*)",
+      "Bash(npx create-next-app@latest /c/Projects/pos-app-init --typescript --tailwind --eslint --app --src-dir --no-import-alias --use-npm)",
+      "Bash(powershell -command \"Get-PSDrive C | Select-Object Used,Free\")",
+      "Bash(npm cache:*)",
+      "Bash(rm -rf /c/Projects/pos-app-init)",
+      "Bash(# Copy project files \\(excluding .git and node_modules\\)\ncp /c/Projects/pos-app-init/package.json /c/Projects/pos-app/\ncp /c/Projects/pos-app-init/package-lock.json /c/Projects/pos-app/\ncp /c/Projects/pos-app-init/tsconfig.json /c/Projects/pos-app/\ncp /c/Projects/pos-app-init/next.config.ts /c/Projects/pos-app/\ncp /c/Projects/pos-app-init/next-env.d.ts /c/Projects/pos-app/\ncp /c/Projects/pos-app-init/eslint.config.mjs /c/Projects/pos-app/\ncp /c/Projects/pos-app-init/postcss.config.mjs /c/Projects/pos-app/\ncp -r /c/Projects/pos-app-init/src /c/Projects/pos-app/\ncp -r /c/Projects/pos-app-init/public /c/Projects/pos-app/\necho \"Done copying\")",
+      "Bash(npm install:*)"
+    ]
+  }
+}
