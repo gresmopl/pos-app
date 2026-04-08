@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, useMemo } from "react";
+import { Suspense, useState, useMemo, useId } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { mockEmployees } from "@/data/employees";
 import { mockServices } from "@/data/services";
@@ -34,6 +34,7 @@ import {
   IconDeviceMobile,
   IconGift,
   IconArrowsSplit,
+  IconCheck,
 } from "@tabler/icons-react";
 
 interface CartItem {
@@ -41,6 +42,7 @@ interface CartItem {
   id: string;
   name: string;
   price: number;
+  quantity: number;
   type: "service" | "product";
 }
 
@@ -59,6 +61,8 @@ export default function POSPageWrapper() {
 
 function POSPage() {
   const router = useRouter();
+  const addTabId = useId();
+  const discountTabId = useId();
   const searchParams = useSearchParams();
   const employeeId = searchParams.get("employee");
   const employee = mockEmployees.find((e) => e.id === employeeId);
@@ -75,6 +79,9 @@ function POSPage() {
   const [customTipValue, setCustomTipValue] = useState<number | string>("");
   const [splitModal, setSplitModal] = useState(false);
   const [splitCashAmount, setSplitCashAmount] = useState<number | string>("");
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [pendingPaymentMethod, setPendingPaymentMethod] = useState("");
+  const [pendingPaymentDetails, setPendingPaymentDetails] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   const [addTab, setAddTab] = useState("services");
 
@@ -82,7 +89,7 @@ function POSPage() {
   const [tempDiscountType, setTempDiscountType] = useState<"percent" | "amount">("percent");
   const [tempDiscountValue, setTempDiscountValue] = useState<number | string>(0);
 
-  const subtotal = cart.reduce((sum, item) => sum + item.price, 0);
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const discountAmount = useMemo(() => {
     if (!discount) return 0;
@@ -98,9 +105,27 @@ function POSPage() {
     item: { id: string; name: string; price: number },
     type: "service" | "product"
   ) => {
-    setCart((prev) => [...prev, { ...item, type, cartId: crypto.randomUUID() }]);
+    setCart((prev) => {
+      const existing = prev.find((c) => c.id === item.id && c.type === type);
+      if (existing) {
+        return prev.map((c) =>
+          c.cartId === existing.cartId ? { ...c, quantity: c.quantity + 1 } : c
+        );
+      }
+      return [...prev, { ...item, type, quantity: 1, cartId: crypto.randomUUID() }];
+    });
     setAddModalOpen(false);
     setSearchQuery("");
+  };
+
+  const updateQuantity = (cartId: string, delta: number) => {
+    setCart((prev) =>
+      prev
+        .map((item) =>
+          item.cartId === cartId ? { ...item, quantity: item.quantity + delta } : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
   };
 
   const removeFromCart = (cartId: string) => {
@@ -122,11 +147,20 @@ function POSPage() {
     setDiscountModalOpen(false);
   };
 
-  const finalize = () => {
+  const requestFinalize = (method: string, details?: string) => {
+    setPendingPaymentMethod(method);
+    setPendingPaymentDetails(details || "");
     setPaymentModalOpen(false);
+    setSplitModal(false);
+    setConfirmModal(true);
+  };
+
+  const finalize = () => {
+    setConfirmModal(false);
     setCart([]);
     setTipAmount(0);
     setDiscount(null);
+    if (navigator.vibrate) navigator.vibrate(100);
     router.push("/");
   };
 
@@ -223,22 +257,44 @@ function POSPage() {
             <Stack gap={0}>
               {cart.map((item, index) => (
                 <div key={item.cartId}>
-                  <Group justify="space-between" py="sm">
-                    <div>
+                  <Group justify="space-between" py="sm" wrap="nowrap">
+                    <div style={{ minWidth: 0 }}>
                       <Text fw={500} fz="md">
                         {item.name}
                       </Text>
                       <Text fz="xs" c="dimmed">
                         {item.type === "service" ? "Usługa" : "Produkt"}
+                        {item.quantity > 1 && ` · ${item.price.toLocaleString("pl-PL")} zł/szt.`}
                       </Text>
                     </div>
-                    <Group gap="sm">
-                      <Text fw={600} fz="md">
-                        {item.price.toLocaleString("pl-PL")} zł
+                    <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
+                      <ActionIcon
+                        variant="light"
+                        color="gray"
+                        size="sm"
+                        onClick={() => updateQuantity(item.cartId, -1)}
+                        aria-label="Mniej"
+                      >
+                        <Text fz="sm" fw={700}>−</Text>
+                      </ActionIcon>
+                      <Text fw={600} fz="sm" w={20} ta="center">
+                        {item.quantity}
+                      </Text>
+                      <ActionIcon
+                        variant="light"
+                        color="gray"
+                        size="sm"
+                        onClick={() => updateQuantity(item.cartId, 1)}
+                        aria-label="Więcej"
+                      >
+                        <Text fz="sm" fw={700}>+</Text>
+                      </ActionIcon>
+                      <Text fw={600} fz="md" w={70} ta="right">
+                        {(item.price * item.quantity).toLocaleString("pl-PL")} zł
                       </Text>
                       <ActionIcon
                         variant="subtle"
-                        color="gray"
+                        color="red"
                         size="sm"
                         onClick={() => removeFromCart(item.cartId)}
                         aria-label="Usuń"
@@ -263,8 +319,35 @@ function POSPage() {
                 Napiwek
               </Text>
               <Group gap="sm">
-                {[0, 5, 10, 20].map((val) => {
-                  const tipVal = val === 0 ? 0 : Math.round(subtotal * (val / 100));
+                <UnstyledButton
+                  px="md"
+                  py="xs"
+                  style={{
+                    border: "1px solid var(--mantine-color-default-border)",
+                    borderRadius: "var(--mantine-radius-md)",
+                    backgroundColor:
+                      tipAmount > 0 &&
+                      ![0, 5, 10, 20].some((p) => Math.round(subtotal * (p / 100)) === tipAmount)
+                        ? "var(--mantine-color-green-light)"
+                        : undefined,
+                  }}
+                  onClick={() => {
+                    setCustomTipValue(tipAmount || "");
+                    setCustomTipModal(true);
+                  }}
+                >
+                  <Text fz="sm" fw={500} ta="center">
+                    Wpisz
+                  </Text>
+                  <Text fz="xs" c="dimmed" ta="center">
+                    {tipAmount > 0 &&
+                    ![0, 5, 10, 20].some((p) => Math.round(subtotal * (p / 100)) === tipAmount)
+                      ? `${tipAmount} zł`
+                      : "... zł"}
+                  </Text>
+                </UnstyledButton>
+                {[5, 10, 20].map((val) => {
+                  const tipVal = Math.round(subtotal * (val / 100));
                   return (
                     <UnstyledButton
                       key={val}
@@ -279,7 +362,7 @@ function POSPage() {
                       }}
                     >
                       <Text fz="sm" fw={500} ta="center">
-                        {val === 0 ? "Bez" : `${val}%`}
+                        {val}%
                       </Text>
                       <Text fz="xs" c="dimmed" ta="center">
                         {tipVal} zł
@@ -288,25 +371,20 @@ function POSPage() {
                   );
                 })}
                 <UnstyledButton
+                  onClick={() => setTipAmount(0)}
                   px="md"
                   py="xs"
                   style={{
                     border: "1px solid var(--mantine-color-default-border)",
                     borderRadius: "var(--mantine-radius-md)",
-                  }}
-                  onClick={() => {
-                    setCustomTipValue(tipAmount || "");
-                    setCustomTipModal(true);
+                    backgroundColor: tipAmount === 0 ? "var(--mantine-color-green-light)" : undefined,
                   }}
                 >
                   <Text fz="sm" fw={500} ta="center">
-                    Własny
+                    Bez
                   </Text>
                   <Text fz="xs" c="dimmed" ta="center">
-                    {tipAmount > 0 &&
-                    ![0, 5, 10, 20].some((p) => Math.round(subtotal * (p / 100)) === tipAmount)
-                      ? `${tipAmount} zł`
-                      : "..."}
+                    0 zł
                   </Text>
                 </UnstyledButton>
               </Group>
@@ -349,6 +427,7 @@ function POSPage() {
           bottom: 0,
           left: 0,
           right: 0,
+          zIndex: 100,
           borderTop: "1px solid var(--mantine-color-default-border)",
           backgroundColor: "var(--mantine-color-body)",
         }}
@@ -384,6 +463,7 @@ function POSPage() {
         size="lg"
       >
         <SegmentedControl
+          id={addTabId}
           fullWidth
           value={addTab}
           onChange={setAddTab}
@@ -454,6 +534,7 @@ function POSPage() {
       >
         <Stack gap="md">
           <SegmentedControl
+            id={discountTabId}
             fullWidth
             value={tempDiscountType}
             onChange={(val) => setTempDiscountType(val as "percent" | "amount")}
@@ -511,7 +592,7 @@ function POSPage() {
                 variant="light"
                 color="green"
                 leftSection={<IconCash size={22} />}
-                onClick={finalize}
+                onClick={() => requestFinalize("Gotówka")}
               >
                 Gotówka
               </Button>
@@ -521,7 +602,7 @@ function POSPage() {
                 variant="light"
                 color="blue"
                 leftSection={<IconCreditCard size={22} />}
-                onClick={finalize}
+                onClick={() => requestFinalize("Karta")}
               >
                 Karta
               </Button>
@@ -531,7 +612,7 @@ function POSPage() {
                 variant="light"
                 color="pink"
                 leftSection={<IconDeviceMobile size={22} />}
-                onClick={finalize}
+                onClick={() => requestFinalize("BLIK")}
               >
                 BLIK
               </Button>
@@ -610,7 +691,7 @@ function POSPage() {
                     color="green"
                     size="xs"
                     leftSection={<IconCash size={16} />}
-                    onClick={finalize}
+                    onClick={() => requestFinalize("Bon + Gotówka", `Bon: ${Number(voucherAmount).toLocaleString("pl-PL")} zł, Gotówka: ${(total - Number(voucherAmount)).toLocaleString("pl-PL")} zł`)}
                   >
                     Gotówka
                   </Button>
@@ -619,7 +700,7 @@ function POSPage() {
                     color="blue"
                     size="xs"
                     leftSection={<IconCreditCard size={16} />}
-                    onClick={finalize}
+                    onClick={() => requestFinalize("Bon + Karta", `Bon: ${Number(voucherAmount).toLocaleString("pl-PL")} zł, Karta: ${(total - Number(voucherAmount)).toLocaleString("pl-PL")} zł`)}
                   >
                     Karta
                   </Button>
@@ -628,7 +709,7 @@ function POSPage() {
                     color="pink"
                     size="xs"
                     leftSection={<IconDeviceMobile size={16} />}
-                    onClick={finalize}
+                    onClick={() => requestFinalize("Bon + BLIK", `Bon: ${Number(voucherAmount).toLocaleString("pl-PL")} zł, BLIK: ${(total - Number(voucherAmount)).toLocaleString("pl-PL")} zł`)}
                   >
                     BLIK
                   </Button>
@@ -672,7 +753,7 @@ function POSPage() {
                 leftSection={<IconGift size={20} />}
                 onClick={() => {
                   if (Number(voucherAmount) >= total) {
-                    finalize();
+                    requestFinalize("Bon podarunkowy", `Bon: ${Number(voucherAmount).toLocaleString("pl-PL")} zł`);
                   }
                 }}
               >
@@ -713,6 +794,86 @@ function POSPage() {
           >
             Zatwierdź
           </Button>
+        </Stack>
+      </Modal>
+
+      {/* ===== CONFIRM MODAL ===== */}
+      <Modal
+        opened={confirmModal}
+        onClose={() => setConfirmModal(false)}
+        title={
+          <Text fw={700} fz="lg">
+            Potwierdzenie płatności
+          </Text>
+        }
+        size="sm"
+      >
+        <Stack gap="md">
+          <Box ta="center" py="sm">
+            <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+              Do zapłaty
+            </Text>
+            <Text fw={700} fz={36}>
+              {total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł
+            </Text>
+          </Box>
+
+          <Box
+            p="md"
+            style={{
+              borderRadius: "var(--mantine-radius-md)",
+              border: "1px solid var(--mantine-color-default-border)",
+            }}
+          >
+            <Stack gap={4}>
+              <Group justify="space-between">
+                <Text fz="sm">Fryzjer:</Text>
+                <Text fz="sm" fw={600}>{employee?.name}</Text>
+              </Group>
+              <Group justify="space-between">
+                <Text fz="sm">Pozycje:</Text>
+                <Text fz="sm" fw={600}>{cart.reduce((sum, i) => sum + i.quantity, 0)}</Text>
+              </Group>
+              <Group justify="space-between">
+                <Text fz="sm">Metoda:</Text>
+                <Text fz="sm" fw={600}>{pendingPaymentMethod}</Text>
+              </Group>
+              {pendingPaymentDetails && (
+                <Text fz="xs" c="dimmed" ta="center" mt={4}>
+                  {pendingPaymentDetails}
+                </Text>
+              )}
+              {tipAmount > 0 && (
+                <Group justify="space-between">
+                  <Text fz="sm">Napiwek:</Text>
+                  <Text fz="sm" fw={600} c="green">{tipAmount.toLocaleString("pl-PL")} zł</Text>
+                </Group>
+              )}
+              {discount && (
+                <Group justify="space-between">
+                  <Text fz="sm">Rabat:</Text>
+                  <Text fz="sm" fw={600} c="red">
+                    -{discountAmount.toLocaleString("pl-PL")} zł
+                    {discount.type === "percent" && ` (${discount.value}%)`}
+                  </Text>
+                </Group>
+              )}
+            </Stack>
+          </Box>
+
+          <Group justify="flex-end">
+            <Button variant="subtle" onClick={() => setConfirmModal(false)}>
+              Anuluj
+            </Button>
+            <Button
+              color="green"
+              size="lg"
+              leftSection={<IconCheck size={20} />}
+              onClick={finalize}
+            >
+              Potwierdzam
+            </Button>
+          </Group>
         </Stack>
       </Modal>
 
@@ -779,9 +940,13 @@ function POSPage() {
             size="lg"
             disabled={!Number(splitCashAmount) || Number(splitCashAmount) >= total}
             onClick={() => {
-              setSplitModal(false);
+              const cashVal = Number(splitCashAmount);
+              const cardVal = total - cashVal;
+              requestFinalize(
+                "Gotówka + Karta",
+                `Gotówka: ${cashVal.toLocaleString("pl-PL")} zł, Karta: ${cardVal.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł`
+              );
               setSplitCashAmount("");
-              finalize();
             }}
           >
             Zapłać

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { mockEmployees } from "@/data/employees";
 import {
@@ -18,7 +18,17 @@ import {
   Select,
   Modal,
 } from "@mantine/core";
-import { IconArrowLeft, IconCash, IconReceipt, IconPlus, IconHandGrab } from "@tabler/icons-react";
+import {
+  IconArrowLeft,
+  IconCash,
+  IconReceipt,
+  IconPlus,
+  IconHandGrab,
+  IconArrowDown,
+  IconArrowUp,
+  IconGift,
+  IconCheck,
+} from "@tabler/icons-react";
 
 interface CashMovement {
   id: string;
@@ -28,7 +38,8 @@ interface CashMovement {
     | "expense_settle"
     | "top_up"
     | "barber_loan"
-    | "barber_payback";
+    | "barber_payback"
+    | "voucher_sale";
   employeeName: string;
   amount: number;
   description: string;
@@ -39,6 +50,8 @@ interface CashMovement {
 
 export default function CashPage() {
   const router = useRouter();
+  const tabsId = useId();
+  const paymentId = useId();
   const [tab, setTab] = useState("tips");
 
   // Top-up (Cash In)
@@ -63,6 +76,12 @@ export default function CashPage() {
   const [settleModal, setSettleModal] = useState(false);
   const [settleTarget, setSettleTarget] = useState<CashMovement | null>(null);
   const [settleCost, setSettleCost] = useState<number | string>("");
+
+  // Voucher sale
+  const [voucherValue, setVoucherValue] = useState<number | string>("");
+  const [voucherPayment, setVoucherPayment] = useState("cash");
+  const [voucherSuccess, setVoucherSuccess] = useState(false);
+  const [voucherCode, setVoucherCode] = useState("");
 
   // Success feedback
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -203,6 +222,35 @@ export default function CashPage() {
     showSuccess(`Zwrócono ${loan.amount} zł dla ${loan.employeeName}`);
   };
 
+  const handleVoucherSale = () => {
+    const amount = Number(voucherValue);
+    if (!amount || amount <= 0) return;
+
+    const code = `BON-${Date.now().toString(36).toUpperCase()}`;
+    setVoucherCode(code);
+
+    setMovements((prev) => [
+      {
+        id: `cm${Date.now()}`,
+        type: "voucher_sale",
+        employeeName: "Salon",
+        amount,
+        description: `Sprzedaż bonu ${code} (${voucherPayment === "cash" ? "gotówka" : "karta"})`,
+        timestamp: new Date().toISOString(),
+      },
+      ...prev,
+    ]);
+
+    setVoucherSuccess(true);
+  };
+
+  const resetVoucher = () => {
+    setVoucherValue("");
+    setVoucherPayment("cash");
+    setVoucherSuccess(false);
+    setVoucherCode("");
+  };
+
   const pendingLoans = movements.filter((m) => m.type === "barber_loan" && m.status === "pending");
 
   return (
@@ -223,6 +271,7 @@ export default function CashPage() {
         {/* ===== TABS ===== */}
         <Box py="md">
           <SegmentedControl
+            id={tabsId}
             fullWidth
             value={tab}
             onChange={setTab}
@@ -232,6 +281,7 @@ export default function CashPage() {
               { label: "Zakupy", value: "expenses" },
               { label: "Wpłata", value: "topup" },
               { label: "Zwrot", value: "loan" },
+              { label: "Bon", value: "voucher" },
             ]}
           />
         </Box>
@@ -530,6 +580,111 @@ export default function CashPage() {
           </Stack>
         )}
 
+        {/* ===== VOUCHER TAB ===== */}
+        {tab === "voucher" && (
+          <Stack gap="md" py="md">
+            {!voucherSuccess ? (
+              <>
+                <div>
+                  <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="xs">
+                    Sprzedaż bonu podarunkowego
+                  </Text>
+                  <Text fz="sm" mb="md">
+                    Bon nie jest przypisany do fryzjera - wpływa do kasy salonu.
+                  </Text>
+                </div>
+
+                <Text fz="sm" fw={500}>
+                  Szybki wybór
+                </Text>
+                <Group gap="sm">
+                  {[50, 100, 200].map((v) => (
+                    <Button
+                      key={v}
+                      variant={Number(voucherValue) === v ? "filled" : "light"}
+                      size="md"
+                      onClick={() => setVoucherValue(v)}
+                      style={{ flex: 1 }}
+                    >
+                      {v} zł
+                    </Button>
+                  ))}
+                </Group>
+
+                <NumberInput
+                  label="Lub wpisz kwotę"
+                  placeholder="0"
+                  value={voucherValue}
+                  onChange={setVoucherValue}
+                  min={1}
+                  suffix=" zł"
+                  size="md"
+                />
+
+                <SegmentedControl
+                  id={paymentId}
+                  fullWidth
+                  value={voucherPayment}
+                  onChange={setVoucherPayment}
+                  data={[
+                    { label: "Gotówka", value: "cash" },
+                    { label: "Karta", value: "card" },
+                  ]}
+                />
+
+                <Button
+                  size="lg"
+                  color="green"
+                  fullWidth
+                  disabled={!Number(voucherValue)}
+                  onClick={handleVoucherSale}
+                  leftSection={<IconGift size={20} />}
+                >
+                  Sprzedaj bon - {Number(voucherValue) || 0} zł
+                </Button>
+              </>
+            ) : (
+              <Stack align="center" gap="md" py="xl">
+                <Box
+                  p="md"
+                  style={{
+                    borderRadius: "50%",
+                    backgroundColor: "var(--mantine-color-green-light)",
+                  }}
+                >
+                  <IconCheck size={40} color="var(--mantine-color-green-filled)" />
+                </Box>
+                <Text fw={700} fz={24}>
+                  Bon sprzedany!
+                </Text>
+                <Box
+                  p="md"
+                  w="100%"
+                  style={{
+                    borderRadius: "var(--mantine-radius-md)",
+                    border: "1px solid var(--mantine-color-default-border)",
+                    textAlign: "center",
+                  }}
+                >
+                  <Text fz="xs" c="dimmed">
+                    Kod bonu
+                  </Text>
+                  <Text fw={700} fz={22} style={{ letterSpacing: 2 }}>
+                    {voucherCode}
+                  </Text>
+                  <Text fz="sm" c="dimmed" mt="xs">
+                    Wartość: {Number(voucherValue).toLocaleString("pl-PL")} zł ·{" "}
+                    {voucherPayment === "cash" ? "Gotówka" : "Karta"}
+                  </Text>
+                </Box>
+                <Button size="lg" fullWidth variant="light" onClick={resetVoucher}>
+                  Sprzedaj kolejny bon
+                </Button>
+              </Stack>
+            )}
+          </Stack>
+        )}
+
         {/* ===== HISTORY ===== */}
         {movements.length > 0 && (
           <>
@@ -538,30 +693,60 @@ export default function CashPage() {
               Dzisiejsze operacje
             </Text>
             <Stack gap={0}>
-              {movements.map((m, index) => (
-                <div key={m.id}>
-                  <Group justify="space-between" py="sm" px="xs">
-                    <div>
-                      <Text fw={500} fz="sm">
-                        {m.description}
-                        {m.status === "settled" && " ✓"}
+              {movements.map((m, index) => {
+                const isOut = ["tip_withdrawal", "expense_take", "barber_payback"].includes(m.type);
+                const isVoucher = m.type === "voucher_sale";
+                return (
+                  <div key={m.id}>
+                    <Group justify="space-between" py="sm" px="xs" wrap="nowrap">
+                      <Group gap="sm" wrap="nowrap" style={{ minWidth: 0 }}>
+                        <Box
+                          p={6}
+                          style={{
+                            borderRadius: "50%",
+                            backgroundColor: isOut
+                              ? "var(--mantine-color-red-light)"
+                              : "var(--mantine-color-green-light)",
+                            flexShrink: 0,
+                          }}
+                        >
+                          {isVoucher ? (
+                            <IconGift size={14} color="var(--mantine-color-green-filled)" />
+                          ) : isOut ? (
+                            <IconArrowUp size={14} color="var(--mantine-color-red-filled)" />
+                          ) : (
+                            <IconArrowDown size={14} color="var(--mantine-color-green-filled)" />
+                          )}
+                        </Box>
+                        <div style={{ minWidth: 0 }}>
+                          <Text fw={500} fz="sm" lineClamp={1}>
+                            {m.description}
+                            {m.status === "settled" && " (rozliczono)"}
+                          </Text>
+                          <Text fz="xs" c="dimmed">
+                            {m.employeeName} ·{" "}
+                            {new Date(m.timestamp).toLocaleTimeString("pl-PL", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              second: "2-digit",
+                            })}
+                          </Text>
+                        </div>
+                      </Group>
+                      <Text
+                        fw={600}
+                        fz="sm"
+                        c={isOut ? "red" : "green"}
+                        style={{ flexShrink: 0 }}
+                      >
+                        {isOut ? "-" : "+"}
+                        {(m.finalCost ?? m.amount).toLocaleString("pl-PL")} zł
                       </Text>
-                      <Text fz="xs" c="dimmed">
-                        {m.employeeName} ·{" "}
-                        {new Date(m.timestamp).toLocaleTimeString("pl-PL", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
-                      </Text>
-                    </div>
-                    <Text fw={600} fz="sm" c={m.type === "tip_withdrawal" ? "red" : undefined}>
-                      {m.type === "tip_withdrawal" ? "-" : ""}
-                      {(m.finalCost ?? m.amount).toLocaleString("pl-PL")} zł
-                    </Text>
-                  </Group>
-                  {index < movements.length - 1 && <Divider />}
-                </div>
-              ))}
+                    </Group>
+                    {index < movements.length - 1 && <Divider />}
+                  </div>
+                );
+              })}
             </Stack>
           </>
         )}

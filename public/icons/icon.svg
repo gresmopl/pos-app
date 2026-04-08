@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="96" fill="#1a1b1e"/>
+  <text x="256" y="200" text-anchor="middle" font-family="sans-serif" font-weight="700" font-size="72" fill="#00e676">FORMEN</text>
+  <g transform="translate(196, 220)" stroke="#00e676" stroke-width="12" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <path d="M8 8 L52 52"/>
+    <path d="M0 52 C0 40 8 28 20 28 C32 28 40 40 40 52 C40 64 32 76 20 76 C8 76 0 64 0 52Z"/>
+    <path d="M112 8 L68 52"/>
+    <path d="M120 52 C120 40 112 28 100 28 C88 28 80 40 80 52 C80 64 88 76 100 76 C112 76 120 64 120 52Z"/>
+  </g>
+</svg>

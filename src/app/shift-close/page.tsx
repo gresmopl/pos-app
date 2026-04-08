@@ -28,6 +28,10 @@ export default function ShiftClosePage() {
   const [floatAmount, setFloatAmount] = useState<number | string>(200);
   const [confirmModal, setConfirmModal] = useState(false);
   const [done, setDone] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Mock: check if shift already closed today (Phase 2: query DailyReport table)
+  const [shiftClosedToday, setShiftClosedToday] = useState(false);
 
   const employeeOptions = mockEmployees.map((e) => ({
     value: e.id,
@@ -47,6 +51,14 @@ export default function ShiftClosePage() {
     .filter((t) => t.paymentMethod === "blik")
     .reduce((sum, t) => sum + t.totalAmount, 0);
 
+  const systemVoucher = mockTransactions
+    .filter((t) => t.paymentMethod === "voucher")
+    .reduce((sum, t) => sum + t.totalAmount, 0);
+
+  const systemSplit = mockTransactions
+    .filter((t) => t.paymentMethod === "split")
+    .reduce((sum, t) => sum + t.totalAmount, 0);
+
   const systemTotal = mockTransactions.reduce((sum, t) => sum + t.totalAmount, 0);
 
   const cash = Number(cashAmount) || 0;
@@ -61,8 +73,12 @@ export default function ShiftClosePage() {
     : null;
 
   const handleConfirm = () => {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setConfirmModal(false);
+    setShiftClosedToday(true);
     setDone(true);
+    if (navigator.vibrate) navigator.vibrate(100);
   };
 
   if (done) {
@@ -161,8 +177,35 @@ export default function ShiftClosePage() {
     );
   }
 
+  if (shiftClosedToday && !done) {
+    return (
+      <Box mih="100vh">
+        <Container size="sm">
+          <Stack align="center" gap="lg" py={80}>
+            <Box
+              p="lg"
+              style={{
+                borderRadius: "50%",
+                backgroundColor: "var(--mantine-color-yellow-light)",
+              }}
+            >
+              <IconPrinter size={48} color="var(--mantine-color-yellow-filled)" />
+            </Box>
+            <Text fw={700} fz={24} ta="center">
+              Zmiana już zamknięta
+            </Text>
+            <Text fz="sm" ta="center" c="dimmed">
+              Dzisiejsza zmiana została już zamknięta. Nie można zamknąć zmiany ponownie.
+            </Text>
+            <Button onClick={() => router.push("/")}>Powrót do Dashboard</Button>
+          </Stack>
+        </Container>
+      </Box>
+    );
+  }
+
   return (
-    <Box mih="100vh" pb={100}>
+    <Box mih="100vh" pb={160}>
       <Container size="lg">
         {/* ===== HEADER ===== */}
         <Group py="md" gap="sm">
@@ -200,6 +243,22 @@ export default function ShiftClosePage() {
                 {systemBlik.toLocaleString("pl-PL")} zł
               </Text>
             </Group>
+            {systemVoucher > 0 && (
+              <Group justify="space-between">
+                <Text fz="sm">Sprzedaż bon:</Text>
+                <Text fz="sm" fw={600}>
+                  {systemVoucher.toLocaleString("pl-PL")} zł
+                </Text>
+              </Group>
+            )}
+            {systemSplit > 0 && (
+              <Group justify="space-between">
+                <Text fz="sm">Sprzedaż split (gotówka + karta):</Text>
+                <Text fz="sm" fw={600}>
+                  {systemSplit.toLocaleString("pl-PL")} zł
+                </Text>
+              </Group>
+            )}
             <Divider my={4} />
             <Group justify="space-between">
               <Text fz="sm" fw={700}>
@@ -317,6 +376,7 @@ export default function ShiftClosePage() {
           bottom: 0,
           left: 0,
           right: 0,
+          zIndex: 100,
           borderTop: "1px solid var(--mantine-color-default-border)",
           backgroundColor: "var(--mantine-color-body)",
         }}
@@ -327,7 +387,7 @@ export default function ShiftClosePage() {
             fullWidth
             size="lg"
             color="dark"
-            disabled={!closingEmployee || (!cash && !vouchers)}
+            disabled={!closingEmployee || (!cash && !vouchers) || isSubmitting}
             onClick={() => setConfirmModal(true)}
             leftSection={<IconPrinter size={20} />}
             fz="md"
@@ -371,7 +431,7 @@ export default function ShiftClosePage() {
             <Button variant="subtle" onClick={() => setConfirmModal(false)}>
               Anuluj
             </Button>
-            <Button color="green" onClick={handleConfirm}>
+            <Button color="green" onClick={handleConfirm} loading={isSubmitting}>
               Potwierdzam
             </Button>
           </Group>

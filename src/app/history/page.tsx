@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { mockTransactions } from "@/data/transactions";
+import { mockEmployees } from "@/data/employees";
 import {
   Text,
   Group,
@@ -13,8 +14,13 @@ import {
   Container,
   ActionIcon,
   Badge,
-  SegmentedControl,
+  Button,
   Collapse,
+  ScrollArea,
+  Modal,
+  PinInput,
+  TextInput,
+  Avatar,
 } from "@mantine/core";
 import {
   IconArrowLeft,
@@ -25,6 +31,10 @@ import {
   IconChevronDown,
   IconChevronUp,
   IconArrowsSplit,
+  IconArrowBackUp,
+  IconSearch,
+  IconUsers,
+  IconStack2,
 } from "@tabler/icons-react";
 
 const paymentIcon: Record<string, typeof IconCash> = {
@@ -47,16 +57,36 @@ export default function HistoryPage() {
   const router = useRouter();
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [undoModal, setUndoModal] = useState(false);
+  const [undoPin, setUndoPin] = useState("");
+  const [undoPinError, setUndoPinError] = useState(false);
+  const [undoSuccess, setUndoSuccess] = useState(false);
+  const [undoTransactionId, setUndoTransactionId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [paymentFilter, setPaymentFilter] = useState("all");
 
   const uniqueEmployees = Array.from(new Set(mockTransactions.map((t) => t.employeeName)));
 
+  const employeeAvatar = (name: string) =>
+    mockEmployees.find((e) => e.name === name)?.avatar ?? name.slice(0, 2).toUpperCase();
+
   const filterOptions = [
     { label: "Wszystkie", value: "all" },
-    ...uniqueEmployees.map((name) => ({ label: name, value: name })),
+    ...uniqueEmployees.map((name) => ({ label: employeeAvatar(name), value: name })),
   ];
 
-  const filtered =
-    filter === "all" ? mockTransactions : mockTransactions.filter((t) => t.employeeName === filter);
+  const filtered = mockTransactions.filter((t) => {
+    if (filter !== "all" && t.employeeName !== filter) return false;
+    if (paymentFilter !== "all" && t.paymentMethod !== paymentFilter) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const matchesName = t.employeeName.toLowerCase().includes(q);
+      const matchesClient = t.clientName?.toLowerCase().includes(q);
+      const matchesItems = t.items.some((i) => i.name.toLowerCase().includes(q));
+      if (!matchesName && !matchesClient && !matchesItems) return false;
+    }
+    return true;
+  });
 
   const serviceCount = filtered.reduce(
     (sum, t) => sum + t.items.filter((i) => i.type === "service").length,
@@ -64,11 +94,16 @@ export default function HistoryPage() {
   );
   const totalRevenue = filtered.reduce((sum, t) => sum + t.totalAmount, 0);
 
+  const today = new Date().toDateString();
+
   const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString("pl-PL", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const date = new Date(timestamp);
+    const isToday = date.toDateString() === today;
+    if (isToday) {
+      return date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+    }
+    return date.toLocaleDateString("pl-PL", { day: "numeric", month: "short" })
+      + " " + date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
   };
 
   return (
@@ -94,16 +129,83 @@ export default function HistoryPage() {
 
         <Divider />
 
-        {/* ===== FILTER ===== */}
-        <Box py="md">
-          <SegmentedControl
-            fullWidth
-            value={filter}
-            onChange={setFilter}
-            data={filterOptions}
+        {/* ===== SEARCH ===== */}
+        <Box py="sm">
+          <TextInput
+            placeholder="Szukaj (usługa, klient, fryzjer)..."
+            leftSection={<IconSearch size={16} />}
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
             size="sm"
           />
         </Box>
+
+        {/* ===== FILTER: EMPLOYEE ===== */}
+        <ScrollArea type="auto" offsetScrollbars scrollbarSize={4}>
+          <Group gap="xs" wrap="nowrap" mb="xs">
+            <UnstyledButton onClick={() => setFilter("all")} style={{ flexShrink: 0 }}>
+              <Avatar
+                size={36}
+                radius="xl"
+                color={filter === "all" ? "green" : "gray"}
+                variant={filter === "all" ? "filled" : "light"}
+              >
+                <IconUsers size={18} />
+              </Avatar>
+            </UnstyledButton>
+            {uniqueEmployees.map((name) => {
+              const emp = mockEmployees.find((e) => e.name === name);
+              const avatar = emp?.avatar ?? name.slice(0, 2).toUpperCase();
+              return (
+                <UnstyledButton key={name} onClick={() => setFilter(name)} style={{ flexShrink: 0 }}>
+                  <Avatar
+                    size={36}
+                    radius="xl"
+                    color={filter === name ? "green" : "gray"}
+                    variant={filter === name ? "filled" : "light"}
+                  >
+                    {avatar}
+                  </Avatar>
+                </UnstyledButton>
+              );
+            })}
+          </Group>
+        </ScrollArea>
+
+        {/* ===== FILTER: PAYMENT METHOD ===== */}
+        <ScrollArea type="auto" offsetScrollbars scrollbarSize={4}>
+          <Group gap="xs" wrap="nowrap" mb="sm">
+            <UnstyledButton onClick={() => setPaymentFilter("all")} style={{ flexShrink: 0 }}>
+              <Avatar
+                size={36}
+                radius="xl"
+                color={paymentFilter === "all" ? "blue" : "gray"}
+                variant={paymentFilter === "all" ? "filled" : "light"}
+              >
+                <IconStack2 size={18} />
+              </Avatar>
+            </UnstyledButton>
+            {[
+              { value: "cash", icon: IconCash },
+              { value: "card", icon: IconCreditCard },
+              { value: "blik", icon: IconDeviceMobile },
+              { value: "voucher", icon: IconGift },
+              { value: "split", icon: IconArrowsSplit },
+            ].map((opt) => (
+              <UnstyledButton key={opt.value} onClick={() => setPaymentFilter(opt.value)} style={{ flexShrink: 0 }}>
+                <Avatar
+                  size={36}
+                  radius="xl"
+                  color={paymentFilter === opt.value ? "blue" : "gray"}
+                  variant={paymentFilter === opt.value ? "filled" : "light"}
+                >
+                  <opt.icon size={18} />
+                </Avatar>
+              </UnstyledButton>
+            ))}
+          </Group>
+        </ScrollArea>
+
         <Divider />
 
         {/* ===== TRANSACTION LIST ===== */}
@@ -128,7 +230,7 @@ export default function HistoryPage() {
                   >
                     <Group justify="space-between" wrap="nowrap">
                       <Group gap="md" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-                        <Text fz="sm" c="dimmed" w={45} style={{ flexShrink: 0 }}>
+                        <Text fz="xs" c="dimmed" w={75} style={{ flexShrink: 0 }}>
                           {formatTime(transaction.timestamp)}
                         </Text>
                         <div style={{ minWidth: 0, flex: 1 }}>
@@ -201,9 +303,28 @@ export default function HistoryPage() {
                             {transaction.totalAmount.toLocaleString("pl-PL")} zł
                           </Text>
                         </Group>
-                        <Badge size="sm" variant="light">
-                          {paymentLabel[transaction.paymentMethod]}
-                        </Badge>
+                        <Group justify="space-between" align="center">
+                          <Badge size="sm" variant="light">
+                            {paymentLabel[transaction.paymentMethod]}
+                          </Badge>
+                          {index === 0 && filter === "all" && (
+                            <Button
+                              variant="subtle"
+                              color="red"
+                              size="xs"
+                              leftSection={<IconArrowBackUp size={14} />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setUndoTransactionId(transaction.id);
+                                setUndoPin("");
+                                setUndoPinError(false);
+                                setUndoModal(true);
+                              }}
+                            >
+                              Cofnij transakcję
+                            </Button>
+                          )}
+                        </Group>
                       </Stack>
                     </Box>
                   </Collapse>
@@ -223,6 +344,7 @@ export default function HistoryPage() {
           bottom: 0,
           left: 0,
           right: 0,
+          zIndex: 100,
           borderTop: "1px solid var(--mantine-color-default-border)",
           backgroundColor: "var(--mantine-color-body)",
         }}
@@ -249,6 +371,90 @@ export default function HistoryPage() {
           </Group>
         </Container>
       </Box>
+
+      {/* ===== UNDO TRANSACTION MODAL ===== */}
+      <Modal
+        opened={undoModal}
+        onClose={() => {
+          setUndoModal(false);
+          setUndoSuccess(false);
+        }}
+        title={
+          <Text fw={700} fz="lg">
+            {undoSuccess ? "Transakcja cofnięta" : "Cofnij transakcję"}
+          </Text>
+        }
+        size="sm"
+      >
+        {undoSuccess ? (
+          <Stack align="center" gap="md" py="md">
+            <Box
+              p="lg"
+              style={{
+                borderRadius: "50%",
+                backgroundColor: "var(--mantine-color-red-light)",
+              }}
+            >
+              <IconArrowBackUp size={32} color="var(--mantine-color-red-filled)" />
+            </Box>
+            <Text fz="sm" ta="center">
+              Transakcja została cofnięta i oznaczona jako anulowana.
+            </Text>
+            <Button
+              fullWidth
+              onClick={() => {
+                setUndoModal(false);
+                setUndoSuccess(false);
+              }}
+            >
+              Zamknij
+            </Button>
+          </Stack>
+        ) : (
+          <Stack gap="md">
+            <Text fz="sm">
+              Cofnięcie transakcji wymaga autoryzacji administratora. Wpisz PIN szefa.
+            </Text>
+            <Stack align="center" gap="xs">
+              <PinInput
+                length={4}
+                type="number"
+                mask
+                value={undoPin}
+                onChange={(val) => {
+                  setUndoPin(val);
+                  setUndoPinError(false);
+                }}
+                error={undoPinError}
+              />
+              {undoPinError && (
+                <Text fz="xs" c="red">
+                  Nieprawidłowy PIN
+                </Text>
+              )}
+            </Stack>
+            <Group justify="flex-end">
+              <Button variant="subtle" onClick={() => setUndoModal(false)}>
+                Anuluj
+              </Button>
+              <Button
+                color="red"
+                disabled={undoPin.length < 4}
+                onClick={() => {
+                  // Mock PIN check - hardcoded "1234" for Phase 1
+                  if (undoPin === "1234") {
+                    setUndoSuccess(true);
+                  } else {
+                    setUndoPinError(true);
+                  }
+                }}
+              >
+                Cofnij transakcję
+              </Button>
+            </Group>
+          </Stack>
+        )}
+      </Modal>
     </Box>
   );
 }

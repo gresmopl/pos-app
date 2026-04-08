@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { mockEmployees, mockStats } from "@/data/employees";
 import {
@@ -17,11 +17,9 @@ import {
   Divider,
   Progress,
   Container,
-  Modal,
   Button,
-  NumberInput,
-  SegmentedControl,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import {
   IconSun,
   IconMoon,
@@ -31,10 +29,10 @@ import {
   IconTrophy,
   IconArrowUpRight,
   IconArrowDownRight,
-  IconGift,
   IconHistory,
   IconWallet,
   IconDoorExit,
+  IconScissors,
 } from "@tabler/icons-react";
 
 const statusColor: Record<string, string> = {
@@ -54,12 +52,17 @@ export default function Dashboard() {
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
 
-  // Voucher sale modal
-  const [voucherModal, setVoucherModal] = useState(false);
-  const [voucherValue, setVoucherValue] = useState<number | string>("");
-  const [voucherPayment, setVoucherPayment] = useState("cash");
-  const [voucherSuccess, setVoucherSuccess] = useState(false);
-  const [voucherCode, setVoucherCode] = useState("");
+  const isMobile = useMediaQuery("(max-width: 600px)");
+  const [dateStr, setDateStr] = useState("");
+
+  useEffect(() => {
+    setDateStr(
+      new Date().toLocaleDateString("pl-PL", isMobile
+        ? { day: "numeric", month: "short" }
+        : { weekday: "long", day: "numeric", month: "long", year: "numeric" }
+      )
+    );
+  }, [isMobile]);
 
   // Mock: admin widzi utarg, fryzjer nie
   const isAdmin = true; // TODO: replace with real role check
@@ -76,18 +79,20 @@ export default function Dashboard() {
       <Container size="lg">
         {/* ===== HEADER ===== */}
         <Group justify="space-between" py="md">
-          <Text fw={700} fz={24}>
-            FORMEN
-          </Text>
           <Group gap="sm">
-            <Text fz="sm" c="var(--mantine-color-text)">
-              {new Date().toLocaleDateString("pl-PL", {
-                weekday: "long",
-                day: "numeric",
-                month: "long",
-                year: "numeric",
-              })}
+            <ActionIcon variant="subtle" color="gray" size="lg">
+              <IconScissors size={22} />
+            </ActionIcon>
+            <Text fw={700} fz={24}>
+              FORMEN
             </Text>
+          </Group>
+          <Group gap="sm">
+            {dateStr && (
+              <Text fz="sm" c="var(--mantine-color-text)">
+                {dateStr}
+              </Text>
+            )}
             <ActionIcon
               variant="subtle"
               color="gray"
@@ -183,6 +188,16 @@ export default function Dashboard() {
             Pracownicy
           </Text>
           <Stack gap={0}>
+            {mockEmployees.length === 0 && (
+              <Stack align="center" gap="sm" py="xl">
+                <Text fz="sm" c="dimmed" ta="center">
+                  Brak pracowników. Dodaj pierwszego pracownika w Panelu Admina.
+                </Text>
+                <Button variant="light" size="sm" onClick={() => router.push("/admin")}>
+                  Przejdź do ustawień
+                </Button>
+              </Stack>
+            )}
             {mockEmployees.map((employee, index) => (
               <div key={employee.id}>
                 <UnstyledButton
@@ -243,25 +258,18 @@ export default function Dashboard() {
           bottom: 0,
           left: 0,
           right: 0,
+          zIndex: 100,
           borderTop: "1px solid var(--mantine-color-default-border)",
           backgroundColor: "var(--mantine-color-body)",
         }}
         p="md"
       >
         <Container size="lg">
-          <SimpleGrid cols={4}>
-            <UnstyledButton onClick={() => setVoucherModal(true)}>
-              <Stack align="center" gap={4}>
-                <IconGift size={22} color="var(--mantine-color-yellow-filled)" />
-                <Text fz="xs" c="var(--mantine-color-text)">
-                  Sprzedaż bonu
-                </Text>
-              </Stack>
-            </UnstyledButton>
+          <SimpleGrid cols={3}>
             <UnstyledButton onClick={() => router.push("/history")}>
               <Stack align="center" gap={4}>
                 <IconHistory size={22} color="var(--mantine-color-blue-filled)" />
-                <Text fz="xs" c="var(--mantine-color-text)">
+                <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
                   Historia
                 </Text>
               </Stack>
@@ -269,7 +277,7 @@ export default function Dashboard() {
             <UnstyledButton onClick={() => router.push("/cash")}>
               <Stack align="center" gap={4}>
                 <IconWallet size={22} color="var(--mantine-color-green-filled)" />
-                <Text fz="xs" c="var(--mantine-color-text)">
+                <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
                   Ruchy kasowe
                 </Text>
               </Stack>
@@ -277,7 +285,7 @@ export default function Dashboard() {
             <UnstyledButton onClick={() => router.push("/shift-close")}>
               <Stack align="center" gap={4}>
                 <IconDoorExit size={22} color="var(--mantine-color-red-filled)" />
-                <Text fz="xs" c="var(--mantine-color-text)">
+                <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
                   Zamknij zmianę
                 </Text>
               </Stack>
@@ -286,98 +294,6 @@ export default function Dashboard() {
         </Container>
       </Box>
 
-      {/* ===== VOUCHER SALE MODAL ===== */}
-      <Modal
-        opened={voucherModal}
-        onClose={() => {
-          setVoucherModal(false);
-          setVoucherSuccess(false);
-          setVoucherValue("");
-        }}
-        title={
-          <Text fw={700} fz="lg">
-            Sprzedaż bonu
-          </Text>
-        }
-        size="sm"
-      >
-        {voucherSuccess ? (
-          <Stack align="center" gap="md" py="md">
-            <Text fz={48}>🎁</Text>
-            <Text fw={600} fz="lg" ta="center">
-              Bon sprzedany!
-            </Text>
-            <Text fz="sm" c="dimmed" ta="center">
-              Wartość: {Number(voucherValue).toLocaleString("pl-PL")} zł ·{" "}
-              {voucherPayment === "cash" ? "Gotówka" : "Karta"}
-            </Text>
-            <Text fz="xs" c="dimmed" ta="center">
-              Kod bonu: {voucherCode}
-            </Text>
-            <Button
-              fullWidth
-              onClick={() => {
-                setVoucherModal(false);
-                setVoucherSuccess(false);
-                setVoucherValue("");
-              }}
-            >
-              Zamknij
-            </Button>
-          </Stack>
-        ) : (
-          <Stack gap="md">
-            <Text fz="sm">Sprzedaż bonu podarunkowego. Nie wymaga wyboru fryzjera.</Text>
-
-            <Group gap="sm">
-              {[50, 100, 200].map((val) => (
-                <Button
-                  key={val}
-                  variant={Number(voucherValue) === val ? "filled" : "light"}
-                  color="green"
-                  onClick={() => setVoucherValue(val)}
-                  size="sm"
-                >
-                  {val} zł
-                </Button>
-              ))}
-            </Group>
-
-            <NumberInput
-              label="Lub wpisz kwotę"
-              placeholder="0"
-              value={voucherValue}
-              onChange={setVoucherValue}
-              min={1}
-              suffix=" zł"
-              size="md"
-            />
-
-            <SegmentedControl
-              fullWidth
-              value={voucherPayment}
-              onChange={setVoucherPayment}
-              data={[
-                { label: "Gotówka", value: "cash" },
-                { label: "Karta", value: "card" },
-              ]}
-            />
-
-            <Button
-              fullWidth
-              size="lg"
-              disabled={!Number(voucherValue)}
-              onClick={() => {
-                setVoucherCode(`BON-${Date.now().toString().slice(-6)}`);
-                setVoucherSuccess(true);
-              }}
-              leftSection={<IconGift size={20} />}
-            >
-              Sprzedaj bon {Number(voucherValue) ? `za ${Number(voucherValue)} zł` : ""}
-            </Button>
-          </Stack>
-        )}
-      </Modal>
     </Box>
   );
 }

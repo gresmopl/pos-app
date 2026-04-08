@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useId } from "react";
 import { useRouter } from "next/navigation";
 import { mockServices, type Service } from "@/data/services";
 import { mockProducts, type Product } from "@/data/products";
@@ -31,6 +31,7 @@ type PricingItem = {
 
 export default function PricingPage() {
   const router = useRouter();
+  const pricingTabId = useId();
   const [tab, setTab] = useState("services");
   const [services, setServices] = useState<Service[]>([...mockServices]);
   const [products, setProducts] = useState<Product[]>([...mockProducts]);
@@ -139,6 +140,7 @@ export default function PricingPage() {
         {/* ===== TABS ===== */}
         <Box py="md">
           <SegmentedControl
+            id={pricingTabId}
             fullWidth
             value={tab}
             onChange={setTab}

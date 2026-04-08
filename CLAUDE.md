@@ -158,14 +158,57 @@ DASHBOARD (Ekran Glowny)
   - MIESIAC: [ikona kalendarza] liczba uslug [pasek postepu]
   - ROK (Y/Y): [ikona wykresu] liczba uslug [% zmiany vs rok ubiegly]
   - REKORD: [ikona pucharu] najlepszy wynik dzienny w historii
-- **Widget "Utarg Dzisiaj":** Suma dzienna (rozbita na: gotowka / karta / bony) - widoczny tylko dla admina
+- **Widget "Utarg Dzisiaj":** Suma dzienna (rozbita na: gotowka / karta / bony)
+- **Widget "Stan Kasetki":** Obliczany na zywo stan gotowki w kasetce (obok Utargu)
 - **Karty fryzjerow:** Siatka (Grid) z avatarem, imieniem i statusem. Klikniecie = natychmiastowe wejscie do POS (BEZ PIN-u)
 - **Dolny panel szybkich akcji:**
   - Szybka Sprzedaz Bonu
   - Historia Transakcji
   - Ruchy Kasowe (Wydatki/Napiwki)
   - Zamknij Zmiane
-- **Ikona zebatki:** Dostep do Panelu Admina (WYMAGA PIN-u Szefa)
+- **Ikona zebatki:** Dostep do Panelu Admina (WYMAGA PIN-u Szefa) - widoczna tylko na urzadzeniach admin
+
+**Widok Dashboard wg typu urzadzenia:**
+
+**personal** — uproszczony widok:
+- Imie pracownika (powitanie, np. "Czesc, Oliwia")
+- Liczba dzisiejszych uslug pracownika
+- Przycisk "Nowa sprzedaz" (prowadzi do POS)
+- Dolny panel (bon, historia, kasa, zmiana)
+
+**station** — widok recepcji:
+- Stan kasetki
+- Lista pracownikow (klikniecie = POS)
+- Dolny panel
+
+**admin** — pelny widok:
+- Pasek motywacyjny (4 statystyki)
+- Utarg dzisiaj + Stan kasetki
+- Lista pracownikow
+- Dolny panel
+- Ikona zebatki (Panel Admina)
+
+| Element Dashboard | personal | station | admin |
+|-------------------|----------|---------|-------|
+| Pasek motywacyjny (4 statystyki) | nie | nie | tak |
+| Utarg dzisiaj | nie | nie | tak |
+| Stan kasetki | nie | tak | tak |
+| Powitanie + dzisiejsze uslugi pracownika | tak | nie | nie |
+| Przycisk "Nowa sprzedaz" | tak | nie | nie |
+| Lista pracownikow | nie | tak | tak |
+| Dolny panel (bon, historia, kasa, zmiana) | tak | tak | tak |
+| Ikona zebatki (Panel Admina) | nie | nie | tak |
+
+**Widocznosc na innych ekranach wg typu urzadzenia:**
+
+| Ekran | personal | station / admin |
+|-------|----------|-----------------|
+| POS — wybor pracownika | auto-przypisany, brak selecta | wybrany z Dashboard |
+| Zamkniecie zmiany — wybor pracownika | auto-przypisany | select z listy |
+| Ruchy kasowe — napiwki | tylko swoje saldo | select pracownika |
+| Historia — filtr | tylko swoje transakcje | filtr po wszystkich |
+
+**PIN admina:** Wymagany ZAWSZE przy wejsciu do Panelu Admina — rowniez na urzadzeniu admin. Dodatkowa warstwa bezpieczenstwa na wypadek dostepu osoby trzeciej do telefonu szefa.
 
 **Styl:** Dark Mode, grafitowe tlo, butelkowa zielen jako akcent, duze dotykowe przyciski.
 
@@ -206,6 +249,10 @@ DASHBOARD (Ekran Glowny)
 - Metoda platnosci
 - Salon ID
 
+**Potwierdzenie platnosci:** Przed finalizacja wyswietlany jest modal potwierdzenia z podsumowaniem (kwota, fryzjer, metoda platnosci, napiwek, rabat). Zapobiega przypadkowym transakcjom.
+
+**Cofniecie transakcji:** Dostepne z Historii transakcji, tylko dla ostatniej transakcji. Wymaga PIN-u admina. Cofnieta transakcja oznaczana jako anulowana (nie usuwana z bazy). Cofniecie koryguje stan kasetki i statystyki.
+
 **Po finalizacji:** Koszyk czyszczony, aplikacja wraca na Dashboard.
 
 ---
@@ -219,6 +266,8 @@ DASHBOARD (Ekran Glowny)
 - System generuje unikalny kod bonu
 - Traktowane jako wplyw gotowkowy do salda kasy
 - Bon NIE wlicza sie do statystyk sprzedazowych zadnego fryzjera
+- Bon NIE jest przypisany do pracownika — kazdy moze go wydac
+- System rejestruje device_id urzadzenia, z ktorego wydano bon (dla audytu)
 
 **Realizacja bonu (platnosc bonem):**
 - W oknie platnosci opcja "Bon Podarunkowy"
@@ -352,6 +401,22 @@ DASHBOARD (Ekran Glowny)
 
 **Kto zamyka:** Losowy pracownik (rotacyjnie).
 
+**Stan kasetki (na zywo):**
+- Widoczny na gorze ekranu Zamkniecia Zmiany (przed formularzem)
+- Rowniez widoczny na Dashboard obok "Utarg dzisiaj"
+- Dostepny TYLKO dla urzadzen typu `station` i `admin` (urzadzenia `personal` NIE widza stanu kasy)
+- Obliczany w czasie rzeczywistym:
+```
+Stan kasetki = Opening Balance (drobne z poprzedniego dnia)
+             + Sprzedaz gotowkowa (cash)
+             + Wplaty do kasy (top-up)
+             + Realizacja bonow papierowych (wkladane do kasetki)
+             - Wyplaty napiwkow (tip_withdrawal)
+             - Pobrania na zakupy (expense)
+             - Zwroty dla fryzjerow (barber_payback)
+```
+- Wartosc orientacyjna (systemowa) — rzeczywisty stan moze sie roznic (stad "slepe liczenie" przy zamknieciu)
+
 **Formularz "slepego liczenia":**
 - **Pole A:** Suma gotowki PLN (banknoty + monety) - wpisywana recznie
 - **Pole B:** Suma papierowych bonow - wpisywana recznie
@@ -382,13 +447,18 @@ Roznica (Nadwyzka/Brak): [Kwota] PLN
 
 **Roznice kasowe:** System NIE karze pracownika automatycznie. Nadwyzki/braki gromadzone do raportu miesiecznego.
 
+**⚠ UWAGA — slepe liczenie vs widocznosc kwot systemowych:**
+Obecna implementacja pokazuje "Podsumowanie systemowe" (oczekiwane kwoty) na tym samym ekranie co formularz liczenia. To podwaza idee slepego audytu kasowego — pracownik widzi ile "powinno byc" i moze dopasowac swoja wartosc.
+Standardowa praktyka: pracownik NAJPIERW wpisuje policzona kwote, POTEM system ujawnia roznice. Ekran podsumowania systemowego powinien byc ukryty do momentu zatwierdzenia formularza.
+**Do potwierdzenia z wlascicielem** — moze to byc swiadoma decyzja (szef chce transparentnosc), ale warto dopytac.
+
 ---
 
 ### MODUL 9: PANEL SZEFA I RAPORTY MIESIECZNE (Admin)
 
 **Dostep:** Tylko po PIN-ie administratora (ikona zebatki na Dashboard).
 
-**Trzy zakladki:**
+**Cztery zakladki:**
 
 #### A) Pracownicy
 - Lista wszystkich pracownikow
@@ -400,7 +470,14 @@ Roznica (Nadwyzka/Brak): [Kwota] PLN
 - Tylko Nazwa + Cena
 - Aktywacja / dezaktywacja pozycji
 
-#### C) Raporty Miesieczne
+#### C) Urzadzenia
+- Lista wszystkich zarejestrowanych urzadzen (z statusem: pending / approved / blocked)
+- Badge z liczba oczekujacych (pending) na zakladce
+- Zatwierdzanie nowych urzadzen (wybor typu, przypisanie pracownika, nazwa)
+- Dezaktywacja / reaktywacja urzadzen
+- Podglad: ostatnia aktywnosc (last_seen_at)
+
+#### D) Raporty Miesieczne
 
 **Zestawienie pracownicze:**
 - Tabela: Imie | Suma uslug | Suma kosmetykow | Prowizja | Napiwki
@@ -418,6 +495,64 @@ Roznica (Nadwyzka/Brak): [Kwota] PLN
 - Szef widzi i sam decyduje jak rozliczyc przy premiach
 
 **Wydruk raportu miesiecznego:** Na drukarce USB lub PDF.
+
+---
+
+### MODUL 11: AUTORYZACJA URZADZEN (Device Pairing)
+
+**Zasada:** Kazde urzadzenie musi byc jednorazowo zarejestrowane i zatwierdzone przez admina. BEZ kont email/hasla. BEZ logowania na co dzien.
+
+**Typy urzadzen:**
+
+| Typ | Przypisanie | Widok | Przyklad |
+|-----|-------------|-------|---------|
+| `personal` | employee_id | Tylko POS przypisanego fryzjera (pomija Dashboard) | Telefon Oliwii |
+| `station` | salon_id | Dashboard + wybor fryzjera + POS | Tablet przy kasie |
+| `admin` | employee_id (admin) | Wszystko + Panel Admina + zmiana PIN | Telefon Zbyszka |
+
+**Jeden pracownik moze miec wiele urzadzen osobistych** (np. telefon + tablet).
+
+**Urzadzenie stacjonarne** (station) sluzy osobie przy kasie — wybiera fryzjera i przypisuje usluge.
+
+**Flow rejestracji:**
+1. Admin dodaje pracownika w panelu → system generuje QR kod rejestracyjny
+2. Pracownik skanuje QR ze swojego urzadzenia → otwiera sie aplikacja
+3. Urzadzenie rejestruje sie w systemie ze statusem **pending** (oczekuje na zatwierdzenie)
+4. Pracownik widzi ekran: "Oczekuje na zatwierdzenie przez administratora"
+5. Admin widzi nowe urzadzenie w panelu → zatwierdza i ustawia:
+   - Typ urzadzenia: personal / station / admin
+   - Przypisanie do pracownika (dla personal i admin)
+   - Nazwe urzadzenia (np. "Telefon Oliwii", "Kasa glowna")
+6. System nadaje `device_id` (GUID) → urzadzenie aktywne
+
+**Logika widoku wg typu:**
+- `personal` → uproszczony Dashboard (powitanie, dzisiejsze uslugi, przycisk "Nowa sprzedaz", dolny panel)
+- `station` → Dashboard z lista pracownikow + stan kasetki
+- `admin` → pelny Dashboard + dostep do Panelu Admina (PIN wymagany ZAWSZE przy wejsciu do panelu)
+
+**Powiadomienia o nowych urzadzeniach:**
+- Badge z liczba oczekujacych urzadzen na ikonie zebatki (Panel Admina)
+- W panelu admina: zakladka/sekcja "Urzadzenia" z lista oczekujacych na zatwierdzenie
+- Opcjonalnie: push notification na urzadzenie admin (Faza 3)
+
+**Blokowanie dostepu:**
+- Admin moze **dezaktywowac urzadzenie** → ekran "Dostep zablokowany, skontaktuj sie z administratorem"
+- Admin moze **dezaktywowac pracownika** → wszystkie jego urzadzenia osobiste automatycznie zablokowane
+- Urzadzenia NIE sa usuwane z systemu — tylko dezaktywacja (historia parowan zachowana)
+
+**Zarzadzanie (operacje CRUD):**
+
+| Obiekt | Dodaj | Edytuj | Dezaktywuj | Usun |
+|--------|-------|--------|------------|------|
+| Pracownik | Admin tworzy profil + generuje QR | Imie, avatar, prowizje, rola | Tak (blokuje urzadzenia) | Nie — tylko dezaktywacja |
+| Urzadzenie | QR → pending → admin zatwierdza | Nazwa, typ, przypisanie | Tak (blokada) | Nie — tylko dezaktywacja |
+| Salon | Super-admin (przyszlosc) | Nazwa, adres | Tak | Nie |
+| PIN admina | Przy tworzeniu admina | Zmiana w Panelu Admina (wymaga starego PIN) | — | — |
+| PIN operacyjny | Ustawiany w Panelu Admina | Zmiana w Panelu Admina | — | — |
+| Usluga/Produkt | Admin | Nazwa, cena | Tak (znika z POS) | Nie — tylko dezaktywacja |
+| Klient | Z POS lub Admin | Imie, telefon | Tak | Nie |
+
+**Zmiana roli** pracownika (barber → admin) nadaje dostep do panelu i wymaga ustawienia PIN-u.
 
 ---
 
@@ -444,7 +579,8 @@ Roznica (Nadwyzka/Brak): [Kwota] PLN
 ### Glowne tabele:
 
 ```
-Salon (id, name, address, is_active)
+Salon (id, name, address, is_active,
+       admin_pin_hash, operations_pin_hash)
 
 Employee (id, salon_id, name, avatar_url, role[ADMIN/BARBER],
           pin_hash, commission_service_percent, commission_product_percent,
@@ -461,9 +597,11 @@ Voucher (id, salon_id, code, initial_value, remaining_balance,
          status[active/used/expired], created_at)
 
 Transaction (id, salon_id, employee_id[nullable], client_id[nullable],
-             date, total_amount, tip_amount, discount_type[percentage/amount],
-             discount_value, payment_method[multi], status)
+             device_id, date, total_amount, tip_amount,
+             discount_type[percentage/amount], discount_value,
+             payment_method[multi], status)
 -- employee_id nullable dla sprzedazy bonow
+-- device_id rejestruje z jakiego urzadzenia dokonano transakcji
 
 TransactionItem (id, transaction_id, type[service/product/voucher_sale],
                  item_id, price_at_sale, commission_amount)
@@ -483,6 +621,14 @@ TipWithdrawal (id, employee_id, amount, timestamp)
 DailyReport (id, salon_id, date, closing_employee_id, expected_cash,
              actual_cash, actual_vouchers_value, float_amount,
              deposit_amount, difference, status[closed])
+
+DeviceRegistration (id, device_id[GUID], salon_id, employee_id[nullable],
+                    device_type[personal/station/admin],
+                    status[pending/approved/blocked],
+                    device_name, registered_at, approved_at, last_seen_at,
+                    is_active)
+-- employee_id nullable dla urzadzen stacjonarnych (station)
+-- is_active = false oznacza dezaktywacje (urzadzenia nigdy nie sa usuwane)
 ```
 
 ### Klucz: salon_id
@@ -502,14 +648,30 @@ Kazda tabela (oprocz Employee i Salon) posiada `salon_id` dla obslugi wielu loka
 - **Komponenty:** Mantine UI (createTheme, ColorSchemeProvider, gotowe tabele, formularze, modale, gridy)
 - **Architektura modularna:** Przygotowana na przyszle moduly (barberCal, barberTime)
 
+### Responsywnosc
+
+- **Scrollbar:** Ukryty na urzadzeniach <= 1024px (telefony, tablety) — scrollowanie dotykiem. Widoczny na desktopie (> 1024px)
+- **Data w headerze:** Pelna na desktopie ("wtorek, 8 kwietnia 2026"), skrocona na mobile <= 600px ("8 kwi")
+- **Filtry (historia):** ScrollArea z przyciskami pill zamiast SegmentedControl — scrollowalne poziomo na waskich ekranach
+- **Dolny panel:** Teksty pod ikonami fz=11px, wycentrowane, line-height 1.2 — nie lamia sie na waskich ekranach
+- **Fixed bottom bar:** Wszystkie strony maja zIndex: 100 na fixed bottom bar — zapobiega nachodzeniu kontrolek (np. NumberInput strzalki)
+- **Padding dolny:** Strony z fixed bottom bar maja pb >= 120-160px aby tresc nie nachodziala pod panel
+
 ---
 
 ## Zasady bezpieczenstwa
 
-- PIN wymagany TYLKO dla Panelu Admina (zmiana cen, prowizji, raporty)
+- **Dwa oddzielne PIN-y:**
+  - **PIN admina** — wejscie do Panelu Szefa (cennik, prowizje, raporty, urzadzenia). Znany TYLKO szefowi. Wymagany ZAWSZE, rowniez na urzadzeniu admin
+  - **PIN operacyjny** — cofniecie transakcji i inne wrazliwe operacje przy kasie. Szef moze go udostepnic zaufanemu pracownikowi bez dawania dostepu do pelnego panelu
+  - Oba PIN-y ustawiane i zmieniane w Panelu Admina
 - Fryzjerzy klikaja w swoja karte BEZ logowania (szybkosc > bezpieczenstwo przy fotelu)
 - Supabase RLS zapewnia izolacje danych miedzy salonami
 - employee_id nullable w Transaction (dla sprzedazy bonow)
+- device_id w Transaction — kazda transakcja rejestruje urzadzenie (audyt)
+- Urzadzenia wymagaja jednorazowej rejestracji i zatwierdzenia przez admina (szczegoly: MODUL 11)
+- Dezaktywacja pracownika automatycznie blokuje wszystkie jego urzadzenia osobiste
+- Dezaktywacja zamiast usuwania — dotyczy pracownikow, urzadzen, uslug, produktow (integralnosc danych historycznych)
 
 ---
 
@@ -537,6 +699,7 @@ Kazda tabela (oprocz Employee i Salon) posiada `salon_id` dla obslugi wielu loka
 
 ### Faza 2 - Pelna funkcjonalnosc
 - Integracja z Supabase (baza, auth)
+- Autoryzacja urzadzen (QR pairing, zatwierdzanie, blokowanie)
 - Bony podarunkowe
 - Wirtualny portfel napiwkow
 - Ruchy kasowe (wplaty, wydatki, zakupy)
@@ -550,3 +713,40 @@ Kazda tabela (oprocz Employee i Salon) posiada `salon_id` dla obslugi wielu loka
 - Eksport CSV/Excel
 - PWA offline fallback
 - Baza klientow (historia wizyt)
+
+---
+
+## Pomysly do rozwazenia
+
+Pomysly ktore nie sa jeszcze zatwierdzone. Wymagaja decyzji wlasciciela przed implementacja.
+
+1. **Przeniesienie sprzedazy bonow do Ruchow Kasowych** — bon sprzedaje sie raz na tydzien, nie zasługuje na osobny przycisk w bottom barze Dashboard. Zamiast tego: nowa zakladka "Sprzedaz bonu" w Ruchach Kasowych. Bottom bar zmniejszony z 4 do 3 przyciskow (Historia, Ruchy kasowe, Zamknij zmiane). Plusy: czystszy bottom bar, logiczna spojnosc (bon = wplyw kasowy). Minus: jeden klik wiecej, ale przy niskiej czestotliwosci to nieistotne.
+2. **Dedykowane skeleton per strona** — zamiast generycznego loading.tsx, kazda podstrona moze miec wlasny skeleton dopasowany do layoutu (np. karty pracownikow na Dashboard, lista transakcji w Historii).
+3. **Ruchy kasowe: filtr/paginacja** — przy duzej liczbie operacji dziennych lista moze byc dluga. Rozwiazanie: filtr po typie operacji + paginacja lub "zaladuj wiecej".
+4. **Pasek motywacyjny — doprecyzowanie algorytmow:**
+   - Miesięczny target — kto ustawia i gdzie? Propozycja: edytowalny w Panelu Admina
+   - Rok do roku bez danych — ukryc procent i pokazac "1. rok" lub sama liczbe
+   - Rekord — salonowy na admin/station, osobisty na personal
+   - Porownanie Y/Y — porownywac do tego samego dnia w roku (fair comparison)
+5. **Swipe na transakcji w historii** — swipe w lewo na transakcji moze otwierac opcje (cofnij, drukuj kopie)
+
+---
+
+## Zrobione w Fazie 1 (audit UX + poprawki)
+
+- Modal potwierdzenia platnosci w POS (zabezpieczenie przed przypadkowym kliknieciem)
+- Cofniecie ostatniej transakcji z PIN-em operacyjnym
+- Ilosc przy pozycji w koszyku (+/- zamiast duplikowania)
+- Napiwek: wlasna kwota jako pierwszy przycisk, potem procentowe
+- Historia: wyszukiwanie + filtr metody platnosci (ikony) + filtr pracownikow (avatary)
+- Historia: pelna data dla transakcji spoza dzisiejszego dnia
+- Ruchy kasowe: chronologia z timestamp, ikony kierunku (wplyw/wydatek), kolorowanie kwot
+- Bony i split w podsumowaniu systemowym zamkniecia zmiany
+- Animacja fade-in przy nawigacji miedzy stronami
+- Haptic feedback (wibracja) przy finalizacji transakcji i sprzedazy bonu
+- Swipe back z lewej krawedzi ekranu na wszystkich podstronach
+- Loading skeleton przy nawigacji
+- Responsywnosc: scrollbar ukryty na mobile/tablet, data skrocona na mobile, bottom bar z-index
+- Pusty stan Dashboard z komunikatem powitalnym
+- Konsekwencja ikon (emoji 🎁 zamienione na Tabler IconGift)
+- Specyfikacja: MODUL 11 (autoryzacja urzadzen), stan kasetki, widocznosc wg typow urzadzen, dwa PIN-y (admin + operacyjny)
