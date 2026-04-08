@@ -1,8 +1,8 @@
-# BarberPOS - Specyfikacja Projektu
+# FORMEN - Specyfikacja Projektu
 
 ## Opis projektu
 
-- **Nazwa:** BarberPOS
+- **Nazwa:** FORMEN
 - **Typ:** Aplikacja POS (Point of Sale) dla meskich salonow fryzjerskich
 - **Uzytkownicy:** Elastyczna liczba salonow, kazdy z dowolna liczba pracownikow. Dynamiczne dodawanie/usuwanie salonow i pracownikow
 - **Cel:** Obsluga sprzedazy uslug fryzjerskich i kosmetykow. Wewnetrzny system kasowy do zarzadzania sprzedaza, utargiem pracownikow, prowizjami i napiwkami
@@ -17,8 +17,8 @@
 | Warstwa | Technologia |
 |---------|------------|
 | **Frontend** | Next.js (App Router) + React + TypeScript |
-| **UI** | Do wyboru po porownaniu: Mantine UI lub shadcn/ui + Tailwind CSS |
-| **Styling** | Zalezne od wyboru UI (Mantine CSS Modules lub Tailwind CSS) |
+| **UI** | Mantine UI (z systemem motywow createTheme) |
+| **Styling** | Mantine CSS Modules + Mantine theme system |
 | **Backend/Baza** | Supabase (PostgreSQL + Auth + Realtime + Storage) |
 | **Polaczenie z baza** | Client-side (Supabase JS SDK z przegladarki) |
 | **Bezpieczenstwo** | Supabase Row Level Security (RLS) |
@@ -493,12 +493,14 @@ Kazda tabela (oprocz Employee i Salon) posiada `salon_id` dla obslugi wielu loka
 
 ## Styl UI/UX
 
-- **Motyw:** Dark Mode (grafitowe tlo, butelkowa zielen jako akcent)
+- **Motyw:** Wielomotywowy (theme system). Kazdy motyw definiuje kolory, border-radius, spacing, fonty. Uzytkownicy wybieraja motyw w ustawieniach
+- **Color scheme:** Dark + Light mode. Domyslnie z preferencji systemowej (prefers-color-scheme), z mozliwoscia recznego przelaczenia. Kazdy motyw dziala w obu trybach
+- **Styl:** Minimalistyczny - duzo przestrzeni, prosta typografia, czytelnosc > dekoracyjnosc
 - **Podejscie:** Mobile/Tablet-First, dotykowy (min. 48px touch targets)
 - **Typ:** SPA (Single Page Application) - plynna nawigacja bez przeladan
 - **Czcionka:** Bezszeryfowa, wysoki kontrast
-- **Komponenty:** Zaokraglone narozniki, karty (cards), duze przyciski
-- **Biblioteka UI:** Mantine (gotowe tabele, formularze, modale, gridy)
+- **Komponenty:** Mantine UI (createTheme, ColorSchemeProvider, gotowe tabele, formularze, modale, gridy)
+- **Architektura modularna:** Przygotowana na przyszle moduly (barberCal, barberTime)
 
 ---
 
@@ -517,7 +519,8 @@ Kazda tabela (oprocz Employee i Salon) posiada `salon_id` dla obslugi wielu loka
 - **Jezyk interfejsu:** polski
 - **Framework:** Next.js App Router
 - **Typowanie:** TypeScript (strict mode)
-- **UI:** Mantine components
+- **UI:** Mantine components (bez shadcn/ui, bez surowego Tailwind)
+- **Motywy:** src/themes/ - kazdy motyw jako oddzielny plik createTheme()
 - **Formatowanie:** Prettier + ESLint
 - **Struktura katalogow:** Next.js App Router conventions
 
