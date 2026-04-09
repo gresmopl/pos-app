@@ -1,7 +1,5 @@
-"use client";
-
 import { useState, useId } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import { mockEmployees } from "@/data/employees";
 import {
   Text,
@@ -49,7 +47,7 @@ interface CashMovement {
 }
 
 export default function CashPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const tabsId = useId();
   const paymentId = useId();
   const [tab, setTab] = useState("tips");
@@ -258,7 +256,7 @@ export default function CashPage() {
       <Container size="lg">
         {/* ===== HEADER ===== */}
         <Group py="md" gap="sm">
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => router.push("/")}>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
             <IconArrowLeft size={22} />
           </ActionIcon>
           <Text fw={700} fz={24}>

@@ -1,7 +1,5 @@
-"use client";
-
-import { Suspense, useState, useMemo, useId } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useState, useMemo, useId } from "react";
+import { useSearchParams, useNavigate } from "react-router";
 import { mockEmployees } from "@/data/employees";
 import { mockServices } from "@/data/services";
 import { mockProducts } from "@/data/products";
@@ -51,19 +49,11 @@ interface DiscountState {
   value: number;
 }
 
-export default function POSPageWrapper() {
-  return (
-    <Suspense>
-      <POSPage />
-    </Suspense>
-  );
-}
-
-function POSPage() {
-  const router = useRouter();
+export default function POSPage() {
+  const navigate = useNavigate();
   const addTabId = useId();
   const discountTabId = useId();
-  const searchParams = useSearchParams();
+  const [searchParams] = useSearchParams();
   const employeeId = searchParams.get("employee");
   const employee = mockEmployees.find((e) => e.id === employeeId);
 
@@ -161,7 +151,7 @@ function POSPage() {
     setTipAmount(0);
     setDiscount(null);
     if (navigator.vibrate) navigator.vibrate(100);
-    router.push("/");
+    navigate("/");
   };
 
   const filteredServices = mockServices.filter(
@@ -175,7 +165,7 @@ function POSPage() {
     return (
       <Container size="lg" py="xl">
         <Text>Nie znaleziono pracownika.</Text>
-        <Button variant="subtle" mt="md" onClick={() => router.push("/")}>
+        <Button variant="subtle" mt="md" onClick={() => navigate("/")}>
           Powrót do Dashboard
         </Button>
       </Container>
@@ -192,7 +182,7 @@ function POSPage() {
               variant="subtle"
               color="gray"
               size="lg"
-              onClick={() => router.push("/")}
+              onClick={() => navigate("/")}
               aria-label="Powrót"
             >
               <IconArrowLeft size={22} />

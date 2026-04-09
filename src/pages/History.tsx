@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import { mockTransactions } from "@/data/transactions";
 import { mockEmployees } from "@/data/employees";
 import {
@@ -54,7 +52,7 @@ const paymentLabel: Record<string, string> = {
 };
 
 export default function HistoryPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [undoModal, setUndoModal] = useState(false);
@@ -69,11 +67,6 @@ export default function HistoryPage() {
 
   const employeeAvatar = (name: string) =>
     mockEmployees.find((e) => e.name === name)?.avatar ?? name.slice(0, 2).toUpperCase();
-
-  const filterOptions = [
-    { label: "Wszystkie", value: "all" },
-    ...uniqueEmployees.map((name) => ({ label: employeeAvatar(name), value: name })),
-  ];
 
   const filtered = mockTransactions.filter((t) => {
     if (filter !== "all" && t.employeeName !== filter) return false;
@@ -116,7 +109,7 @@ export default function HistoryPage() {
               variant="subtle"
               color="gray"
               size="lg"
-              onClick={() => router.push("/")}
+              onClick={() => navigate("/")}
               aria-label="Powrót"
             >
               <IconArrowLeft size={22} />

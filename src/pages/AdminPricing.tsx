@@ -1,7 +1,5 @@
-"use client";
-
 import { useState, useId } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import { mockServices, type Service } from "@/data/services";
 import { mockProducts, type Product } from "@/data/products";
 import {
@@ -30,7 +28,7 @@ type PricingItem = {
 };
 
 export default function PricingPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const pricingTabId = useId();
   const [tab, setTab] = useState("services");
   const [services, setServices] = useState<Service[]>([...mockServices]);
@@ -116,7 +114,7 @@ export default function PricingPage() {
               variant="subtle"
               color="gray"
               size="lg"
-              onClick={() => router.push("/admin")}
+              onClick={() => navigate("/admin")}
             >
               <IconArrowLeft size={22} />
             </ActionIcon>
