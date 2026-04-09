@@ -1,10 +1,8 @@
-"use client";
-
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 
 export function SwipeBack() {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   useEffect(() => {
     let startX = 0;
@@ -23,7 +21,7 @@ export function SwipeBack() {
 
       // Swipe from left edge (start < 30px), horizontal > 80px, not too vertical
       if (startX < 30 && dx > 80 && dy < 100) {
-        router.back();
+        navigate(-1);
       }
     };
 
@@ -34,7 +32,7 @@ export function SwipeBack() {
       document.removeEventListener("touchstart", handleTouchStart);
       document.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [router]);
+  }, [navigate]);
 
   return null;
 }

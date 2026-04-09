@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import { mockEmployees } from "@/data/employees";
 import { mockTransactions } from "@/data/transactions";
 import {
@@ -20,7 +18,7 @@ import {
 import { IconArrowLeft, IconPrinter, IconCheck } from "@tabler/icons-react";
 
 export default function ShiftClosePage() {
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const [closingEmployee, setClosingEmployee] = useState<string | null>(null);
   const [cashAmount, setCashAmount] = useState<number | string>("");
@@ -169,7 +167,7 @@ export default function ShiftClosePage() {
               >
                 Drukuj raport
               </Button>
-              <Button onClick={() => router.push("/")}>Powrót do Dashboard</Button>
+              <Button onClick={() => navigate("/")}>Powrót do Dashboard</Button>
             </Group>
           </Stack>
         </Container>
@@ -197,7 +195,7 @@ export default function ShiftClosePage() {
             <Text fz="sm" ta="center" c="dimmed">
               Dzisiejsza zmiana została już zamknięta. Nie można zamknąć zmiany ponownie.
             </Text>
-            <Button onClick={() => router.push("/")}>Powrót do Dashboard</Button>
+            <Button onClick={() => navigate("/")}>Powrót do Dashboard</Button>
           </Stack>
         </Container>
       </Box>
@@ -209,7 +207,7 @@ export default function ShiftClosePage() {
       <Container size="lg">
         {/* ===== HEADER ===== */}
         <Group py="md" gap="sm">
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => router.push("/")}>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
             <IconArrowLeft size={22} />
           </ActionIcon>
           <Text fw={700} fz={24}>

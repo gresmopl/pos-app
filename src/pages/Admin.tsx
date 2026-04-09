@@ -1,7 +1,5 @@
-"use client";
-
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import {
   Text,
   Group,
@@ -18,7 +16,7 @@ import { IconArrowLeft, IconLock } from "@tabler/icons-react";
 const ADMIN_PIN = "1234"; // mock
 
 export default function AdminPage() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
@@ -38,7 +36,7 @@ export default function AdminPage() {
       <Box mih="100vh">
         <Container size="xs">
           <Group py="md">
-            <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => router.push("/")}>
+            <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
               <IconArrowLeft size={22} />
             </ActionIcon>
             <Text fw={700} fz={24}>
@@ -81,7 +79,7 @@ export default function AdminPage() {
     <Box mih="100vh">
       <Container size="lg">
         <Group py="md">
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => router.push("/")}>
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
             <IconArrowLeft size={22} />
           </ActionIcon>
           <Text fw={700} fz={24}>
@@ -93,7 +91,7 @@ export default function AdminPage() {
           <AdminLink
             label="Cennik"
             description="Usługi i produkty"
-            onClick={() => router.push("/admin/pricing")}
+            onClick={() => navigate("/admin/pricing")}
           />
           <Divider />
           <AdminLink

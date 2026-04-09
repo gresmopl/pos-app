@@ -1,7 +1,5 @@
-"use client";
-
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useNavigate } from "react-router";
 import { mockEmployees, mockStats } from "@/data/employees";
 import {
   Text,
@@ -48,7 +46,7 @@ const statusLabel: Record<string, string> = {
 };
 
 export default function Dashboard() {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";
 
@@ -107,7 +105,7 @@ export default function Dashboard() {
               color="gray"
               size="lg"
               aria-label="Ustawienia"
-              onClick={() => router.push("/admin")}
+              onClick={() => navigate("/admin")}
             >
               <IconSettings size={20} />
             </ActionIcon>
@@ -193,7 +191,7 @@ export default function Dashboard() {
                 <Text fz="sm" c="dimmed" ta="center">
                   Brak pracowników. Dodaj pierwszego pracownika w Panelu Admina.
                 </Text>
-                <Button variant="light" size="sm" onClick={() => router.push("/admin")}>
+                <Button variant="light" size="sm" onClick={() => navigate("/admin")}>
                   Przejdź do ustawień
                 </Button>
               </Stack>
@@ -204,7 +202,7 @@ export default function Dashboard() {
                   w="100%"
                   py="sm"
                   px="xs"
-                  onClick={() => router.push(`/pos?employee=${employee.id}`)}
+                  onClick={() => navigate(`/pos?employee=${employee.id}`)}
                 >
                   <Group justify="space-between" wrap="nowrap">
                     <Group gap="md" wrap="nowrap">
@@ -266,7 +264,7 @@ export default function Dashboard() {
       >
         <Container size="lg">
           <SimpleGrid cols={3}>
-            <UnstyledButton onClick={() => router.push("/history")}>
+            <UnstyledButton onClick={() => navigate("/history")}>
               <Stack align="center" gap={4}>
                 <IconHistory size={22} color="var(--mantine-color-blue-filled)" />
                 <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
@@ -274,7 +272,7 @@ export default function Dashboard() {
                 </Text>
               </Stack>
             </UnstyledButton>
-            <UnstyledButton onClick={() => router.push("/cash")}>
+            <UnstyledButton onClick={() => navigate("/cash")}>
               <Stack align="center" gap={4}>
                 <IconWallet size={22} color="var(--mantine-color-green-filled)" />
                 <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
@@ -282,7 +280,7 @@ export default function Dashboard() {
                 </Text>
               </Stack>
             </UnstyledButton>
-            <UnstyledButton onClick={() => router.push("/shift-close")}>
+            <UnstyledButton onClick={() => navigate("/shift-close")}>
               <Stack align="center" gap={4}>
                 <IconDoorExit size={22} color="var(--mantine-color-red-filled)" />
                 <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
