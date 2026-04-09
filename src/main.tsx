@@ -14,9 +14,13 @@ if (redirect) {
   window.history.replaceState(null, "", redirect);
 }
 
+// Detect GitHub Pages by pathname prefix
+const isGitHubPages = window.location.pathname.startsWith("/pos-app");
+const basename = isGitHubPages ? "/pos-app" : "/";
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <BrowserRouter basename="/pos-app">
+    <BrowserRouter basename={basename}>
       <MantineProvider theme={themes[defaultThemeKey]} defaultColorScheme="auto">
         <App />
       </MantineProvider>
