@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      // SPA redirect: GitHub Pages serves 404.html for unknown paths.
+      // This script redirects to index.html with the path as a query param,
+      // and index.html picks it up and restores the correct route.
+      var path = window.location.pathname;
+      window.location.replace(
+        window.location.origin + '/pos-app/?redirect=' + encodeURIComponent(path)
+      );
+    </script>
+  </head>
+</html>
