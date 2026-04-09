@@ -23,7 +23,7 @@ export default function ShiftClosePage() {
   const [closingEmployee, setClosingEmployee] = useState<string | null>(null);
   const [cashAmount, setCashAmount] = useState<number | string>("");
   const [vouchersAmount, setVouchersAmount] = useState<number | string>("");
-  const [floatAmount, setFloatAmount] = useState<number | string>(200);
+  const [floatAmount, setFloatAmount] = useState<number | string>("");
   const [confirmModal, setConfirmModal] = useState(false);
   const [done, setDone] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -115,11 +115,11 @@ export default function ShiftClosePage() {
                 RAPORT DOBOWY
               </Text>
               <Text fz="xs" ta="center" c="dimmed" mb="md">
-                {new Date().toLocaleDateString("pl-PL")} · Zamykał: {closingName}
+                {new Date().toLocaleDateString("pl-PL")}, {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} · Zamykał: {closingName}
               </Text>
               <Divider mb="sm" variant="dashed" />
               <Group justify="space-between" mb={4}>
-                <Text fz="xs">Gotówka w kasetce:</Text>
+                <Text fz="xs">Gotówka:</Text>
                 <Text fz="xs" fw={600}>
                   {cash.toLocaleString("pl-PL")} zł
                 </Text>
@@ -230,25 +230,17 @@ export default function ShiftClosePage() {
               </Text>
             </Group>
             <Group justify="space-between">
-              <Text fz="sm">Sprzedaż karta:</Text>
+              <Text fz="sm">Sprzedaż karta/BLIK:</Text>
               <Text fz="sm" fw={600}>
-                {systemCard.toLocaleString("pl-PL")} zł
+                {(systemCard + systemBlik).toLocaleString("pl-PL")} zł
               </Text>
             </Group>
             <Group justify="space-between">
-              <Text fz="sm">Sprzedaż BLIK:</Text>
+              <Text fz="sm">Sprzedaż bon (fizyczne bony):</Text>
               <Text fz="sm" fw={600}>
-                {systemBlik.toLocaleString("pl-PL")} zł
+                {systemVoucher.toLocaleString("pl-PL")} zł
               </Text>
             </Group>
-            {systemVoucher > 0 && (
-              <Group justify="space-between">
-                <Text fz="sm">Sprzedaż bon:</Text>
-                <Text fz="sm" fw={600}>
-                  {systemVoucher.toLocaleString("pl-PL")} zł
-                </Text>
-              </Group>
-            )}
             {systemSplit > 0 && (
               <Group justify="space-between">
                 <Text fz="sm">Sprzedaż split (gotówka + karta):</Text>
@@ -286,11 +278,22 @@ export default function ShiftClosePage() {
           />
 
           <NumberInput
-            label="Gotówka w kasetce (zł)"
+            label="Gotówka (zł)"
             description="Policz banknoty i monety"
             placeholder="0"
             value={cashAmount}
             onChange={setCashAmount}
+            min={0}
+            suffix=" zł"
+            size="md"
+          />
+
+          <NumberInput
+            label="Drobne na jutro (zł)"
+            description="Pogotowie kasowe na następną zmianę"
+            placeholder="0"
+            value={floatAmount}
+            onChange={setFloatAmount}
             min={0}
             suffix=" zł"
             size="md"
@@ -302,17 +305,6 @@ export default function ShiftClosePage() {
             placeholder="0"
             value={vouchersAmount}
             onChange={setVouchersAmount}
-            min={0}
-            suffix=" zł"
-            size="md"
-          />
-
-          <NumberInput
-            label="Drobne na jutro (zł)"
-            description="Pogotowie kasowe na następną zmianę"
-            placeholder="200"
-            value={floatAmount}
-            onChange={setFloatAmount}
             min={0}
             suffix=" zł"
             size="md"

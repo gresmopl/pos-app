@@ -35,13 +35,16 @@ export default function AdminPage() {
     return (
       <Box mih="100vh">
         <Container size="xs">
-          <Group py="md">
-            <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
-              <IconArrowLeft size={22} />
-            </ActionIcon>
-            <Text fw={700} fz={24}>
-              Panel admina
-            </Text>
+          <Group justify="space-between" py="md">
+            <Group gap="sm">
+              <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
+                <IconArrowLeft size={22} />
+              </ActionIcon>
+              <Text fw={700} fz={24}>
+                Panel admina
+              </Text>
+            </Group>
+            <Text fz="xs" c="dimmed">v{APP_VERSION}</Text>
           </Group>
           <Divider />
           <Stack align="center" gap="lg" py={60}>
@@ -78,13 +81,16 @@ export default function AdminPage() {
   return (
     <Box mih="100vh">
       <Container size="lg">
-        <Group py="md">
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
-            <IconArrowLeft size={22} />
-          </ActionIcon>
-          <Text fw={700} fz={24}>
-            Panel admina
-          </Text>
+        <Group justify="space-between" py="md">
+          <Group gap="sm">
+            <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
+              <IconArrowLeft size={22} />
+            </ActionIcon>
+            <Text fw={700} fz={24}>
+              Panel admina
+            </Text>
+          </Group>
+          <Text fz="xs" c="dimmed">v{APP_VERSION}</Text>
         </Group>
         <Divider />
         <Stack gap={0} py="md">
