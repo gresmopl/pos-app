@@ -1,6 +1,9 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.25] - 2026-04-10
+- fix: GitHub Actions workflow - dodano tsc przed vite build, base path z vite.config.ts
+
 [0.1.24] - 2026-04-10
 - fix: @eslint/js downgrade do ^9 (zgodnosc z eslint ^9, npm ci failowal na CI)
 - fix: regeneracja package-lock.json
