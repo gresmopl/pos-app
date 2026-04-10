@@ -1,6 +1,10 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.24] - 2026-04-10
+- fix: @eslint/js downgrade do ^9 (zgodnosc z eslint ^9, npm ci failowal na CI)
+- fix: regeneracja package-lock.json
+
 [0.1.23] - 2026-04-10
 - fix: Vite base path dla GitHub Pages (assety JS/CSS teraz poprawnie serwowane z /pos-app/)
 
