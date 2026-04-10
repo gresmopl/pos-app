@@ -31,7 +31,12 @@ export default function ShiftClosePage() {
     validate: {
       closingEmployee: (v) => (v ? null : "Wybierz pracownika"),
       cashAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
-      floatAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
+      floatAmount: (v, values) =>
+        Number(v) < 0
+          ? "Kwota nie może być ujemna"
+          : Number(v) > Number(values.cashAmount)
+            ? "Drobne nie mogą być większe niż gotówka"
+            : null,
       vouchersAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
     },
   });

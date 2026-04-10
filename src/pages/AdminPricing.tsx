@@ -80,7 +80,7 @@ export default function PricingPage() {
         );
       } else {
         const newItem: Service = {
-          id: `s${Date.now()}`,
+          id: crypto.randomUUID(),
           name: editName,
           price,
           category: "Inne",
@@ -95,7 +95,7 @@ export default function PricingPage() {
         );
       } else {
         const newItem: Product = {
-          id: `p${Date.now()}`,
+          id: crypto.randomUUID(),
           name: editName,
           price,
           isActive: true,
