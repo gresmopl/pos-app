@@ -114,6 +114,138 @@ const questions: Question[] = [
       { value: "all", label: "O każdej transakcji (real-time)" },
     ],
   },
+  {
+    id: "blind_counting",
+    title: "Ślepe liczenie przy zamknięciu zmiany",
+    description:
+      'Pracownik liczy gotówkę w kasetce. Czy widzi "oczekiwaną kwotę systemową" ZANIM wpisze swoją policzoną wartość?',
+    impact:
+      "Jeśli widzi - może dopasować swoją kwotę do systemowej. Jeśli nie widzi - uczciwy audyt kasowy.",
+    options: [
+      {
+        value: "blind",
+        label: "Nie widzi - najpierw wpisuje, potem system pokazuje różnicę (prawdziwy audyt)",
+      },
+      {
+        value: "visible",
+        label: "Widzi kwotę systemową od razu - transparentność ważniejsza niż audyt",
+      },
+    ],
+  },
+  {
+    id: "voucher_placement",
+    title: "Sprzedaż bonów - gdzie przycisk?",
+    description:
+      'Bon sprzedaje się raz na tydzień. Obecnie ma osobny przycisk na ekranie głównym. Alternatywa: przenieść do "Ruchów Kasowych" jako zakładkę.',
+    impact: "Układ ekranu głównego, liczba przycisków na dolnym pasku.",
+    options: [
+      { value: "dashboard", label: "Zostaw na ekranie głównym - szybki dostęp ważniejszy" },
+      {
+        value: "cash",
+        label: "Przenieś do Ruchów Kasowych - rzadko używane, nie zajmuje miejsca",
+      },
+    ],
+  },
+  {
+    id: "device_types",
+    title: "Urządzenia w salonie",
+    description:
+      "Jakie urządzenia będą używane? Wpływa na to, które widoki priorytetowo dopracować.",
+    impact: "Priorytet implementacji widoków (personal/station/admin).",
+    options: [
+      {
+        value: "admin_only",
+        label: "Tylko mój telefon (admin) - sam obsługuję kasę",
+      },
+      {
+        value: "admin_station",
+        label: "Mój telefon (admin) + tablet przy kasie (station)",
+      },
+      {
+        value: "all",
+        label: "Mój telefon (admin) + tablet przy kasie + telefony fryzjerów (personal)",
+      },
+    ],
+  },
+  {
+    id: "cash_tips",
+    title: "Napiwki gotówkowe 'do ręki'",
+    description:
+      "Klient daje fryzjerowi napiwek gotówką bezpośrednio (nie przez kasę). Czy rejestrować to w systemie?",
+    impact: "Dokładność statystyk napiwkowych, złożoność obsługi.",
+    options: [
+      {
+        value: "no",
+        label: "Nie - gotówka do ręki to sprawa fryzjera, system nie śledzi",
+      },
+      {
+        value: "optional",
+        label:
+          "Opcjonalnie - fryzjer może wpisać napiwek do ręki (do statystyk, nie wpływa na kasę)",
+      },
+    ],
+  },
+  {
+    id: "discount_limit",
+    title: "Limit rabatu",
+    description:
+      "Obecnie każdy fryzjer/kasjer może dać dowolny rabat (nawet 100%) bez ograniczeń. Czy wprowadzić kontrolę?",
+    impact: "Walidacja rabatów, ewentualny PIN przy dużych rabatach.",
+    options: [
+      { value: "no_limit", label: "Bez limitu - ufam pracownikom" },
+      {
+        value: "pin_above",
+        label: "Rabat powyżej 20% wymaga PIN-u operacyjnego",
+      },
+      {
+        value: "max_percent",
+        label: "Maksymalny rabat to 30% - nie da się dać więcej",
+      },
+      {
+        value: "admin_only",
+        label: "Rabaty daje tylko admin/szef (PIN wymagany zawsze)",
+      },
+    ],
+  },
+  {
+    id: "cash_tolerance",
+    title: "Tolerancja różnicy kasowej",
+    description:
+      "Przy zamknięciu zmiany policzona gotówka może się różnić od systemowej o parę złotych (drobne, zaokrąglenia). Jaka różnica jest akceptowalna?",
+    impact: "Kolorowanie różnicy przy zamknięciu zmiany, ewentualne alerty.",
+    options: [
+      { value: "0", label: "0 zł - każda różnica jest oznaczana" },
+      { value: "5", label: "Do 5 zł - drobne różnice ignorowane" },
+      { value: "10", label: "Do 10 zł - tolerancja na zaokrąglenia" },
+      { value: "20", label: "Do 20 zł - luźne podejście" },
+    ],
+  },
+  {
+    id: "tip_presets",
+    title: "Presety napiwków",
+    description:
+      "W POS są szybkie przyciski napiwków: 5%, 10%, 20% od rachunku. Można też wpisać własną kwotę. Czy te wartości są dobre?",
+    impact: "Przyciski napiwków na ekranie sprzedaży.",
+    options: [
+      { value: "5_10_20", label: "5%, 10%, 20% - ok, zostawiamy" },
+      { value: "10_15_20", label: "Wolę 10%, 15%, 20%" },
+      { value: "5_10_15_20", label: "Chcę 4 przyciski: 5%, 10%, 15%, 20%" },
+      { value: "custom_only", label: "Tylko pole na własną kwotę, bez presetów procentowych" },
+    ],
+  },
+  {
+    id: "voucher_denominations",
+    title: "Nominały bonów podarunkowych",
+    description:
+      "Szybkie przyciski do sprzedaży bonu: 50 zł, 100 zł, 200 zł. Można też wpisać dowolną kwotę. Pasuje?",
+    impact: "Przyciski szybkiego wyboru przy sprzedaży bonu.",
+    options: [
+      { value: "50_100_200", label: "50, 100, 200 zł - ok" },
+      { value: "100_200_300", label: "Wolę 100, 200, 300 zł" },
+      { value: "50_100_150_200", label: "Chcę 4 przyciski: 50, 100, 150, 200 zł" },
+      { value: "custom_only", label: "Tylko pole na własną kwotę, bez presetów" },
+    ],
+  },
 ];
 
 export default function OwnerSurvey() {
