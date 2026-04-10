@@ -4,7 +4,7 @@
   "description": "System POS dla salonów fryzjerskich",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1a1b1e",
+  "background_color": "#f5f5f5",
   "theme_color": "#00e676",
   "orientation": "portrait",
   "icons": [
