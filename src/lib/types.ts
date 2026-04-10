@@ -10,6 +10,9 @@ export interface Employee {
   todayRevenue: number;
   todayServices: number;
   tipBalance: number;
+  commissionServicePercent: number;
+  commissionProductPercent: number;
+  isActive: boolean;
 }
 
 export interface DailyStats {
@@ -26,7 +29,11 @@ export interface Service {
   id: string;
   name: string;
   price: number;
+  priceFrom?: boolean;
+  durationMinutes?: string;
   category: string;
+  description?: string;
+  descriptionLong?: string;
   isActive: boolean;
 }
 
@@ -34,6 +41,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
+  description?: string;
   isActive: boolean;
 }
 
@@ -41,6 +49,11 @@ export interface TransactionItem {
   name: string;
   price: number;
   type: "service" | "product" | "voucher_sale";
+}
+
+export interface PaymentBreakdownItem {
+  method: "cash" | "card" | "blik" | "voucher";
+  amount: number;
 }
 
 export interface Transaction {
@@ -53,6 +66,7 @@ export interface Transaction {
   tipAmount: number;
   discountAmount: number;
   paymentMethod: "cash" | "card" | "blik" | "voucher" | "split";
+  paymentBreakdown?: PaymentBreakdownItem[];
   timestamp: string;
 }
 
@@ -65,13 +79,26 @@ export interface CashMovement {
     | "top_up"
     | "barber_loan"
     | "barber_payback"
-    | "voucher_sale";
+    | "voucher_sale"
+    | "shift_close"
+    | "float";
   employeeName: string;
   amount: number;
   description: string;
   timestamp: string;
   status?: "pending" | "settled";
   finalCost?: number;
+  paymentMethod?: string;
+}
+
+export interface Voucher {
+  id: string;
+  code: string;
+  initialValue: number;
+  remainingBalance: number;
+  status: "active" | "used" | "expired";
+  expiresAt: string;
+  createdAt: string;
 }
 
 export interface CartItem {

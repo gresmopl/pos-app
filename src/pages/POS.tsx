@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router";
-import { mockEmployees } from "@/data/employees";
-import { mockServices } from "@/data/services";
-import { mockProducts } from "@/data/products";
+import { useEmployees, useServices, useProducts } from "@/hooks/useDbData";
+import { db } from "@/db";
 import {
   Text,
   Group,
@@ -28,8 +27,12 @@ import { ConfirmModal } from "@/components/pos/ConfirmModal";
 export default function POSPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { data: employees = [] } = useEmployees();
+  const { data: services = [] } = useServices();
+  const { data: products = [] } = useProducts();
+
   const employeeId = searchParams.get("employee");
-  const employee = mockEmployees.find((e) => e.id === employeeId);
+  const employee = employees.find((e) => e.id === employeeId);
 
   const {
     cart,
@@ -54,20 +57,50 @@ export default function POSPage() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingPaymentMethod, setPendingPaymentMethod] = useState("");
   const [pendingPaymentDetails, setPendingPaymentDetails] = useState("");
+  const [pendingVoucherCode, setPendingVoucherCode] = useState<string | undefined>();
+  const [pendingVoucherAmount, setPendingVoucherAmount] = useState<number | undefined>();
+  const [finalizing, setFinalizing] = useState(false);
 
-  const requestFinalize = (method: string, details?: string) => {
+  const requestFinalize = (
+    method: string,
+    details?: string,
+    voucherCode?: string,
+    voucherAmount?: number
+  ) => {
     setPendingPaymentMethod(method);
     setPendingPaymentDetails(details || "");
+    setPendingVoucherCode(voucherCode);
+    setPendingVoucherAmount(voucherAmount);
     setPaymentModalOpen(false);
     setSplitModalOpen(false);
     setConfirmModalOpen(true);
   };
 
-  const finalize = () => {
-    setConfirmModalOpen(false);
-    resetCart();
-    if (navigator.vibrate) navigator.vibrate(100);
-    navigate("/");
+  const finalize = async () => {
+    if (finalizing) return;
+    setFinalizing(true);
+    try {
+      await db.transactions.create({
+        employeeId: employeeId || "",
+        items: cart,
+        tipAmount,
+        discount,
+        discountAmount,
+        totalAmount: total,
+        paymentMethod: pendingPaymentMethod,
+        paymentDetails: pendingPaymentDetails,
+        voucherCode: pendingVoucherCode,
+        voucherAmount: pendingVoucherAmount,
+      });
+      setConfirmModalOpen(false);
+      resetCart();
+      if (navigator.vibrate) navigator.vibrate(100);
+      navigate("/");
+    } catch (err) {
+      console.error("[POS] Failed to save transaction:", err);
+    } finally {
+      setFinalizing(false);
+    }
   };
 
   if (!employee) {
@@ -142,7 +175,7 @@ export default function POSPage() {
         {cart.length > 0 && (
           <>
             <Divider />
-            <TipSelector subtotal={subtotal} tipAmount={tipAmount} onTipChange={setTipAmount} />
+            <TipSelector tipAmount={tipAmount} onTipChange={setTipAmount} />
           </>
         )}
 
@@ -200,8 +233,8 @@ export default function POSPage() {
       <AddItemModal
         opened={addModalOpen}
         onClose={() => setAddModalOpen(false)}
-        services={mockServices}
-        products={mockProducts}
+        services={services}
+        products={products}
         onAdd={(item, type) => {
           addToCart(item, type);
           setAddModalOpen(false);
@@ -242,6 +275,7 @@ export default function POSPage() {
         discount={discount}
         discountAmount={discountAmount}
         onConfirm={finalize}
+        loading={finalizing}
       />
     </Box>
   );

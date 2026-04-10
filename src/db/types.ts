@@ -1,9 +1,83 @@
-import type { Employee, DailyStats, Service, Product, Transaction } from "@/lib/types";
+import type {
+  Employee,
+  DailyStats,
+  Service,
+  Product,
+  Transaction,
+  CashMovement,
+  CartItem,
+  DiscountState,
+  Voucher,
+} from "@/lib/types";
+
+export interface SaveEmployeeInput {
+  name: string;
+  avatarUrl?: string;
+  role?: "admin" | "barber";
+  commissionServicePercent: number;
+  commissionProductPercent: number;
+}
+
+export interface SaveServiceInput {
+  name: string;
+  price: number;
+  priceFrom?: boolean;
+  durationMinutes?: string;
+  category?: string;
+  description?: string;
+  descriptionLong?: string;
+}
+
+export interface SaveProductInput {
+  name: string;
+  price: number;
+  description?: string;
+}
+
+export interface CreateCashMovementInput {
+  type: CashMovement["type"];
+  employeeId?: string;
+  amount: number;
+  description: string;
+  status?: "pending" | "settled";
+  voucherCode?: string;
+  paymentMethod?: string;
+}
+
+export interface CreateDailyReportInput {
+  closingEmployeeId: string;
+  expectedCash: number;
+  actualCash: number;
+  expectedVouchers: number;
+  actualVouchersValue: number;
+  floatAmount: number;
+  depositAmount: number;
+  difference: number;
+  voucherDifference: number;
+}
+
+export interface CreateTransactionInput {
+  employeeId: string;
+  clientId?: string;
+  items: CartItem[];
+  tipAmount: number;
+  discount: DiscountState | null;
+  discountAmount: number;
+  totalAmount: number;
+  paymentMethod: string;
+  paymentDetails?: string;
+  voucherCode?: string;
+  voucherAmount?: number;
+}
 
 export interface DbClient {
   employees: {
     getAll(): Promise<Employee[]>;
+    getActive(): Promise<Employee[]>;
     getById(id: string): Promise<Employee | undefined>;
+    create(input: SaveEmployeeInput): Promise<Employee>;
+    update(id: string, input: SaveEmployeeInput): Promise<Employee>;
+    toggleActive(id: string, isActive: boolean): Promise<void>;
   };
   stats: {
     getDaily(): Promise<DailyStats>;
@@ -11,14 +85,39 @@ export interface DbClient {
   services: {
     getAll(): Promise<Service[]>;
     getActive(): Promise<Service[]>;
+    create(input: SaveServiceInput): Promise<Service>;
+    update(id: string, input: SaveServiceInput): Promise<Service>;
+    toggleActive(id: string, isActive: boolean): Promise<void>;
   };
   products: {
     getAll(): Promise<Product[]>;
     getActive(): Promise<Product[]>;
+    create(input: SaveProductInput): Promise<Product>;
+    update(id: string, input: SaveProductInput): Promise<Product>;
+    toggleActive(id: string, isActive: boolean): Promise<void>;
   };
   transactions: {
     getAll(): Promise<Transaction[]>;
     getByEmployee(employeeId: string): Promise<Transaction[]>;
     getToday(): Promise<Transaction[]>;
+    getSince(since: string | null): Promise<Transaction[]>;
+    create(input: CreateTransactionInput): Promise<Transaction>;
+    cancel(id: string): Promise<void>;
+  };
+  cashMovements: {
+    getToday(): Promise<CashMovement[]>;
+    getSince(since: string | null): Promise<CashMovement[]>;
+    create(input: CreateCashMovementInput): Promise<CashMovement>;
+    updateStatus(id: string, status: "settled", finalCost?: number): Promise<void>;
+  };
+  vouchers: {
+    getByCode(code: string): Promise<Voucher | null>;
+    redeem(id: string, amount: number): Promise<void>;
+  };
+  dailyReports: {
+    create(input: CreateDailyReportInput): Promise<void>;
+    getToday(): Promise<{ closedAt: string } | null>;
+    getLastClosedAt(): Promise<string | null>;
+    getLastFloat(): Promise<number>;
   };
 }

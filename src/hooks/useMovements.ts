@@ -1,11 +1,16 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { mockEmployees } from "@/data/employees";
+import { db } from "@/db";
 import type { CashMovement } from "@/lib/types";
 
 export function useMovements() {
   const [movements, setMovements] = useState<CashMovement[]>([]);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const successTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  // Load today's movements from DB
+  useEffect(() => {
+    db.cashMovements.getToday().then(setMovements).catch(console.error);
+  }, []);
 
   useEffect(() => {
     return () => {
@@ -30,117 +35,112 @@ export function useMovements() {
   }, []);
 
   const handleTipWithdrawal = useCallback(
-    (employeeId: string, amount: number) => {
-      const emp = mockEmployees.find((e) => e.id === employeeId);
-      if (!emp) return;
-
-      setMovements((prev) => [
-        {
-          id: crypto.randomUUID(),
-          type: "tip_withdrawal",
-          employeeName: emp.name,
-          amount,
-          description: "Wypłata napiwków",
-          timestamp: new Date().toISOString(),
-        },
-        ...prev,
-      ]);
-      showSuccess(`Wypłacono ${amount} zł napiwków dla ${emp.name}`);
+    async (employeeId: string, amount: number) => {
+      const movement = await db.cashMovements.create({
+        type: "tip_withdrawal",
+        employeeId,
+        amount,
+        description: "Wypłata napiwków",
+      });
+      setMovements((prev) => [movement, ...prev]);
+      showSuccess(`Wypłacono ${amount} zł napiwków dla ${movement.employeeName}`);
     },
     [showSuccess]
   );
 
   const handleExpenseTake = useCallback(
-    (employeeId: string, amount: number, desc: string) => {
-      const emp = mockEmployees.find((e) => e.id === employeeId);
-      if (!emp) return;
-
-      setMovements((prev) => [
-        {
-          id: crypto.randomUUID(),
-          type: "expense_take",
-          employeeName: emp.name,
-          amount,
-          description: desc || "Zakupy salonowe",
-          timestamp: new Date().toISOString(),
-          status: "pending",
-        },
-        ...prev,
-      ]);
-      showSuccess(`Pobrano ${amount} zł na zakupy - ${emp.name}`);
+    async (employeeId: string, amount: number, desc: string) => {
+      const movement = await db.cashMovements.create({
+        type: "expense_take",
+        employeeId,
+        amount,
+        description: desc || "Zakupy salonowe",
+        status: "pending",
+      });
+      setMovements((prev) => [movement, ...prev]);
+      showSuccess(`Pobrano ${amount} zł na zakupy - ${movement.employeeName}`);
     },
     [showSuccess]
   );
 
-  const handleSettle = useCallback(() => {
+  const handleSettle = useCallback(async () => {
     if (!settleTarget) return;
     const cost = Number(settleCost);
     if (cost < 0) return;
 
-    setMovements((prev) =>
-      prev.map((m) =>
-        m.id === settleTarget.id ? { ...m, status: "settled" as const, finalCost: cost } : m
-      )
-    );
+    await db.cashMovements.updateStatus(settleTarget.id, "settled", cost);
 
     const change = settleTarget.amount - cost;
+
+    // Zwrot reszty do kasetki jako osobny ruch
+    let settleMovement: CashMovement | null = null;
+    if (change > 0) {
+      settleMovement = await db.cashMovements.create({
+        type: "expense_settle",
+        amount: change,
+        description: `Zwrot reszty z zakupów (${settleTarget.employeeName}: pobrano ${settleTarget.amount} zł, wydano ${cost} zł)`,
+      });
+    }
+
+    setMovements((prev) => {
+      const updated = prev.map((m) =>
+        m.id === settleTarget.id ? { ...m, status: "settled" as const, finalCost: cost } : m
+      );
+      return settleMovement ? [settleMovement, ...updated] : updated;
+    });
+
     setSettleModal(false);
     setSettleTarget(null);
     setSettleCost("");
-    showSuccess(`Rozliczono: wydano ${cost} zł, do zwrotu ${change > 0 ? change : 0} zł`);
+    showSuccess(
+      change > 0
+        ? `Rozliczono: wydano ${cost} zł, zwrot ${change} zł do kasetki`
+        : `Rozliczono: wydano ${cost} zł`
+    );
   }, [settleTarget, settleCost, showSuccess]);
 
   const handleTopUp = useCallback(
-    (amount: number, reason: string) => {
-      setMovements((prev) => [
-        {
-          id: crypto.randomUUID(),
-          type: "top_up",
-          employeeName: "Szef",
-          amount,
-          description: reason,
-          timestamp: new Date().toISOString(),
-        },
-        ...prev,
-      ]);
+    async (amount: number, reason: string) => {
+      const movement = await db.cashMovements.create({
+        type: "top_up",
+        amount,
+        description: reason,
+      });
+      setMovements((prev) => [movement, ...prev]);
       showSuccess(`Wpłacono ${amount} zł do kasy`);
     },
     [showSuccess]
   );
 
   const handleBarberLoan = useCallback(
-    (employeeId: string, amount: number) => {
-      const emp = mockEmployees.find((e) => e.id === employeeId);
-      if (!emp) return;
-
-      setMovements((prev) => [
-        {
-          id: crypto.randomUUID(),
-          type: "barber_loan",
-          employeeName: emp.name,
-          amount,
-          description: "Wydał z własnych (reszta)",
-          timestamp: new Date().toISOString(),
-          status: "pending",
-        },
-        ...prev,
-      ]);
-      showSuccess(`Zarejestrowano dług kasetki: ${amount} zł dla ${emp.name}`);
+    async (employeeId: string, amount: number) => {
+      const movement = await db.cashMovements.create({
+        type: "barber_loan",
+        employeeId,
+        amount,
+        description: "Wydał z własnych (reszta)",
+        status: "pending",
+      });
+      setMovements((prev) => [movement, ...prev]);
+      showSuccess(`Zarejestrowano dług kasetki: ${amount} zł dla ${movement.employeeName}`);
     },
     [showSuccess]
   );
 
   const handleBarberPayback = useCallback(
-    (loan: CashMovement) => {
+    async (loan: CashMovement) => {
+      // Mark original loan as settled
+      await db.cashMovements.updateStatus(loan.id, "settled");
+
+      // Create payback movement
+      const movement = await db.cashMovements.create({
+        type: "barber_payback",
+        amount: loan.amount,
+        description: `Zwrot za resztę dla ${loan.employeeName}`,
+      });
+
       setMovements((prev) => [
-        {
-          id: crypto.randomUUID(),
-          type: "barber_payback" as const,
-          employeeName: loan.employeeName,
-          amount: loan.amount,
-          description: `Zwrot za resztę dla ${loan.employeeName}`,
-          timestamp: new Date().toISOString(),
-        },
+        movement,
         ...prev.map((m) => (m.id === loan.id ? { ...m, status: "settled" as const } : m)),
       ]);
       showSuccess(`Zwrócono ${loan.amount} zł dla ${loan.employeeName}`);
@@ -148,22 +148,16 @@ export function useMovements() {
     [showSuccess]
   );
 
-  const handleVoucherSale = useCallback(
-    (amount: number, payment: string, code: string) => {
-      setMovements((prev) => [
-        {
-          id: crypto.randomUUID(),
-          type: "voucher_sale",
-          employeeName: "Salon",
-          amount,
-          description: `Sprzedaż bonu ${code} (${payment === "cash" ? "gotówka" : "karta"})`,
-          timestamp: new Date().toISOString(),
-        },
-        ...prev,
-      ]);
-    },
-    []
-  );
+  const handleVoucherSale = useCallback(async (amount: number, payment: string, code: string) => {
+    const movement = await db.cashMovements.create({
+      type: "voucher_sale",
+      amount,
+      description: `Sprzedaż bonu ${code} (${payment === "cash" ? "gotówka" : "karta"})`,
+      voucherCode: code,
+      paymentMethod: payment,
+    });
+    setMovements((prev) => [movement, ...prev]);
+  }, []);
 
   const openSettleModal = useCallback((expense: CashMovement) => {
     setSettleTarget(expense);

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { mockEmployees, mockStats } from "@/data/employees";
+import { useEmployees, useDailyStats } from "@/hooks/useDbData";
 import {
   Text,
   Group,
@@ -65,15 +65,22 @@ export default function Dashboard() {
     );
   }, [isMobile]);
 
+  const { data: employees = [], loading: empLoading } = useEmployees();
+  const { data: stats } = useDailyStats();
+
   // Mock: admin widzi utarg, fryzjer nie
   const isAdmin = true; // TODO: replace with real role check
 
-  const totalRevenue = mockEmployees.reduce((s, e) => s + e.todayRevenue, 0);
-  const diff = mockStats.todayServices - mockStats.yesterdayServices;
-  const yearDiff = Math.round(
-    ((mockStats.yearServices - mockStats.lastYearServices) / mockStats.lastYearServices) * 100
-  );
-  const monthProgress = Math.round((mockStats.monthServices / mockStats.monthTarget) * 100);
+  const totalRevenue = employees.reduce((s, e) => s + e.todayRevenue, 0);
+  const diff = (stats?.todayServices ?? 0) - (stats?.yesterdayServices ?? 0);
+  const yearDiff =
+    stats && stats.lastYearServices > 0
+      ? Math.round(((stats.yearServices - stats.lastYearServices) / stats.lastYearServices) * 100)
+      : 0;
+  const monthProgress =
+    stats && stats.monthTarget > 0
+      ? Math.round((stats.monthServices / stats.monthTarget) * 100)
+      : 0;
 
   return (
     <Box mih="100vh" pb={80}>
@@ -123,7 +130,7 @@ export default function Dashboard() {
             <IconSun size={18} color="#fbbf24" />
             <Group gap={4} align="baseline">
               <Text fw={700} fz={22}>
-                {mockStats.todayServices}
+                {stats?.todayServices}
               </Text>
               <Text fz="xs" fw={600} c={diff >= 0 ? "green" : "red"}>
                 {diff >= 0 ? (
@@ -140,7 +147,7 @@ export default function Dashboard() {
           <Stack gap={0} align="center">
             <IconCalendar size={18} color="#60a5fa" />
             <Text fw={700} fz={22}>
-              {mockStats.monthServices}
+              {stats?.monthServices}
             </Text>
             <Progress value={monthProgress} color="green" size={3} w={60} />
           </Stack>
@@ -149,7 +156,7 @@ export default function Dashboard() {
             <IconChartBar size={18} color="#a78bfa" />
             <Group gap={4} align="baseline">
               <Text fw={700} fz={22}>
-                {mockStats.yearServices}
+                {stats?.yearServices}
               </Text>
               <Text fz="xs" fw={600} c={yearDiff >= 0 ? "green" : "red"}>
                 {yearDiff >= 0 ? "+" : ""}
@@ -161,7 +168,7 @@ export default function Dashboard() {
           <Stack gap={0} align="center">
             <IconTrophy size={18} color="#f59e0b" />
             <Text fw={700} fz={22}>
-              {mockStats.allTimeRecord}
+              {stats?.allTimeRecord}
             </Text>
           </Stack>
         </SimpleGrid>
@@ -189,7 +196,12 @@ export default function Dashboard() {
             Pracownicy
           </Text>
           <Stack gap={0}>
-            {mockEmployees.length === 0 && (
+            {empLoading && (
+              <Text fz="sm" c="dimmed" ta="center" py="xl">
+                Ładowanie...
+              </Text>
+            )}
+            {!empLoading && employees.length === 0 && (
               <Stack align="center" gap="sm" py="xl">
                 <Text fz="sm" c="dimmed" ta="center">
                   Brak pracowników. Dodaj pierwszego pracownika w Panelu Admina.
@@ -199,12 +211,12 @@ export default function Dashboard() {
                 </Button>
               </Stack>
             )}
-            {mockStats.todayServices === 0 && mockEmployees.length > 0 && (
+            {stats?.todayServices === 0 && employees.length > 0 && (
               <Text fz="xs" c="dimmed" ta="center" py="sm">
                 Wybierz fryzjera aby rozpocząć pierwszy rachunek
               </Text>
             )}
-            {mockEmployees.map((employee, index) => (
+            {employees.map((employee, index) => (
               <div key={employee.id}>
                 <UnstyledButton
                   w="100%"
@@ -250,7 +262,7 @@ export default function Dashboard() {
                     )}
                   </Group>
                 </UnstyledButton>
-                {index < mockEmployees.length - 1 && <Divider />}
+                {index < employees.length - 1 && <Divider />}
               </div>
             ))}
           </Stack>

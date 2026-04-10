@@ -1,7 +1,6 @@
 import { useState, useId } from "react";
 import { Text, Group, Stack, Box, NumberInput, SegmentedControl, Button } from "@mantine/core";
 import { IconGift, IconCheck } from "@tabler/icons-react";
-import { VOUCHER_PRESETS } from "@/lib/constants";
 
 interface VoucherTabProps {
   onSale: (amount: number, payment: string, code: string) => void;
@@ -84,25 +83,8 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
         </Text>
       </div>
 
-      <Text fz="sm" fw={500}>
-        Szybki wybór
-      </Text>
-      <Group gap="sm">
-        {VOUCHER_PRESETS.map((v) => (
-          <Button
-            key={v}
-            variant={Number(value) === v ? "filled" : "light"}
-            size="md"
-            onClick={() => setValue(v)}
-            style={{ flex: 1 }}
-          >
-            {v} zł
-          </Button>
-        ))}
-      </Group>
-
       <NumberInput
-        label="Lub wpisz kwotę"
+        label="Kwota bonu"
         placeholder="0"
         value={value}
         onChange={setValue}

@@ -2,11 +2,11 @@
 export const MOCK_ADMIN_PIN = "1234";
 export const MOCK_OPERATIONS_PIN = "1234";
 
-// Voucher quick-select presets (PLN)
-export const VOUCHER_PRESETS = [50, 100, 200] as const;
+// Cash tolerance for shift close difference (PLN)
+export const CASH_TOLERANCE = 10;
 
-// Tip percentage presets
-export const TIP_PERCENTAGES = [5, 10, 20] as const;
+// Voucher expiry (months from sale date)
+export const VOUCHER_EXPIRY_MONTHS = 12;
 
 // Payment methods
 export const PAYMENT_METHODS = ["cash", "card", "blik", "voucher", "split"] as const;

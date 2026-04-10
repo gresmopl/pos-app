@@ -14,6 +14,7 @@ interface ConfirmModalProps {
   discount: DiscountState | null;
   discountAmount: number;
   onConfirm: () => void;
+  loading?: boolean;
 }
 
 export function ConfirmModal({
@@ -28,6 +29,7 @@ export function ConfirmModal({
   discount,
   discountAmount,
   onConfirm,
+  loading,
 }: ConfirmModalProps) {
   return (
     <Modal
@@ -105,7 +107,13 @@ export function ConfirmModal({
           <Button variant="subtle" onClick={onClose}>
             Anuluj
           </Button>
-          <Button color="green" size="lg" leftSection={<IconCheck size={20} />} onClick={onConfirm}>
+          <Button
+            color="green"
+            size="lg"
+            leftSection={<IconCheck size={20} />}
+            onClick={onConfirm}
+            loading={loading}
+          >
             Potwierdzam
           </Button>
         </Group>

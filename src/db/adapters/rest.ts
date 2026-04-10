@@ -24,8 +24,37 @@ export function createRestClient(config: DbConfig): DbClient {
       async getAll() {
         return fetchApi(apiUrl, "/api/employees");
       },
+      async getActive() {
+        return fetchApi(apiUrl, "/api/employees?active=true");
+      },
       async getById(id: string) {
         return fetchApi(apiUrl, `/api/employees/${id}`);
+      },
+      async create(input) {
+        const r = await fetch(`${apiUrl}/api/employees`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async update(id, input) {
+        const r = await fetch(`${apiUrl}/api/employees/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async toggleActive(id, isActive) {
+        const r = await fetch(`${apiUrl}/api/employees/${id}/active`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isActive }),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
       },
     },
     stats: {
@@ -40,6 +69,32 @@ export function createRestClient(config: DbConfig): DbClient {
       async getActive() {
         return fetchApi(apiUrl, "/api/services?active=true");
       },
+      async create(input) {
+        const r = await fetch(`${apiUrl}/api/services`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async update(id, input) {
+        const r = await fetch(`${apiUrl}/api/services/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async toggleActive(id, isActive) {
+        const r = await fetch(`${apiUrl}/api/services/${id}/active`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isActive }),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
     },
     products: {
       async getAll() {
@@ -47,6 +102,104 @@ export function createRestClient(config: DbConfig): DbClient {
       },
       async getActive() {
         return fetchApi(apiUrl, "/api/products?active=true");
+      },
+      async create(input) {
+        const r = await fetch(`${apiUrl}/api/products`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async update(id, input) {
+        const r = await fetch(`${apiUrl}/api/products/${id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async toggleActive(id, isActive) {
+        const r = await fetch(`${apiUrl}/api/products/${id}/active`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ isActive }),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
+    },
+    cashMovements: {
+      async getToday() {
+        return fetchApi(apiUrl, "/api/cash-movements?period=today");
+      },
+      async getSince(since: string | null) {
+        const param = since ? `?since=${encodeURIComponent(since)}` : "";
+        return fetchApi(apiUrl, `/api/cash-movements${param}`);
+      },
+      async create(input) {
+        const r = await fetch(`${apiUrl}/api/cash-movements`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async updateStatus(id, status, finalCost) {
+        const r = await fetch(`${apiUrl}/api/cash-movements/${id}/status`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status, finalCost }),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
+    },
+    dailyReports: {
+      async create(input) {
+        const r = await fetch(`${apiUrl}/api/daily-reports`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
+      async getToday() {
+        const r = await fetch(`${apiUrl}/api/daily-reports/today`);
+        if (r.status === 404) return null;
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async getLastClosedAt() {
+        const r = await fetch(`${apiUrl}/api/daily-reports/last`);
+        if (r.status === 404) return null;
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        const data = await r.json();
+        return data.closedAt;
+      },
+      async getLastFloat() {
+        const r = await fetch(`${apiUrl}/api/daily-reports/last`);
+        if (r.status === 404) return 0;
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        const data = await r.json();
+        return data.floatAmount ?? 0;
+      },
+    },
+    vouchers: {
+      async getByCode(code: string) {
+        const r = await fetch(`${apiUrl}/api/vouchers?code=${encodeURIComponent(code)}`);
+        if (r.status === 404) return null;
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async redeem(id: string, amount: number) {
+        const r = await fetch(`${apiUrl}/api/vouchers/${id}/redeem`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount }),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
       },
     },
     transactions: {
@@ -58,6 +211,23 @@ export function createRestClient(config: DbConfig): DbClient {
       },
       async getToday() {
         return fetchApi(apiUrl, "/api/transactions?period=today");
+      },
+      async getSince(since: string | null) {
+        const param = since ? `?since=${encodeURIComponent(since)}` : "";
+        return fetchApi(apiUrl, `/api/transactions${param}`);
+      },
+      async create(input) {
+        const response = await fetch(`${apiUrl}/api/transactions`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!response.ok) throw new Error(`API error: ${response.status}`);
+        return response.json();
+      },
+      async cancel(id) {
+        const r = await fetch(`${apiUrl}/api/transactions/${id}/cancel`, { method: "POST" });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
       },
     },
   };

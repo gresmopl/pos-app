@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { mockTransactions } from "@/data/transactions";
-import { mockEmployees } from "@/data/employees";
+import { useState, useEffect } from "react";
+import { useEmployees } from "@/hooks/useDbData";
+import { db } from "@/db";
+import type { Transaction } from "@/lib/types";
 import {
   Text,
   Group,
@@ -47,23 +48,41 @@ const paymentLabel: Record<string, string> = {
   card: "Karta",
   blik: "BLIK",
   voucher: "Bon",
-  split: "Gotówka + Karta",
+  split: "Split",
 };
 
+function getPaymentLabel(t: Transaction): string {
+  if (t.paymentMethod === "split" && t.paymentBreakdown?.length) {
+    return t.paymentBreakdown.map((b) => paymentLabel[b.method] ?? b.method).join(" + ");
+  }
+  return paymentLabel[t.paymentMethod] ?? t.paymentMethod;
+}
+
 export default function HistoryPage() {
+  const { data: employees = [] } = useEmployees();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      const since = await db.dailyReports.getLastClosedAt();
+      const txs = await db.transactions.getSince(since);
+      setTransactions(txs);
+    }
+    load().catch(console.error);
+  }, []);
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [undoModal, setUndoModal] = useState(false);
   const [undoPin, setUndoPin] = useState("");
   const [undoPinError, setUndoPinError] = useState(false);
   const [undoSuccess, setUndoSuccess] = useState(false);
-  const [_undoTransactionId, setUndoTransactionId] = useState<string | null>(null);
+  const [undoTransactionId, setUndoTransactionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
 
-  const uniqueEmployees = Array.from(new Set(mockTransactions.map((t) => t.employeeName)));
+  const uniqueEmployees = Array.from(new Set(transactions.map((t) => t.employeeName)));
 
-  const filtered = mockTransactions.filter((t) => {
+  const filtered = transactions.filter((t) => {
     if (filter !== "all" && t.employeeName !== filter) return false;
     if (paymentFilter !== "all" && t.paymentMethod !== paymentFilter) return false;
     if (searchQuery) {
@@ -129,7 +148,7 @@ export default function HistoryPage() {
               </Avatar>
             </UnstyledButton>
             {uniqueEmployees.map((name) => {
-              const emp = mockEmployees.find((e) => e.name === name);
+              const emp = employees.find((e) => e.name === name);
               const avatar = emp?.avatar ?? name.slice(0, 2).toUpperCase();
               return (
                 <UnstyledButton
@@ -196,7 +215,7 @@ export default function HistoryPage() {
           {filtered.length === 0 ? (
             <Stack align="center" gap="xs" py="xl">
               <Text fz="sm" c="dimmed" ta="center">
-                Nie ma jeszcze dziś transakcji
+                Brak transakcji od ostatniego zamknięcia
               </Text>
               {(filter !== "all" || paymentFilter !== "all" || searchQuery) && (
                 <Button
@@ -303,7 +322,7 @@ export default function HistoryPage() {
                         </Group>
                         <Group justify="space-between" align="center">
                           <Badge size="sm" variant="light">
-                            {paymentLabel[transaction.paymentMethod]}
+                            {getPaymentLabel(transaction)}
                           </Badge>
                           {index === 0 && filter === "all" && (
                             <Button
@@ -438,9 +457,15 @@ export default function HistoryPage() {
               <Button
                 color="red"
                 disabled={undoPin.length < 4}
-                onClick={() => {
+                onClick={async () => {
                   if (undoPin === MOCK_OPERATIONS_PIN) {
-                    setUndoSuccess(true);
+                    try {
+                      await db.transactions.cancel(undoTransactionId!);
+                      setTransactions((prev) => prev.filter((t) => t.id !== undoTransactionId));
+                      setUndoSuccess(true);
+                    } catch (err) {
+                      console.error("[History] Cancel failed:", err);
+                    }
                   } else {
                     setUndoPinError(true);
                   }

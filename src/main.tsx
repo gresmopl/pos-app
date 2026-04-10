@@ -2,7 +2,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { MantineProvider } from "@mantine/core";
+import { Notifications } from "@mantine/notifications";
+import { ModalsProvider } from "@mantine/modals";
 import "@mantine/core/styles.css";
+import "@mantine/notifications/styles.css";
 import "./globals.css";
 import { themes, defaultThemeKey } from "@/themes";
 import { App } from "./App";
@@ -22,8 +25,11 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter basename={basename}>
       <MantineProvider theme={themes[defaultThemeKey]} defaultColorScheme="auto">
-        <App />
+        <Notifications position="top-center" autoClose={3000} />
+        <ModalsProvider>
+          <App />
+        </ModalsProvider>
       </MantineProvider>
     </BrowserRouter>
-  </StrictMode>,
+  </StrictMode>
 );

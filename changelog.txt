@@ -1,6 +1,138 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.55] - 2026-04-11
+- fix: pusty stan w AddItemModal gdy brak wynikow wyszukiwania ("Brak wynikow" / "Brak uslug")
+- fix: aria-label "Powrot" na przycisku wstecz w PageHeader (a11y)
+- fix: toast bledu przy nieudanej wyplacie napiwku (TipTab)
+- fix: toast bledu przy nieudanym toggleActive w AdminPricing i AdminEmployees
+- fix: loading spinner na przycisku Zapisz w AdminPricing (brakujacy prop loading={saving})
+
+[0.1.54] - 2026-04-10
+- feat: potwierdzenie dezaktywacji uslugi/produktu w AdminPricing (modals.openConfirmModal)
+- feat: toast notifications po zapisie w AdminPricing i AdminEmployees
+- fix: cleanup - nieuzywana zmienna _undoTransactionId w History
+- chore: oznaczenie cofniecia bonu jako zrealizowane w TODO
+
+[0.1.53] - 2026-04-10
+- fix: cofniecie transakcji - faktyczne wywolanie db.transactions.cancel() (oznaczenie cancelled, cofniecie tip_balance, zwrot salda bonu)
+- fix: Dashboard statystyki - supabase adapter liczy monthServices, yearServices, lastYearServices, allTimeRecord z bazy
+- fix: blokada podwojnego klikniecia przy finalizacji (loading state na przycisku Potwierdzam)
+- feat: db.transactions.cancel() w trzech adapterach (supabase, mock, rest)
+
+[0.1.52] - 2026-04-10
+- feat: panel zarzadzania pracownikami (/admin/employees)
+- feat: CRUD pracownikow (imie, symbol, rola, stawki prowizji, aktywnosc)
+- feat: DbClient.employees rozszerzony o getActive(), create(), update(), toggleActive()
+- feat: getAll() zwraca wszystkich (w tym nieaktywnych), getActive() tylko aktywnych
+- feat: Employee.isActive w typach i adapterach (dezaktywacja zamiast usuwania)
+
+[0.1.51] - 2026-04-10
+- feat: obliczanie prowizji przy finalizacji transakcji (commission_amount per item)
+- feat: prowizja od uslug (commission_service_percent) i kosmetykow (commission_product_percent)
+- feat: prowizja liczona od kwoty PO rabacie (proporcjonalny rozklad rabatu na pozycje)
+- feat: Employee.commissionServicePercent/commissionProductPercent w typach i adapterach
+- feat: zamrazanie commission_amount w transaction_item (historyzacja)
+- info: prowizja na razie niewidoczna w UI - do ustalenia z szefem
+
+[0.1.50] - 2026-04-10
+- fix: spinner strzalki w NumberInput napiwku nie dzialaly (0 || "" resetowal wartosc do pustego stringa)
+
+[0.1.49] - 2026-04-10
+- fix: etykieta platnosci w historii dla split z bonem - "Bon + Gotowka" zamiast zahardkodowanego "Gotowka + Karta"
+- fix: getPaymentLabel() dynamicznie buduje nazwe z paymentBreakdown
+
+[0.1.48] - 2026-04-10
+- feat: realizacja bonu - wpisz kod, sprawdz saldo, zaplac (caly lub split z doplata)
+- feat: PaymentModal z walidacja bonu (istnieje, aktywny, nie wygasl, saldo > 0)
+- feat: db.vouchers.getByCode() + redeem() w trzech adapterach (supabase, mock, rest)
+- feat: transakcja z bonem odejmuje saldo i oznacza bon jako "used" jesli saldo = 0
+- feat: payment_detail.voucher_id - powiazanie platnosci z bonem w bazie
+- feat: ciaglosc salda kasowego - opening balance z float poprzedniego zamkniecia
+- feat: db.dailyReports.getLastFloat() - pobranie drobnych z ostatniego raportu
+- feat: ShiftClose uwzglednia pogotowie kasowe w oczekiwanej gotowce i na kwicie
+
+[0.1.47] - 2026-04-10
+- fix: mapowanie metod platnosci UI -> DB enum (polskie nazwy na cash/card/blik/voucher)
+- fix: split payment zapisuje osobne payment_detail per metoda (bon+gotowka, bon+karta, itp.)
+- feat: paymentBreakdown na Transaction - dokladne kwoty per metoda platnosci
+- fix: ShiftClose rozliczenie per metoda z paymentBreakdown (bony w splitach widoczne)
+- fix: mock adapter tez mapuje polskie nazwy na DB enum values
+- fix: DIRECTION_MAP - dodano shift_close (out) i float (in)
+- fix: tip_balance atomowy increment/decrement (rpc increment_tip_balance, GREATEST(0, ...))
+- schema: CREATE FUNCTION increment_tip_balance(emp_id, delta)
+
+[0.1.46] - 2026-04-10
+- feat: pelne rozliczenie kasowe - gotowka i bony osobno
+- feat: oczekiwana gotowka uwzglednia ruchy kasowe (napiwki, zakupy, wplaty, bony za gotowke)
+- feat: sekcja "Ruchy kasowe" na ekranie zamkniecia (wplaty, wyplaty, zwroty)
+- feat: roznica bonowa (policzone bony vs platnosci bonem)
+- feat: payment_method na cash_movement (rozroznienie bon za gotowke vs karte)
+- feat: kwit drukowany z pelnym rozliczeniem (gotowka + bony + roznice)
+- schema: cash_movement + payment_method, daily_report + expected_vouchers + voucher_difference
+
+[0.1.45] - 2026-04-10
+- feat: historia transakcji pokazuje od ostatniego zamkniecia (nie tylko dzisiejsze)
+
+[0.1.44] - 2026-04-10
+- fix: raport kasowy (nie dobowy/zmianowy) - nazwa odpowiada funkcji
+- feat: zamkniecie pokazuje transakcje od ostatniego zamkniecia (nie tylko dzisiejsze)
+- feat: wiele zamkniec dziennie dozwolone (brak blokady "zmiana juz zamknieta")
+- feat: db.transactions.getSince() + db.dailyReports.getLastClosedAt()
+
+[0.1.43] - 2026-04-10
+- feat: zapis ruchow kasowych do bazy (cash_movement: tip_withdrawal, expense, top_up, loan, payback, voucher_sale)
+- feat: zamkniecie zmiany do bazy (daily_report: expected_cash, actual, deposit, difference)
+- feat: portfel napiwkow - wyplata zmniejsza tip_balance w bazie + zapis tip_withdrawal
+- feat: sprzedaz bonu - tworzenie voucher w bazie (kod, wartosc, 12mies. waznosc)
+- feat: useMovements laduje dzisiejsze ruchy z bazy przy starcie
+- feat: ShiftClose sprawdza czy zmiana juz zamknieta (daily_report.getToday)
+- feat: TipTab - loading state, refetch employees po wyplacie napiwkow
+- schema: cash_movement + status VARCHAR(20), final_cost NUMERIC(10,2)
+
+[0.1.42] - 2026-04-10
+- feat: CRUD cennik - zapis uslug i produktow do bazy (create/update/toggleActive)
+- feat: adaptery supabase, mock, rest - pelna obsluga services i products
+- feat: AdminPricing.tsx - async saveItem/toggleActive z db adapter
+
+[0.1.41] - 2026-04-10
+- refactor: CLAUDE.md odchudzony z 934 do 116 linii (szczegoly w docs/)
+- refactor: ankieta szefa - zamieniona na ekran podsumowania z 18 podjętymi decyzjami + pole na nowe uwagi
+- feat: formularz cennika: czas trwania (TextInput, zakres "30-45"), krotki opis, opis szczegolowy
+- feat: duration_minutes zmieniony z INT na VARCHAR(20) (zakresy)
+- feat: Product.description dodany do typu i adaptera
+
+[0.1.40] - 2026-04-10
+- feat: description_long dla uslug (krotki opis + opis szczegolowy dla Katalogu Wiedzy)
+- schema: ALTER TABLE service ADD COLUMN description_long TEXT
+- seed: wszystkie 11 uslug z pelnym opisem szczegolowym
+
+[0.1.39] - 2026-04-10
+- feat: zapis transakcji do Supabase (transactions.create z items, payment_detail, tip_balance update)
+- fix: testy useMovements - mock modulu @/db zamiast realnych zapytan do Supabase
+- fix: mapowanie discount_type (frontend percent -> DB percentage)
+
+[0.1.38] - 2026-04-10
+- feat: adapter Supabase z pelna implementacja (employees, services, products, transactions, stats)
+- feat: hooki useDbQuery, useDbData (useEmployees, useServices, useProducts, useTodayTransactions, useDailyStats)
+- refactor: wszystkie strony podlaczone do warstwy DB zamiast bezposrednich importow z @/data/
+  - Dashboard, POS, History, ShiftClose, Cash, AdminPricing, TipTab, useMovements, AddItemModal
+- feat: service.duration_minutes i service.price_from (przygotowanie pod rezerwacje)
+- feat: prawdziwe dane uslug z cennika salonu (11 uslug z cenami, czasem, opisami)
+- fix: testy useMovements dostosowane do async handlerow
+
+[0.1.37] - 2026-04-10
+- feat: decyzje szefa z ankiety (18 odpowiedzi) wdrozone do kodu
+- remove: presety napiwkow (TIP_PERCENTAGES) - tylko pole na kwote
+- remove: presety bonow (VOUCHER_PRESETS) - tylko pole na kwote
+- feat: tolerancja kasowa 10 zl (CASH_TOLERANCE) - roznice <= 10 zl jako OK (zielone)
+- feat: waznosc bonu 12 miesiecy (expires_at w schema.sql)
+- feat: konfiguracja Supabase DEV (.env z URL + anon key)
+- deps: @supabase/supabase-js zainstalowany
+
+[0.1.36] - 2026-04-10
+- feat: seed.sql - dane testowe dla Supabase DEV (salon, pracownicy, uslugi, produkty, klienci, bony, transakcje, ruchy kasowe, urzadzenia)
+
 [0.1.26] - 2026-04-10
 - feat: custom hooks useCart i useMovements (src/hooks/)
 - refactor: POS.tsx uzywa useCart, Cash.tsx uzywa useMovements
