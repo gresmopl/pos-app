@@ -246,6 +246,27 @@ const questions: Question[] = [
       { value: "custom_only", label: "Tylko pole na własną kwotę, bez presetów" },
     ],
   },
+  {
+    id: "photo_audit",
+    title: "Zdjęcie kasetki przy zamknięciu zmiany",
+    description:
+      "Pracownik zamykający zmianę robi zdjęcie otwartej kasetki telefonem. Zdjęcie zapisywane w systemie jako dowód. Szef może sprawdzić zdalnie.",
+    impact: "Dodatkowa kontrola kasowa, wymaga miejsca na zdjęcia w chmurze.",
+    options: [
+      {
+        value: "required",
+        label: "Wymagane - bez zdjęcia nie da się zamknąć zmiany",
+      },
+      {
+        value: "optional",
+        label: "Opcjonalne - przycisk 'Dodaj zdjęcie' ale można pominąć",
+      },
+      {
+        value: "no",
+        label: "Nie - zbędne, ufam pracownikom",
+      },
+    ],
+  },
 ];
 
 export default function OwnerSurvey() {
