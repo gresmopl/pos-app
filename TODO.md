@@ -38,7 +38,13 @@
 
 ### Opcjonalne (do oceny przy Phase 2)
 
-- [ ] **Custom hooks** - useCart, useMovements itp. (opcjonalne, do oceny przy Phase 2)
+- [x] **Custom hooks** - useCart, useMovements (zrobione)
+- [x] **CI/CD quality gate** - lint + type check + testy w GitHub Actions (zrobione)
+
+### Czeka na odpowiedz szefa (ankieta /admin/survey)
+
+- [ ] **Licznik banknotow** - zamiana pola "Gotowka" w zamknieciu zmiany na grid z nominalami (200/100/50/20/10 zl + monety) z auto-suma
+- [ ] **Zdjecie kasetki** - opcjonalne/wymagane zdjecie otwartej kasetki przy zamknieciu zmiany (Supabase Storage)
 
 ## Faza 2 (pelna funkcjonalnosc)
 
@@ -63,7 +69,7 @@
 
 ## Przyszle usprawnienia
 
-- [ ] CI/CD: lint + testy w GitHub Actions (quality gate)
+- [x] CI/CD: lint + testy w GitHub Actions (quality gate) - zrobione
 - [ ] Vitest z pokryciem 80%+
 - [ ] Storybook dla komponentow UI
 - [ ] Accessibility audit (a11y)
