@@ -1,6 +1,10 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.25] - 2026-04-10
+- fix: build script zmieniony z "tsc -b" na "tsc --noEmit" (kompatybilnosc z CI)
+- fix: Vite base path dla GitHub Pages w vite.config.ts (auto-detekcja GITHUB_ACTIONS)
+
 [0.1.24] - 2026-04-10
 - fix: @eslint/js downgrade do ^9 (zgodnosc z eslint ^9, npm ci failowal na CI)
 - fix: regeneracja package-lock.json
