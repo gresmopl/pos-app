@@ -1,5 +1,4 @@
 {
-  "rewrites": [
-    { "source": "/((?!assets/).*)", "destination": "/index.html" }
-  ]
+  "buildCommand": "tsc --noEmit && vite build --mode development",
+  "rewrites": [{ "source": "/((?!assets/).*)", "destination": "/index.html" }]
 }
