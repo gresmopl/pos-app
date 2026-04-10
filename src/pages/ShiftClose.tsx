@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import { useForm } from "@mantine/form";
 import { mockEmployees } from "@/data/employees";
 import { mockTransactions } from "@/data/transactions";
 import {
@@ -8,22 +9,33 @@ import {
   Stack,
   Box,
   Container,
-  ActionIcon,
   Divider,
   Button,
   NumberInput,
   Select,
   Modal,
 } from "@mantine/core";
-import { IconArrowLeft, IconPrinter, IconCheck } from "@tabler/icons-react";
+import { IconPrinter, IconCheck } from "@tabler/icons-react";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function ShiftClosePage() {
   const navigate = useNavigate();
 
-  const [closingEmployee, setClosingEmployee] = useState<string | null>(null);
-  const [cashAmount, setCashAmount] = useState<number | string>("");
-  const [vouchersAmount, setVouchersAmount] = useState<number | string>("");
-  const [floatAmount, setFloatAmount] = useState<number | string>("");
+  const form = useForm({
+    initialValues: {
+      closingEmployee: "" as string,
+      cashAmount: "" as number | string,
+      floatAmount: "" as number | string,
+      vouchersAmount: "" as number | string,
+    },
+    validate: {
+      closingEmployee: (v) => (v ? null : "Wybierz pracownika"),
+      cashAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
+      floatAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
+      vouchersAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
+    },
+  });
+
   const [confirmModal, setConfirmModal] = useState(false);
   const [done, setDone] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,15 +71,15 @@ export default function ShiftClosePage() {
 
   const systemTotal = mockTransactions.reduce((sum, t) => sum + t.totalAmount, 0);
 
-  const cash = Number(cashAmount) || 0;
-  const vouchers = Number(vouchersAmount) || 0;
-  const floatVal = Number(floatAmount) || 0;
+  const cash = Number(form.values.cashAmount) || 0;
+  const vouchers = Number(form.values.vouchersAmount) || 0;
+  const floatVal = Number(form.values.floatAmount) || 0;
 
   const deposit = Math.max(0, cash - floatVal) + vouchers;
   const difference = cash - systemCash;
 
-  const closingName = closingEmployee
-    ? mockEmployees.find((e) => e.id === closingEmployee)?.name
+  const closingName = form.values.closingEmployee
+    ? mockEmployees.find((e) => e.id === form.values.closingEmployee)?.name
     : null;
 
   const handleConfirm = () => {
@@ -115,7 +127,9 @@ export default function ShiftClosePage() {
                 RAPORT DOBOWY
               </Text>
               <Text fz="xs" ta="center" c="dimmed" mb="md">
-                {new Date().toLocaleDateString("pl-PL")}, {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} · Zamykał: {closingName}
+                {new Date().toLocaleDateString("pl-PL")},{" "}
+                {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} ·
+                Zamykał: {closingName}
               </Text>
               <Divider mb="sm" variant="dashed" />
               <Group justify="space-between" mb={4}>
@@ -167,7 +181,7 @@ export default function ShiftClosePage() {
               >
                 Drukuj raport
               </Button>
-              <Button onClick={() => navigate("/")}>Powrót do Dashboard</Button>
+              <Button onClick={() => navigate("/")}>Powrót do ekranu głównego</Button>
             </Group>
           </Stack>
         </Container>
@@ -195,7 +209,7 @@ export default function ShiftClosePage() {
             <Text fz="sm" ta="center" c="dimmed">
               Dzisiejsza zmiana została już zamknięta. Nie można zamknąć zmiany ponownie.
             </Text>
-            <Button onClick={() => navigate("/")}>Powrót do Dashboard</Button>
+            <Button onClick={() => navigate("/")}>Powrót do ekranu głównego</Button>
           </Stack>
         </Container>
       </Box>
@@ -205,15 +219,7 @@ export default function ShiftClosePage() {
   return (
     <Box mih="100vh" pb={160}>
       <Container size="lg">
-        {/* ===== HEADER ===== */}
-        <Group py="md" gap="sm">
-          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
-            <IconArrowLeft size={22} />
-          </ActionIcon>
-          <Text fw={700} fz={24}>
-            Zamknięcie zmiany
-          </Text>
-        </Group>
+        <PageHeader title="Zamknięcie zmiany" />
 
         <Divider />
 
@@ -273,41 +279,37 @@ export default function ShiftClosePage() {
             label="Zamyka zmianę"
             placeholder="Wybierz pracownika..."
             data={employeeOptions}
-            value={closingEmployee}
-            onChange={setClosingEmployee}
+            {...form.getInputProps("closingEmployee")}
           />
 
           <NumberInput
             label="Gotówka (zł)"
             description="Policz banknoty i monety"
             placeholder="0"
-            value={cashAmount}
-            onChange={setCashAmount}
             min={0}
             suffix=" zł"
             size="md"
+            {...form.getInputProps("cashAmount")}
           />
 
           <NumberInput
             label="Drobne na jutro (zł)"
             description="Pogotowie kasowe na następną zmianę"
             placeholder="0"
-            value={floatAmount}
-            onChange={setFloatAmount}
             min={0}
             suffix=" zł"
             size="md"
+            {...form.getInputProps("floatAmount")}
           />
 
           <NumberInput
             label="Bony papierowe (zł)"
             description="Suma wartości papierowych bonów"
             placeholder="0"
-            value={vouchersAmount}
-            onChange={setVouchersAmount}
             min={0}
             suffix=" zł"
             size="md"
+            {...form.getInputProps("vouchersAmount")}
           />
         </Stack>
 
@@ -342,7 +344,7 @@ export default function ShiftClosePage() {
               </Group>
               <Group justify="space-between">
                 <Text fz="sm" c="dimmed">
-                  Różnica gotówkowa vs system:
+                  Różnica (policzone a system):
                 </Text>
                 <Text
                   fz="sm"
@@ -377,8 +379,12 @@ export default function ShiftClosePage() {
             fullWidth
             size="lg"
             color="dark"
-            disabled={!closingEmployee || (!cash && !vouchers) || isSubmitting}
-            onClick={() => setConfirmModal(true)}
+            disabled={isSubmitting}
+            onClick={() => {
+              if (form.validate().hasErrors) return;
+              if (!cash && !vouchers) return;
+              setConfirmModal(true);
+            }}
             leftSection={<IconPrinter size={20} />}
             fz="md"
             fw={600}

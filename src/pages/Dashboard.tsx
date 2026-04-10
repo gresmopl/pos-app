@@ -32,6 +32,7 @@ import {
   IconDoorExit,
   IconScissors,
 } from "@tabler/icons-react";
+import { pluralize } from "@/lib/constants";
 
 const statusColor: Record<string, string> = {
   available: "green",
@@ -55,9 +56,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     setDateStr(
-      new Date().toLocaleDateString("pl-PL", isMobile
-        ? { day: "numeric", month: "short" }
-        : { weekday: "long", day: "numeric", month: "long", year: "numeric" }
+      new Date().toLocaleDateString(
+        "pl-PL",
+        isMobile
+          ? { day: "numeric", month: "short" }
+          : { weekday: "long", day: "numeric", month: "long", year: "numeric" }
       )
     );
   }, [isMobile]);
@@ -196,6 +199,11 @@ export default function Dashboard() {
                 </Button>
               </Stack>
             )}
+            {mockStats.todayServices === 0 && mockEmployees.length > 0 && (
+              <Text fz="xs" c="dimmed" ta="center" py="sm">
+                Wybierz fryzjera aby rozpocząć pierwszy rachunek
+              </Text>
+            )}
             {mockEmployees.map((employee, index) => (
               <div key={employee.id}>
                 <UnstyledButton
@@ -230,7 +238,7 @@ export default function Dashboard() {
                           )}
                           <Text fz="sm" c="var(--mantine-color-text)">
                             {employee.status && statusLabel[employee.status] ? "· " : ""}
-                            {employee.todayServices} usług
+                            {pluralize(employee.todayServices, "usługa", "usługi", "usług")}
                           </Text>
                         </Group>
                       </div>
@@ -291,7 +299,6 @@ export default function Dashboard() {
           </SimpleGrid>
         </Container>
       </Box>
-
     </Box>
   );
 }

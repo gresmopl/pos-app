@@ -1,19 +1,5 @@
-export interface Transaction {
-  id: string;
-  employeeId: string;
-  employeeName: string;
-  clientName?: string;
-  items: {
-    name: string;
-    price: number;
-    type: "service" | "product" | "voucher_sale";
-  }[];
-  totalAmount: number;
-  tipAmount: number;
-  discountAmount: number;
-  paymentMethod: "cash" | "card" | "blik" | "voucher" | "split";
-  timestamp: string;
-}
+import type { Transaction } from "@/lib/types";
+export type { Transaction };
 
 const today = new Date().toISOString().slice(0, 10);
 

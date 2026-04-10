@@ -1,19 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import {
-  Text,
-  Group,
-  Stack,
-  Box,
-  Container,
-  ActionIcon,
-  Divider,
-  PinInput,
-  Button,
-} from "@mantine/core";
-import { IconArrowLeft, IconLock } from "@tabler/icons-react";
-
-const ADMIN_PIN = "1234"; // mock
+import { Text, Group, Stack, Box, Container, Divider, PinInput, Button } from "@mantine/core";
+import { IconLock } from "@tabler/icons-react";
+import { MOCK_ADMIN_PIN } from "@/lib/constants";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 export default function AdminPage() {
   const navigate = useNavigate();
@@ -22,7 +12,7 @@ export default function AdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
 
   const handlePinComplete = (value: string) => {
-    if (value === ADMIN_PIN) {
+    if (value === MOCK_ADMIN_PIN) {
       setAuthenticated(true);
       setError(false);
     } else {
@@ -35,17 +25,14 @@ export default function AdminPage() {
     return (
       <Box mih="100vh">
         <Container size="xs">
-          <Group justify="space-between" py="md">
-            <Group gap="sm">
-              <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
-                <IconArrowLeft size={22} />
-              </ActionIcon>
-              <Text fw={700} fz={24}>
-                Panel admina
+          <PageHeader
+            title="Panel admina"
+            rightSection={
+              <Text fz="xs" c="dimmed">
+                v{APP_VERSION} {APP_BUILD_DATE}
               </Text>
-            </Group>
-            <Text fz="xs" c="dimmed">v{APP_VERSION}</Text>
-          </Group>
+            }
+          />
           <Divider />
           <Stack align="center" gap="lg" py={60}>
             <IconLock size={40} color="var(--mantine-color-dimmed)" />
@@ -81,17 +68,14 @@ export default function AdminPage() {
   return (
     <Box mih="100vh">
       <Container size="lg">
-        <Group justify="space-between" py="md">
-          <Group gap="sm">
-            <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate("/")}>
-              <IconArrowLeft size={22} />
-            </ActionIcon>
-            <Text fw={700} fz={24}>
-              Panel admina
+        <PageHeader
+          title="Panel admina"
+          rightSection={
+            <Text fz="xs" c="dimmed">
+              v{APP_VERSION} {APP_BUILD_DATE}
             </Text>
-          </Group>
-          <Text fz="xs" c="dimmed">v{APP_VERSION}</Text>
-        </Group>
+          }
+        />
         <Divider />
         <Stack gap={0} py="md">
           <AdminLink
@@ -112,6 +96,12 @@ export default function AdminPage() {
             description="Zestawienia, eksport"
             onClick={() => {}}
             disabled
+          />
+          <Divider />
+          <AdminLink
+            label="Ankieta dla szefa"
+            description="Pytania projektowe, uwagi, zgłoszenia"
+            onClick={() => navigate("/admin/survey")}
           />
         </Stack>
       </Container>
