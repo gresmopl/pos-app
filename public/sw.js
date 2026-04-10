@@ -1,4 +1,4 @@
-const CACHE_NAME = "formen-v1";
+const CACHE_NAME = "formen-v2";
 const OFFLINE_URL = "/offline.html";
 
 const PRECACHE_URLS = [
@@ -57,9 +57,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Static assets (_next/static, icons, fonts) — cache first
+  // Immutable static assets (icons, fonts) — cache first
   if (
-    request.url.includes("/_next/static/") ||
     request.url.includes("/icons/") ||
     request.url.includes(".woff") ||
     request.url.includes(".woff2")
