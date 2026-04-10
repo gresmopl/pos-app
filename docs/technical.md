@@ -22,13 +22,39 @@ Docelowo: Progressive Web App (PWA) z offline fallback.
 
 ### Hosting i deploy
 
-| Srodowisko  | Hosting      | Branch | Deploy                        |
-| ----------- | ------------ | ------ | ----------------------------- |
-| Produkcja   | GitHub Pages | main   | GitHub Actions (automatyczny) |
-| Produkcja   | Vercel       | main   | Automatyczny (webhook)        |
-| Development | Lokalne      | dev    | `npm run dev`                 |
+| Srodowisko  | Hosting      | Baza                  | Branch | Deploy                        |
+| ----------- | ------------ | --------------------- | ------ | ----------------------------- |
+| Produkcja   | MyDevil MD1  | MyDevil PostgreSQL 16 | main   | FTP/SFTP (po npm run build)   |
+| Dev/Preview | GitHub Pages | Supabase DEV (free)   | main   | GitHub Actions (automatyczny) |
+| Lokalne     | Vite dev     | Supabase DEV / mock   | dev    | `npm run dev`                 |
 
 GitHub Pages wymaga basename `/pos-app` w BrowserRouter - wykrywane automatycznie w `main.tsx`.
+
+### Strategia hostingu i migracji
+
+**Stan obecny (Faza 1):** Frontend na GitHub Pages, mock dane w kodzie, brak bazy.
+
+**Faza 2 (development):**
+
+- Supabase DEV (free tier, 1 z 2 dostepnych projektow) jako baza rozwojowa
+- Budowanie schematu PostgreSQL, testowanie, seed danych
+- Frontend nadal na GitHub Pages
+
+**Produkcja (docelowo):**
+
+- MyDevil MD1 (200 zl/rok) -- frontend SPA + PostgreSQL 16 + Node.js
+- Rownolegle przeniesienie istniejacego serwisu z lh.pl na MyDevil (konsolidacja)
+- Supabase DEV zostaje jako srodowisko testowe (free, bez kosztow)
+
+**MyDevil MD1 -- parametry:**
+
+- 25 GB SSD/NVMe, 1 GB RAM
+- Node.js, PostgreSQL 16, MySQL 8, MongoDB 5
+- SSH, Git, SFTP, CRON
+- SSL Let's Encrypt, WAF, backup codzienny
+- Serwery w Warszawie (ATMAN)
+
+**Koszty docelowe:** 200 zl/rok (MyDevil) vs poprzedni plan ~1460 zl/rok (lh.pl + Supabase Pro).
 
 ---
 
