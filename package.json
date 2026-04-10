@@ -1,6 +1,6 @@
 {
   "name": "pos-app-init",
-  "version": "0.1.28",
+  "version": "0.1.29",
   "private": true,
   "type": "module",
   "scripts": {
@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
+    "@resvg/resvg-js": "^2.6.2",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
