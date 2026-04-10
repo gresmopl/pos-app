@@ -267,6 +267,28 @@ const questions: Question[] = [
       },
     ],
   },
+  {
+    id: "inventory",
+    title: "Magazyn kosmetyków",
+    description:
+      "Obecnie system nie śledzi stanów magazynowych - kosmetyki to tylko nazwa i cena. Czy chcesz wiedzieć ile sztuk masz na półce?",
+    impact:
+      "Dodanie modułu magazynowego (przyjęcia towaru, stany, alerty o niskim stanie). Znacząco zwiększa złożoność systemu.",
+    options: [
+      {
+        value: "no",
+        label: "Nie - sam ogarniam co mam na półce, nie potrzebuję tego w systemie",
+      },
+      {
+        value: "basic",
+        label: "Podstawowy - ilość sztuk, ręczne dodawanie dostaw, alert gdy < 3 szt.",
+      },
+      {
+        value: "full",
+        label: "Pełny - stany, dostawy, auto-schodzenie ze stanu przy sprzedaży, raporty zużycia",
+      },
+    ],
+  },
 ];
 
 export default function OwnerSurvey() {
