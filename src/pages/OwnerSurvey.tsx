@@ -230,7 +230,7 @@ export default function OwnerSurvey() {
 
         <Box py="md">
           <Stepper active={step} size="xs" onStepClick={setStep}>
-            {questions.map((q, i) => (
+            {questions.map((q) => (
               <Stepper.Step
                 key={q.id}
                 label=""

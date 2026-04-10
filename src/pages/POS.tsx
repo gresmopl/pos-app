@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import { mockEmployees } from "@/data/employees";
 import { mockServices } from "@/data/services";
@@ -15,7 +15,7 @@ import {
   Button,
 } from "@mantine/core";
 import { IconPlus, IconDiscount2 } from "@tabler/icons-react";
-import type { CartItem, DiscountState } from "@/lib/types";
+import { useCart } from "@/hooks/useCart";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { CartItemList } from "@/components/pos/CartItemList";
 import { TipSelector } from "@/components/pos/TipSelector";
@@ -31,9 +31,22 @@ export default function POSPage() {
   const employeeId = searchParams.get("employee");
   const employee = mockEmployees.find((e) => e.id === employeeId);
 
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [tipAmount, setTipAmount] = useState(0);
-  const [discount, setDiscount] = useState<DiscountState | null>(null);
+  const {
+    cart,
+    tipAmount,
+    discount,
+    subtotal,
+    discountAmount,
+    total,
+    itemCount,
+    setTipAmount,
+    setDiscount,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    resetCart,
+  } = useCart();
+
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -41,48 +54,6 @@ export default function POSPage() {
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [pendingPaymentMethod, setPendingPaymentMethod] = useState("");
   const [pendingPaymentDetails, setPendingPaymentDetails] = useState("");
-
-  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-
-  const discountAmount = useMemo(() => {
-    if (!discount) return 0;
-    if (discount.type === "percent") {
-      return Math.round(subtotal * (discount.value / 100) * 100) / 100;
-    }
-    return Math.min(discount.value, subtotal);
-  }, [discount, subtotal]);
-
-  const total = subtotal - discountAmount + tipAmount;
-
-  const addToCart = (
-    item: { id: string; name: string; price: number },
-    type: "service" | "product"
-  ) => {
-    setCart((prev) => {
-      const existing = prev.find((c) => c.id === item.id && c.type === type);
-      if (existing) {
-        return prev.map((c) =>
-          c.cartId === existing.cartId ? { ...c, quantity: c.quantity + 1 } : c
-        );
-      }
-      return [...prev, { ...item, type, quantity: 1, cartId: crypto.randomUUID() }];
-    });
-    setAddModalOpen(false);
-  };
-
-  const updateQuantity = (cartId: string, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) =>
-          item.cartId === cartId ? { ...item, quantity: item.quantity + delta } : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
-  };
-
-  const removeFromCart = (cartId: string) => {
-    setCart((prev) => prev.filter((item) => item.cartId !== cartId));
-  };
 
   const requestFinalize = (method: string, details?: string) => {
     setPendingPaymentMethod(method);
@@ -94,9 +65,7 @@ export default function POSPage() {
 
   const finalize = () => {
     setConfirmModalOpen(false);
-    setCart([]);
-    setTipAmount(0);
-    setDiscount(null);
+    resetCart();
     if (navigator.vibrate) navigator.vibrate(100);
     navigate("/");
   };
@@ -233,7 +202,10 @@ export default function POSPage() {
         onClose={() => setAddModalOpen(false)}
         services={mockServices}
         products={mockProducts}
-        onAdd={addToCart}
+        onAdd={(item, type) => {
+          addToCart(item, type);
+          setAddModalOpen(false);
+        }}
       />
       <DiscountModal
         opened={discountModalOpen}
@@ -263,7 +235,7 @@ export default function POSPage() {
         onClose={() => setConfirmModalOpen(false)}
         total={total}
         employeeName={employee.name}
-        itemCount={cart.reduce((sum, i) => sum + i.quantity, 0)}
+        itemCount={itemCount}
         paymentMethod={pendingPaymentMethod}
         paymentDetails={pendingPaymentDetails}
         tipAmount={tipAmount}

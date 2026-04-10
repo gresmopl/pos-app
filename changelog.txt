@@ -1,9 +1,16 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.26] - 2026-04-10
+- feat: custom hooks useCart i useMovements (src/hooks/)
+- refactor: POS.tsx uzywa useCart, Cash.tsx uzywa useMovements
+- fix: ESLint - public/** w globalIgnores, unused var w OwnerSurvey
+- test: 18 nowych testow hookow (51 total)
+
 [0.1.25] - 2026-04-10
-- fix: build script zmieniony z "tsc -b" na "tsc --noEmit" (kompatybilnosc z CI)
+- fix: build script "tsc -b" na "tsc --noEmit" (kompatybilnosc z CI)
 - fix: Vite base path dla GitHub Pages w vite.config.ts (auto-detekcja GITHUB_ACTIONS)
+- fix: GitHub Actions workflow - Node 22, npm install bez lockfile (cross-platform)
 
 [0.1.24] - 2026-04-10
 - fix: @eslint/js downgrade do ^9 (zgodnosc z eslint ^9, npm ci failowal na CI)
