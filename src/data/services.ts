@@ -1,10 +1,5 @@
-export interface Service {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  isActive: boolean;
-}
+import type { Service } from "@/lib/types";
+export type { Service };
 
 export const mockServices: Service[] = [
   { id: "s1", name: "Strzyżenie Męskie", price: 80, category: "Strzyżenie", isActive: true },

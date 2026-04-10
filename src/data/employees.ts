@@ -1,13 +1,5 @@
-export interface Employee {
-  id: string;
-  name: string;
-  avatar: string;
-  role: "admin" | "barber";
-  status?: "available" | "busy" | "break";
-  todayRevenue: number;
-  todayServices: number;
-  tipBalance: number;
-}
+import type { Employee, DailyStats } from "@/lib/types";
+export type { Employee, DailyStats };
 
 export const mockEmployees: Employee[] = [
   {
@@ -61,7 +53,7 @@ export const mockEmployees: Employee[] = [
   },
 ];
 
-export const mockStats = {
+export const mockStats: DailyStats = {
   todayServices: 11,
   yesterdayServices: 9,
   monthServices: 210,

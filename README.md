@@ -1,13 +1,14 @@
 # FORMEN
 
-System POS (Point of Sale) dla salonow fryzjerskich. Obsluga sprzedazy uslug i kosmetykow, zarzadzanie utargiem, prowizjami, napiwkami i ruchami kasowymi.
+System POS (Point of Sale) dla meskich salonow fryzjerskich. Obsluga sprzedazy uslug i kosmetykow, zarzadzanie utargiem, prowizjami, napiwkami i ruchami kasowymi.
 
 ## Stack
 
-- **Frontend:** Next.js (App Router) + React + TypeScript
-- **UI:** Mantine UI
-- **Backend/Baza:** Supabase (PostgreSQL + Auth + Realtime)
-- **Hosting:** Vercel
+- **Frontend:** Vite + React + TypeScript
+- **UI:** Mantine UI (wielomotywowa architektura)
+- **Routing:** React Router v7 (SPA)
+- **Backend/Baza:** Supabase (PostgreSQL + Auth + Realtime) — Faza 2
+- **Hosting:** GitHub Pages + Vercel (oba z main)
 
 ## Uruchomienie
 
@@ -18,31 +19,51 @@ npm run dev
 
 Aplikacja dostepna pod `http://localhost:3000`
 
+## Skrypty
+
+| Skrypt            | Opis                         |
+| ----------------- | ---------------------------- |
+| `npm run dev`     | Serwer deweloperski (Vite)   |
+| `npm run build`   | Build produkcyjny            |
+| `npm run preview` | Podglad builda produkcyjnego |
+| `npm run lint`    | ESLint                       |
+| `npm test`        | Testy (vitest)               |
+
 ## Struktura
 
 ```
 src/
-  app/           Strony (Next.js App Router)
-  components/    Komponenty wielokrotnego uzytku
-  data/          Mock dane (Faza 1)
-  themes/        Motywy Mantine (createTheme)
-  hooks/         Custom React hooks
-  lib/           Logika, helpery, typy
+  pages/          Strony (Dashboard, POS, History, Cash, ShiftClose, Admin)
+  components/     Komponenty wielokrotnego uzytku
+    layout/       PageHeader, PinModal
+    pos/          Komponenty ekranu sprzedazy
+    cash/         Komponenty ruchow kasowych
+  data/           Mock dane (Faza 1)
+  lib/            Logika, helpery, typy, stale
+  hooks/          Custom React hooks
+  test/           Konfiguracja testow
 ```
 
 ## Branche
 
-| Branch | Srodowisko | Cel |
-|--------|-----------|-----|
-| `main` | Vercel produkcja | Stabilna wersja |
-| `dev` | Vercel preview | Rozwoj, testowanie |
+| Branch | Srodowisko            | Cel                |
+| ------ | --------------------- | ------------------ |
+| `main` | GitHub Pages + Vercel | Stabilna wersja    |
+| `dev`  | Lokalne testowanie    | Rozwoj, testowanie |
+
+## Jakosc kodu
+
+- TypeScript strict mode
+- ESLint (typescript-eslint) + Prettier
+- Pre-commit hooks (husky + lint-staged)
+- Testy: vitest + @testing-library/react
 
 ## Fazy
 
 - **Faza 1** — MVP: prototyp UI z mock danymi (aktualna)
-- **Faza 2** — Integracja z Supabase, pelna funkcjonalnosc
-- **Faza 3** — Raporty, drukarka USB, PWA offline, eksport
+- **Faza 2** — Integracja z Supabase, autoryzacja urzadzen, pelna funkcjonalnosc
+- **Faza 3** — Raporty miesieczne, drukarka etykiet, PWA offline, eksport
 
 ## Licencja
 
-Wszelkie prawa zastrzezone. Kod zrodlowy jest publiczny, ale nie jest udostepniony na licencji open source.
+Wszelkie prawa zastrzezone. Kod zrodlowy jest publiczny, ale nie jest udostepniony na licencji open source. Szczegoly w pliku [LICENSE](./LICENSE).

@@ -1,7 +1,8 @@
 import { useState, useId } from "react";
-import { useNavigate } from "react-router";
-import { mockServices, type Service } from "@/data/services";
-import { mockProducts, type Product } from "@/data/products";
+import { useForm } from "@mantine/form";
+import { mockServices } from "@/data/services";
+import { mockProducts } from "@/data/products";
+import type { Service, Product } from "@/lib/types";
 import {
   Text,
   Group,
@@ -17,7 +18,8 @@ import {
   NumberInput,
   Button,
 } from "@mantine/core";
-import { IconArrowLeft, IconPlus, IconPencil } from "@tabler/icons-react";
+import { IconPlus, IconPencil } from "@tabler/icons-react";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 type PricingItem = {
   id: string;
@@ -28,7 +30,6 @@ type PricingItem = {
 };
 
 export default function PricingPage() {
-  const navigate = useNavigate();
   const pricingTabId = useId();
   const [tab, setTab] = useState("services");
   const [services, setServices] = useState<Service[]>([...mockServices]);
@@ -36,8 +37,17 @@ export default function PricingPage() {
 
   const [editModal, setEditModal] = useState(false);
   const [editItem, setEditItem] = useState<PricingItem | null>(null);
-  const [editName, setEditName] = useState("");
-  const [editPrice, setEditPrice] = useState<number | string>(0);
+
+  const editForm = useForm({
+    initialValues: {
+      name: "",
+      price: 0 as number | string,
+    },
+    validate: {
+      name: (v) => (v.trim() ? null : "Nazwa jest wymagana"),
+      price: (v) => (Number(v) > 0 ? null : "Cena musi być większa od 0"),
+    },
+  });
 
   const items: PricingItem[] =
     tab === "services" ? services.map((s) => ({ ...s })) : products.map((p) => ({ ...p }));
@@ -47,21 +57,21 @@ export default function PricingPage() {
 
   const openAdd = () => {
     setEditItem(null);
-    setEditName("");
-    setEditPrice(0);
+    editForm.reset();
     setEditModal(true);
   };
 
   const openEdit = (item: PricingItem) => {
     setEditItem(item);
-    setEditName(item.name);
-    setEditPrice(item.price);
+    editForm.setValues({ name: item.name, price: item.price });
+    editForm.clearErrors();
     setEditModal(true);
   };
 
   const saveItem = () => {
+    if (editForm.validate().hasErrors) return;
+    const { name: editName, price: editPrice } = editForm.values;
     const price = Number(editPrice);
-    if (!editName.trim() || price <= 0) return;
 
     if (tab === "services") {
       if (editItem) {
@@ -107,31 +117,21 @@ export default function PricingPage() {
   return (
     <Box mih="100vh" pb={80}>
       <Container size="lg">
-        {/* ===== HEADER ===== */}
-        <Group justify="space-between" py="md">
-          <Group gap="sm">
+        <PageHeader
+          title="Cennik"
+          backTo="/admin"
+          rightSection={
             <ActionIcon
-              variant="subtle"
-              color="gray"
+              variant="light"
+              color="green"
               size="lg"
-              onClick={() => navigate("/admin")}
+              onClick={openAdd}
+              aria-label="Dodaj pozycję"
             >
-              <IconArrowLeft size={22} />
+              <IconPlus size={20} />
             </ActionIcon>
-            <Text fw={700} fz={24}>
-              Cennik
-            </Text>
-          </Group>
-          <ActionIcon
-            variant="light"
-            color="green"
-            size="lg"
-            onClick={openAdd}
-            aria-label="Dodaj pozycję"
-          >
-            <IconPlus size={20} />
-          </ActionIcon>
-        </Group>
+          }
+        />
 
         <Divider />
 
@@ -237,16 +237,14 @@ export default function PricingPage() {
           <TextInput
             label="Nazwa"
             placeholder="np. Strzyżenie Męskie"
-            value={editName}
-            onChange={(e) => setEditName(e.currentTarget.value)}
+            {...editForm.getInputProps("name")}
           />
           <NumberInput
             label="Cena (zł)"
             placeholder="0"
-            value={editPrice}
-            onChange={setEditPrice}
             min={0}
             suffix=" zł"
+            {...editForm.getInputProps("price")}
           />
           <Group justify="flex-end">
             <Button variant="subtle" onClick={() => setEditModal(false)}>

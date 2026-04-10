@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
 import { mockTransactions } from "@/data/transactions";
 import { mockEmployees } from "@/data/employees";
 import {
@@ -10,7 +9,6 @@ import {
   UnstyledButton,
   Divider,
   Container,
-  ActionIcon,
   Badge,
   Button,
   Collapse,
@@ -21,7 +19,6 @@ import {
   Avatar,
 } from "@mantine/core";
 import {
-  IconArrowLeft,
   IconCash,
   IconCreditCard,
   IconDeviceMobile,
@@ -34,6 +31,8 @@ import {
   IconUsers,
   IconStack2,
 } from "@tabler/icons-react";
+import { MOCK_OPERATIONS_PIN } from "@/lib/constants";
+import { PageHeader } from "@/components/layout/PageHeader";
 
 const paymentIcon: Record<string, typeof IconCash> = {
   cash: IconCash,
@@ -52,21 +51,17 @@ const paymentLabel: Record<string, string> = {
 };
 
 export default function HistoryPage() {
-  const navigate = useNavigate();
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [undoModal, setUndoModal] = useState(false);
   const [undoPin, setUndoPin] = useState("");
   const [undoPinError, setUndoPinError] = useState(false);
   const [undoSuccess, setUndoSuccess] = useState(false);
-  const [undoTransactionId, setUndoTransactionId] = useState<string | null>(null);
+  const [_undoTransactionId, setUndoTransactionId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
 
   const uniqueEmployees = Array.from(new Set(mockTransactions.map((t) => t.employeeName)));
-
-  const employeeAvatar = (name: string) =>
-    mockEmployees.find((e) => e.name === name)?.avatar ?? name.slice(0, 2).toUpperCase();
 
   const filtered = mockTransactions.filter((t) => {
     if (filter !== "all" && t.employeeName !== filter) return false;
@@ -95,30 +90,17 @@ export default function HistoryPage() {
     if (isToday) {
       return date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
     }
-    return date.toLocaleDateString("pl-PL", { day: "numeric", month: "short" })
-      + " " + date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" });
+    return (
+      date.toLocaleDateString("pl-PL", { day: "numeric", month: "short" }) +
+      " " +
+      date.toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })
+    );
   };
 
   return (
     <Box mih="100vh" pb={100}>
       <Container size="lg">
-        {/* ===== HEADER ===== */}
-        <Group justify="space-between" py="md">
-          <Group gap="sm">
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="lg"
-              onClick={() => navigate("/")}
-              aria-label="Powrót"
-            >
-              <IconArrowLeft size={22} />
-            </ActionIcon>
-            <Text fw={700} fz={24}>
-              Historia transakcji
-            </Text>
-          </Group>
-        </Group>
+        <PageHeader title="Historia transakcji" />
 
         <Divider />
 
@@ -150,7 +132,11 @@ export default function HistoryPage() {
               const emp = mockEmployees.find((e) => e.name === name);
               const avatar = emp?.avatar ?? name.slice(0, 2).toUpperCase();
               return (
-                <UnstyledButton key={name} onClick={() => setFilter(name)} style={{ flexShrink: 0 }}>
+                <UnstyledButton
+                  key={name}
+                  onClick={() => setFilter(name)}
+                  style={{ flexShrink: 0 }}
+                >
                   <Avatar
                     size={36}
                     radius="xl"
@@ -185,7 +171,11 @@ export default function HistoryPage() {
               { value: "voucher", icon: IconGift },
               { value: "split", icon: IconArrowsSplit },
             ].map((opt) => (
-              <UnstyledButton key={opt.value} onClick={() => setPaymentFilter(opt.value)} style={{ flexShrink: 0 }}>
+              <UnstyledButton
+                key={opt.value}
+                onClick={() => setPaymentFilter(opt.value)}
+                style={{ flexShrink: 0 }}
+              >
                 <Avatar
                   size={36}
                   radius="xl"
@@ -204,9 +194,24 @@ export default function HistoryPage() {
         {/* ===== TRANSACTION LIST ===== */}
         <Stack gap={0} py="sm">
           {filtered.length === 0 ? (
-            <Text fz="sm" c="dimmed" ta="center" py="xl">
-              Brak transakcji.
-            </Text>
+            <Stack align="center" gap="xs" py="xl">
+              <Text fz="sm" c="dimmed" ta="center">
+                Nie ma jeszcze dziś transakcji
+              </Text>
+              {(filter !== "all" || paymentFilter !== "all" || searchQuery) && (
+                <Button
+                  variant="subtle"
+                  size="xs"
+                  onClick={() => {
+                    setFilter("all");
+                    setPaymentFilter("all");
+                    setSearchQuery("");
+                  }}
+                >
+                  Wyczyść filtry
+                </Button>
+              )}
+            </Stack>
           ) : (
             filtered.map((transaction, index) => {
               const PayIcon = paymentIcon[transaction.paymentMethod];
@@ -434,8 +439,7 @@ export default function HistoryPage() {
                 color="red"
                 disabled={undoPin.length < 4}
                 onClick={() => {
-                  // Mock PIN check - hardcoded "1234" for Phase 1
-                  if (undoPin === "1234") {
+                  if (undoPin === MOCK_OPERATIONS_PIN) {
                     setUndoSuccess(true);
                   } else {
                     setUndoPinError(true);

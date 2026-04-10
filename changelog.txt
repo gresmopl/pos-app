@@ -1,0 +1,141 @@
+CHANGELOG - FORMEN POS App
+==========================
+
+[0.1.22] - 2026-04-10
+- Ankieta dla szefa (/admin/survey) - interaktywny kwestionariusz 8 pytan do PO
+  - Stepper z nawigacja miedzy pytaniami
+  - Radio buttons z opcjami do wyboru
+  - Sekcja dodatkowych uwag (textarea)
+  - Generowanie podsumowania jako tekst + kopiuj do schowka
+  - Dostepna z Panelu Admina
+
+[0.1.21] - 2026-04-10
+- Walidacja formularzy (@mantine/form useForm + getInputProps)
+  - ShiftClose: pracownik wymagany, kwoty >= 0
+  - Cash tabs (TipTab, ExpenseTab, LoanTab, TopUpTab): useForm wewnatrz komponentow
+  - AdminPricing: nazwa wymagana, cena > 0
+- Uproszczenie Cash.tsx: stan formularzy przeniesiony do child komponentow (mniej prop drilling)
+- LICENSE: plik z zastrzezonymi prawami (all rights reserved)
+- README.md: zaktualizowany stack (Vite, React Router), struktura, skrypty, hosting
+- docs/technical.md: dokumentacja techniczna (architektura, routing, flow, testy, deploy)
+- docs/analytical.md: dokumentacja analityczna (procesy biznesowe, obiekty domenowe, raporty)
+
+[0.1.20] - 2026-04-10
+- Polska odmiana liczebnikow w UI (1 usluga, 2 uslugi, 5 uslug) - helper pluralize() w constants.ts
+- Pusty stan na stronie Historia ("Nie ma jeszcze dzis transakcji" + przycisk "Wyczysc filtry")
+- Fix: barber_loan wyswietlany jako neutralny/dlug (zolty kolor, ikona rachunku) zamiast zielonego +
+- Fix: barber_payback tworzy nowy wpis na liscie operacji zamiast nadpisywac oryginalny dlug
+- Zamiana "Powrot do Dashboard" na "Powrot do ekranu glownego" w calym UI (5 plikow)
+- Poprawa "Roznica gotowkowa vs system" na "Roznica (policzone a system)" w ShiftClose
+
+[0.1.19] - 2026-04-10
+- Wspolny komponent PageHeader (strzalka + tytul + opcjonalna prawa sekcja + backTo)
+- Podmieniony header w 6 stronach: Cash, ShiftClose, AdminPricing, POS, History, Admin (x2)
+- Komponent PinModal (reusable modal z PinInput, na przyszlosc Phase 2)
+- Stale w constants.ts: VOUCHER_PRESETS, TIP_PERCENTAGES, PAYMENT_METHODS
+- Wyeliminowane magic numbers z VoucherTab i TipSelector
+- Usuniete nieuzywane importy (ActionIcon, IconArrowLeft, useNavigate) z 4 plikow
+
+[0.1.18] - 2026-04-10
+- Pliki konfiguracyjne: .editorconfig, .nvmrc (Node 20), .env.example (Supabase Phase 2)
+- ESLint: dodano typescript-eslint + @eslint/js, reguly: no-unused-vars, no-explicit-any, consistent-type-imports
+- Naprawiono 5 ESLint warningow (nieuzywane importy Box/screen, dead code employeeAvatar)
+- Wyczyszczono .gitignore: .next/out -> dist/
+
+[0.1.17] - 2026-04-10
+- Pre-commit hooks: husky + lint-staged (autoformatowanie Prettier + ESLint --fix przy commitach)
+- Dodano .prettierignore (dist, node_modules, coverage, .claude)
+- Wyczyszczono .gitignore: usunieto .next/out, dodano dist/
+
+[0.1.16] - 2026-04-10
+- Centralny plik typow src/lib/types.ts: Employee, DailyStats, Service, Product, Transaction, TransactionItem, CashMovement, CartItem, DiscountState
+- Pliki data/ i komponenty importuja typy z centralnego pliku (re-export dla kompatybilnosci)
+- Dodano typ DailyStats (wczesniej mockStats byl bez typu) i TransactionItem (wczesniej inline)
+
+[0.1.15] - 2026-04-09
+- Infrastruktura testowa: vitest + @testing-library/react + jsdom
+- Testy jednostkowe: mock dane (employees, services, transactions), logika ShiftClose, PageSkeleton
+- Error Boundary: obsluga bledow runtime z przyjaznym komunikatem
+- Strona 404 (Not Found) z catch-all route
+- Centralizacja stalych: MOCK_ADMIN_PIN, MOCK_OPERATIONS_PIN w src/lib/constants.ts
+- Dekompozycja POS.tsx: 948 -> ~190 linii, 7 komponentow w src/components/pos/
+  (CartItemList, TipSelector, AddItemModal, DiscountModal, PaymentModal, SplitPaymentModal, ConfirmModal)
+- Dekompozycja Cash.tsx: 820 -> ~230 linii, 8 komponentow w src/components/cash/
+  (types, MovementHistory, TipTab, ExpenseTab, TopUpTab, LoanTab, VoucherTab, SettleModal)
+
+[0.1.13] - 2026-04-10
+- Dodano date buildu obok wersji w panelu admina (v0.1.13 2026.04.09)
+- Dodano loading skeleton przy nawigacji (React.lazy + Suspense + PageSkeleton)
+- Dodano pusty stan Dashboard ze wskazowka gdy brak transakcji
+- Utworzono TODO.md z pelna lista zadan
+- Utworzono changelog.txt z historia zmian
+- Zaktualizowano CLAUDE.md: sekcje zmian technicznych, UI ShiftClose, znane braki
+- Specyfikacja: MODUL 12 (Katalog Wiedzy) - dynamiczne opisy uslug/produktow + instrukcja obslugi
+- Specyfikacja: pole description w tabelach Service i Product
+- Dodano loading skeleton przy nawigacji miedzy stronami (React.lazy + Suspense)
+- Dodano pusty stan Dashboard ze wskazowka gdy brak transakcji
+
+[0.1.10] - 2026-04-09
+- Naprawiono eslint.config.mjs - usunieto referencje do Next.js (eslint-config-next)
+- Zmieniono ignore pattern z .next na dist
+
+[0.1.9] - 2026-04-09
+- ShiftClose: polaczono Karta + BLIK w jeden wiersz "Sprzedaz karta/BLIK"
+- ShiftClose: uslunieto osobny wiersz BLIK z podsumowania systemowego
+- ShiftClose: bon papierowy zawsze widoczny (nie tylko gdy > 0)
+- ShiftClose: zmieniono "Gotowka w kasetce" na "Gotowka" (formularz + raport)
+- ShiftClose: zmieniono kolejnosc pol: Zamyka zmiane -> Gotowka -> Drobne na jutro -> Bony papierowe
+- ShiftClose: domyslna wartosc "Drobne na jutro" zmieniona z 200 na 0 zl
+- ShiftClose: placeholder "Drobne na jutro" zmieniony z 200 na 0
+- ShiftClose: dodano godzine do daty w raporcie dobowym
+- Admin: wersja aplikacji widoczna na ekranie PIN-u (przed logowaniem)
+- Vite: dodano APP_VERSION define z package.json
+
+[0.1.0] - 2026-04-09
+- Migracja z Next.js App Router na Vite + React Router v7
+- Usunieto: next, eslint-config-next, next.config.ts, next-env.d.ts
+- Dodano: vite, @vitejs/plugin-react, react-router
+- Zamieniono useRouter (next) na useNavigate (react-router)
+- Zamieniono useSearchParams (next) na useSearchParams (react-router)
+- Usunieto dyrektywy "use client" ze wszystkich komponentow
+- Dodano index.html jako entry point Vite
+- Dodano src/main.tsx z BrowserRouter i MantineProvider
+- Dodano src/App.tsx z definicja tras
+- Przeniesiono strony z src/app/ do src/pages/
+- Przeniesiono globals.css z src/app/ do src/
+- Dodano czcionke Inter przez Google Fonts (zastepuje next/font)
+- Dodano zmienna CSS --font-inter dla Mantine theme
+- Konfiguracja GitHub Pages: 404.html (SPA redirect), GitHub Actions workflow
+- Konfiguracja Vercel: vercel.json z SPA rewrites
+- Auto-detekcja srodowiska (GitHub Pages vs Vercel) dla BrowserRouter basename
+- Wsparcie dual deployment: GitHub Pages (/pos-app/) + Vercel (/)
+
+[0.0.x] - 2026-04-08/09
+- UX audit: modal potwierdzenia platnosci, cofniecie transakcji z PIN-em
+- Ilosc +/- przy pozycjach w koszyku
+- Napiwek: wlasna kwota + procentowe
+- Historia: wyszukiwanie, filtr metod platnosci, filtr pracownikow
+- Historia: pelna data dla transakcji spoza dzisiejszego dnia
+- Ruchy kasowe: chronologia, ikony kierunku, kolorowanie kwot
+- Sprzedaz bonu w zakladce Ruchy kasowe
+- Animacja fade-in przy nawigacji
+- Haptic feedback (wibracja) przy finalizacji
+- Swipe back z lewej krawedzi ekranu
+- PWA: Service Worker, manifest, offline fallback
+
+[0.0.1] - 2026-04-08
+- Faza 1 MVP: kompletny prototyp UI z mock danymi
+- Dashboard z kartami fryzjerow i paskiem motywacyjnym
+- Ekran sprzedazy (POS) z koszykiem, rabatami, napiwkami
+- Cennik uslug i kosmetykow (AdminPricing)
+- Historia transakcji
+- Ruchy kasowe (napiwki, zakupy, wplaty, zwroty)
+- Zamkniecie zmiany z formularzem slepego liczenia
+- Panel admina z PIN-em
+- Dark/Light mode z Mantine createTheme
+- Responsywnosc mobile/tablet/desktop
+
+[0.0.0] - 2026-04-07
+- Inicjalizacja repozytorium
+- Utworzenie README.md i CLAUDE.md
+- Upload plikow konfiguracyjnych
