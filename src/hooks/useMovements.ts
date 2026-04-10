@@ -1,10 +1,17 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { mockEmployees } from "@/data/employees";
 import type { CashMovement } from "@/lib/types";
 
 export function useMovements() {
   const [movements, setMovements] = useState<CashMovement[]>([]);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const successTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+
+  useEffect(() => {
+    return () => {
+      if (successTimer.current) clearTimeout(successTimer.current);
+    };
+  }, []);
 
   const [settleModal, setSettleModal] = useState(false);
   const [settleTarget, setSettleTarget] = useState<CashMovement | null>(null);
@@ -18,7 +25,8 @@ export function useMovements() {
 
   const showSuccess = useCallback((msg: string) => {
     setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(null), 3000);
+    if (successTimer.current) clearTimeout(successTimer.current);
+    successTimer.current = setTimeout(() => setSuccessMsg(null), 3000);
   }, []);
 
   const handleTipWithdrawal = useCallback(
@@ -28,7 +36,7 @@ export function useMovements() {
 
       setMovements((prev) => [
         {
-          id: `cm${Date.now()}`,
+          id: crypto.randomUUID(),
           type: "tip_withdrawal",
           employeeName: emp.name,
           amount,
@@ -49,7 +57,7 @@ export function useMovements() {
 
       setMovements((prev) => [
         {
-          id: `cm${Date.now()}`,
+          id: crypto.randomUUID(),
           type: "expense_take",
           employeeName: emp.name,
           amount,
@@ -86,7 +94,7 @@ export function useMovements() {
     (amount: number, reason: string) => {
       setMovements((prev) => [
         {
-          id: `cm${Date.now()}`,
+          id: crypto.randomUUID(),
           type: "top_up",
           employeeName: "Szef",
           amount,
@@ -107,7 +115,7 @@ export function useMovements() {
 
       setMovements((prev) => [
         {
-          id: `cm${Date.now()}`,
+          id: crypto.randomUUID(),
           type: "barber_loan",
           employeeName: emp.name,
           amount,
@@ -126,7 +134,7 @@ export function useMovements() {
     (loan: CashMovement) => {
       setMovements((prev) => [
         {
-          id: `cm${Date.now()}`,
+          id: crypto.randomUUID(),
           type: "barber_payback" as const,
           employeeName: loan.employeeName,
           amount: loan.amount,
@@ -144,7 +152,7 @@ export function useMovements() {
     (amount: number, payment: string, code: string) => {
       setMovements((prev) => [
         {
-          id: `cm${Date.now()}`,
+          id: crypto.randomUUID(),
           type: "voucher_sale",
           employeeName: "Salon",
           amount,
