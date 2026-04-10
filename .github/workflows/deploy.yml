@@ -27,7 +27,7 @@ jobs:
             cache: npm
 
         - run: rm package-lock.json && npm install
-        - run: npm run build
+        - run: tsc --noEmit && vite build --mode development
 
         - uses: actions/configure-pages@v5
         - uses: actions/upload-pages-artifact@v3
