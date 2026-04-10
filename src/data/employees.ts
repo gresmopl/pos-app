@@ -11,6 +11,9 @@ export const mockEmployees: Employee[] = [
     todayRevenue: 225,
     todayServices: 2,
     tipBalance: 150,
+    commissionServicePercent: 50,
+    commissionProductPercent: 30,
+    isActive: true,
   },
   {
     id: "2",
@@ -21,6 +24,9 @@ export const mockEmployees: Employee[] = [
     todayRevenue: 215,
     todayServices: 2,
     tipBalance: 85,
+    commissionServicePercent: 40,
+    commissionProductPercent: 20,
+    isActive: true,
   },
   {
     id: "3",
@@ -30,6 +36,9 @@ export const mockEmployees: Employee[] = [
     todayRevenue: 350,
     todayServices: 2,
     tipBalance: 40,
+    commissionServicePercent: 40,
+    commissionProductPercent: 20,
+    isActive: true,
   },
   {
     id: "4",
@@ -40,6 +49,9 @@ export const mockEmployees: Employee[] = [
     todayRevenue: 230,
     todayServices: 3,
     tipBalance: 25,
+    commissionServicePercent: 40,
+    commissionProductPercent: 20,
+    isActive: true,
   },
   {
     id: "5",
@@ -50,6 +62,9 @@ export const mockEmployees: Employee[] = [
     todayRevenue: 330,
     todayServices: 2,
     tipBalance: 110,
+    commissionServicePercent: 40,
+    commissionProductPercent: 20,
+    isActive: true,
   },
 ];
 

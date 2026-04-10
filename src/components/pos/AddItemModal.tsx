@@ -10,8 +10,7 @@ import {
   TextInput,
 } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
-import type { Service } from "@/data/services";
-import type { Product } from "@/data/products";
+import type { Service, Product } from "@/lib/types";
 
 interface AddItemModalProps {
   opened: boolean;
@@ -78,41 +77,54 @@ export function AddItemModal({ opened, onClose, services, products, onAdd }: Add
       />
       <Stack gap={0}>
         {tab === "services" &&
-          filteredServices.map((service) => (
-            <div key={service.id}>
-              <UnstyledButton w="100%" py="sm" onClick={() => handleAdd(service, "service")}>
-                <Group justify="space-between">
-                  <div>
-                    <Text fw={500} fz="md">
-                      {service.name}
+          (filteredServices.length === 0 ? (
+            <Text fz="sm" c="dimmed" ta="center" py="xl">
+              {search ? "Brak wyników" : "Brak usług"}
+            </Text>
+          ) : (
+            filteredServices.map((service) => (
+              <div key={service.id}>
+                <UnstyledButton w="100%" py="sm" onClick={() => handleAdd(service, "service")}>
+                  <Group justify="space-between">
+                    <div>
+                      <Text fw={500} fz="md">
+                        {service.name}
+                      </Text>
+                      <Text fz="xs" c="dimmed">
+                        {service.category}
+                      </Text>
+                    </div>
+                    <Text fw={600} fz="md">
+                      {service.priceFrom ? "od " : ""}
+                      {service.price.toLocaleString("pl-PL")} zł
                     </Text>
-                    <Text fz="xs" c="dimmed">
-                      {service.category}
-                    </Text>
-                  </div>
-                  <Text fw={600} fz="md">
-                    {service.price.toLocaleString("pl-PL")} zł
-                  </Text>
-                </Group>
-              </UnstyledButton>
-              <Divider />
-            </div>
+                  </Group>
+                </UnstyledButton>
+                <Divider />
+              </div>
+            ))
           ))}
         {tab === "products" &&
-          filteredProducts.map((product) => (
-            <div key={product.id}>
-              <UnstyledButton w="100%" py="sm" onClick={() => handleAdd(product, "product")}>
-                <Group justify="space-between">
-                  <Text fw={500} fz="md">
-                    {product.name}
-                  </Text>
-                  <Text fw={600} fz="md">
-                    {product.price.toLocaleString("pl-PL")} zł
-                  </Text>
-                </Group>
-              </UnstyledButton>
-              <Divider />
-            </div>
+          (filteredProducts.length === 0 ? (
+            <Text fz="sm" c="dimmed" ta="center" py="xl">
+              {search ? "Brak wyników" : "Brak produktów"}
+            </Text>
+          ) : (
+            filteredProducts.map((product) => (
+              <div key={product.id}>
+                <UnstyledButton w="100%" py="sm" onClick={() => handleAdd(product, "product")}>
+                  <Group justify="space-between">
+                    <Text fw={500} fz="md">
+                      {product.name}
+                    </Text>
+                    <Text fw={600} fz="md">
+                      {product.price.toLocaleString("pl-PL")} zł
+                    </Text>
+                  </Group>
+                </UnstyledButton>
+                <Divider />
+              </div>
+            ))
           ))}
       </Stack>
     </Modal>

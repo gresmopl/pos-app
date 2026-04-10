@@ -86,9 +86,8 @@ export default function AdminPage() {
           <Divider />
           <AdminLink
             label="Pracownicy"
-            description="Profile, prowizje, PIN-y"
-            onClick={() => {}}
-            disabled
+            description="Profile, prowizje, aktywność"
+            onClick={() => navigate("/admin/employees")}
           />
           <Divider />
           <AdminLink

@@ -1,14 +1,19 @@
+import { useState } from "react";
 import { Text, Stack, Box, NumberInput, Select, Button } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconCash } from "@tabler/icons-react";
-import { mockEmployees } from "@/data/employees";
+import { notifications } from "@mantine/notifications";
+import { useEmployees } from "@/hooks/useDbData";
 
 interface TipTabProps {
   employeeOptions: { value: string; label: string }[];
-  onWithdraw: (employeeId: string, amount: number) => void;
+  onWithdraw: (employeeId: string, amount: number) => Promise<void>;
 }
 
 export function TipTab({ employeeOptions, onWithdraw }: TipTabProps) {
+  const { data: employees = [], refetch } = useEmployees();
+  const [submitting, setSubmitting] = useState(false);
+
   const form = useForm({
     initialValues: {
       employee: "" as string,
@@ -19,19 +24,28 @@ export function TipTab({ employeeOptions, onWithdraw }: TipTabProps) {
       amount: (v) => {
         const n = Number(v);
         if (!n || n <= 0) return "Podaj kwotę";
-        const emp = mockEmployees.find((e) => e.id === form.values.employee);
+        const emp = employees.find((e) => e.id === form.values.employee);
         if (emp && n > emp.tipBalance) return "Kwota przekracza dostępne napiwki";
         return null;
       },
     },
   });
 
-  const selectedEmployee = mockEmployees.find((e) => e.id === form.values.employee);
+  const selectedEmployee = employees.find((e) => e.id === form.values.employee);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (form.validate().hasErrors) return;
-    onWithdraw(form.values.employee, Number(form.values.amount));
-    form.reset();
+    setSubmitting(true);
+    try {
+      await onWithdraw(form.values.employee, Number(form.values.amount));
+      refetch();
+      form.reset();
+    } catch (err) {
+      console.error("[TipTab] Withdrawal failed:", err);
+      notifications.show({ message: "Błąd wypłaty napiwku", color: "red" });
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -84,6 +98,7 @@ export function TipTab({ employeeOptions, onWithdraw }: TipTabProps) {
         color="green"
         fullWidth
         onClick={handleSubmit}
+        loading={submitting}
         leftSection={<IconCash size={20} />}
       >
         Potwierdź wypłatę

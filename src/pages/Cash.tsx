@@ -1,5 +1,5 @@
 import { useState, useId } from "react";
-import { mockEmployees } from "@/data/employees";
+import { useEmployees } from "@/hooks/useDbData";
 import { Text, Box, Container, Divider, SegmentedControl } from "@mantine/core";
 import { useMovements } from "@/hooks/useMovements";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -35,7 +35,9 @@ export default function CashPage() {
     handleVoucherSale,
   } = useMovements();
 
-  const employeeOptions = mockEmployees.map((e) => ({
+  const { data: employees = [] } = useEmployees();
+
+  const employeeOptions = employees.map((e) => ({
     value: e.id,
     label: e.name,
   }));

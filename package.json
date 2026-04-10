@@ -1,6 +1,6 @@
 {
   "name": "pos-app-init",
-  "version": "0.1.35",
+  "version": "0.1.55",
   "private": true,
   "type": "module",
   "scripts": {
@@ -21,6 +21,8 @@
     "@mantine/form": "^9.0.1",
     "@mantine/hooks": "^9.0.1",
     "@mantine/modals": "^9.0.1",
+    "@mantine/notifications": "^9.0.1",
+    "@supabase/supabase-js": "^2.103.0",
     "@tabler/icons-react": "^3.41.1",
     "dayjs": "^1.11.20",
     "react": "19.2.4",

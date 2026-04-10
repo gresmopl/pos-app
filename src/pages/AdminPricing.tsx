@@ -1,7 +1,7 @@
-import { useState, useId } from "react";
+import { useState, useId, useEffect } from "react";
 import { useForm } from "@mantine/form";
-import { mockServices } from "@/data/services";
-import { mockProducts } from "@/data/products";
+import { useAllServices, useAllProducts } from "@/hooks/useDbData";
+import { db } from "@/db";
 import type { Service, Product } from "@/lib/types";
 import {
   Text,
@@ -16,9 +16,12 @@ import {
   Modal,
   TextInput,
   NumberInput,
+  Textarea,
   Button,
 } from "@mantine/core";
-import { IconPlus, IconPencil } from "@tabler/icons-react";
+import { IconPlus, IconPencil, IconCheck } from "@tabler/icons-react";
+import { notifications } from "@mantine/notifications";
+import { modals } from "@mantine/modals";
 import { PageHeader } from "@/components/layout/PageHeader";
 
 type PricingItem = {
@@ -27,13 +30,24 @@ type PricingItem = {
   price: number;
   isActive: boolean;
   category?: string;
+  description?: string;
+  descriptionLong?: string;
 };
 
 export default function PricingPage() {
   const pricingTabId = useId();
+  const { data: dbServices } = useAllServices();
+  const { data: dbProducts } = useAllProducts();
   const [tab, setTab] = useState("services");
-  const [services, setServices] = useState<Service[]>([...mockServices]);
-  const [products, setProducts] = useState<Product[]>([...mockProducts]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    if (dbServices) setServices([...dbServices]);
+  }, [dbServices]);
+  useEffect(() => {
+    if (dbProducts) setProducts([...dbProducts]);
+  }, [dbProducts]);
 
   const [editModal, setEditModal] = useState(false);
   const [editItem, setEditItem] = useState<PricingItem | null>(null);
@@ -42,6 +56,9 @@ export default function PricingPage() {
     initialValues: {
       name: "",
       price: 0 as number | string,
+      durationMinutes: "",
+      description: "",
+      descriptionLong: "",
     },
     validate: {
       name: (v) => (v.trim() ? null : "Nazwa jest wymagana"),
@@ -63,54 +80,111 @@ export default function PricingPage() {
 
   const openEdit = (item: PricingItem) => {
     setEditItem(item);
-    editForm.setValues({ name: item.name, price: item.price });
+    const svc = tab === "services" ? services.find((s) => s.id === item.id) : null;
+    editForm.setValues({
+      name: item.name,
+      price: item.price,
+      durationMinutes: svc?.durationMinutes ?? "",
+      description: item.description || "",
+      descriptionLong: item.descriptionLong || "",
+    });
     editForm.clearErrors();
     setEditModal(true);
   };
 
-  const saveItem = () => {
-    if (editForm.validate().hasErrors) return;
-    const { name: editName, price: editPrice } = editForm.values;
-    const price = Number(editPrice);
+  const [saving, setSaving] = useState(false);
 
-    if (tab === "services") {
-      if (editItem) {
-        setServices((prev) =>
-          prev.map((s) => (s.id === editItem.id ? { ...s, name: editName, price } : s))
-        );
-      } else {
-        const newItem: Service = {
-          id: crypto.randomUUID(),
+  const saveItem = async () => {
+    if (editForm.validate().hasErrors) return;
+    const {
+      name: editName,
+      price: editPrice,
+      durationMinutes,
+      description,
+      descriptionLong,
+    } = editForm.values;
+    const price = Number(editPrice);
+    const duration = durationMinutes?.toString().trim() || undefined;
+
+    setSaving(true);
+    try {
+      if (tab === "services") {
+        const input = {
           name: editName,
           price,
-          category: "Inne",
-          isActive: true,
+          durationMinutes: duration,
+          category: editItem?.category || "Inne",
+          description: description || undefined,
+          descriptionLong: descriptionLong || undefined,
         };
-        setServices((prev) => [...prev, newItem]);
-      }
-    } else {
-      if (editItem) {
-        setProducts((prev) =>
-          prev.map((p) => (p.id === editItem.id ? { ...p, name: editName, price } : p))
-        );
+        if (editItem) {
+          const updated = await db.services.update(editItem.id, input);
+          setServices((prev) => prev.map((s) => (s.id === editItem.id ? updated : s)));
+        } else {
+          const created = await db.services.create(input);
+          setServices((prev) => [...prev, created]);
+        }
       } else {
-        const newItem: Product = {
-          id: crypto.randomUUID(),
+        const input = {
           name: editName,
           price,
-          isActive: true,
+          description: description || undefined,
         };
-        setProducts((prev) => [...prev, newItem]);
+        if (editItem) {
+          const updated = await db.products.update(editItem.id, input);
+          setProducts((prev) => prev.map((p) => (p.id === editItem.id ? updated : p)));
+        } else {
+          const created = await db.products.create(input);
+          setProducts((prev) => [...prev, created]);
+        }
       }
+      setEditModal(false);
+      notifications.show({
+        message: editItem ? "Zapisano zmiany" : "Dodano nową pozycję",
+        color: "green",
+        icon: <IconCheck size={16} />,
+      });
+    } catch (err) {
+      console.error("[AdminPricing] Save failed:", err);
+      notifications.show({ message: "Błąd zapisu", color: "red" });
+    } finally {
+      setSaving(false);
     }
-    setEditModal(false);
+  };
+
+  const doToggle = async (id: string, newActive: boolean) => {
+    try {
+      if (tab === "services") {
+        await db.services.toggleActive(id, newActive);
+        setServices((prev) => prev.map((s) => (s.id === id ? { ...s, isActive: newActive } : s)));
+      } else {
+        await db.products.toggleActive(id, newActive);
+        setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, isActive: newActive } : p)));
+      }
+    } catch (err) {
+      console.error("[AdminPricing] Toggle failed:", err);
+      notifications.show({ message: "Błąd zmiany statusu", color: "red" });
+    }
   };
 
   const toggleActive = (id: string) => {
-    if (tab === "services") {
-      setServices((prev) => prev.map((s) => (s.id === id ? { ...s, isActive: !s.isActive } : s)));
+    const item = items.find((i) => i.id === id);
+    if (!item) return;
+    if (item.isActive) {
+      const label = tab === "services" ? "usługę" : "produkt";
+      modals.openConfirmModal({
+        title: `Dezaktywacja`,
+        children: (
+          <Text fz="sm">
+            Czy na pewno dezaktywować {label} <b>{item.name}</b>? Nie będzie widoczny w POS.
+          </Text>
+        ),
+        labels: { confirm: "Dezaktywuj", cancel: "Anuluj" },
+        confirmProps: { color: "red" },
+        onConfirm: () => doToggle(id, false),
+      });
     } else {
-      setProducts((prev) => prev.map((p) => (p.id === id ? { ...p, isActive: !p.isActive } : p)));
+      doToggle(id, true);
     }
   };
 
@@ -246,11 +320,38 @@ export default function PricingPage() {
             suffix=" zł"
             {...editForm.getInputProps("price")}
           />
+          {tab === "services" && (
+            <TextInput
+              label="Czas trwania (min)"
+              placeholder="np. 45 lub 30-45"
+              {...editForm.getInputProps("durationMinutes")}
+            />
+          )}
+          <Textarea
+            label="Krótki opis"
+            placeholder="np. Strzyżenie + mycie + stylizacja, 30-45 min"
+            autosize
+            minRows={2}
+            maxRows={3}
+            {...editForm.getInputProps("description")}
+          />
+          {tab === "services" && (
+            <Textarea
+              label="Opis szczegółowy"
+              placeholder="Pełny opis usługi dla pracowników (widoczny w Katalogu Wiedzy)"
+              autosize
+              minRows={3}
+              maxRows={6}
+              {...editForm.getInputProps("descriptionLong")}
+            />
+          )}
           <Group justify="flex-end">
             <Button variant="subtle" onClick={() => setEditModal(false)}>
               Anuluj
             </Button>
-            <Button onClick={saveItem}>Zapisz</Button>
+            <Button onClick={saveItem} loading={saving}>
+              Zapisz
+            </Button>
           </Group>
         </Stack>
       </Modal>

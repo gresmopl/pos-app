@@ -12,6 +12,7 @@ const Cash = lazy(() => import("@/pages/Cash"));
 const ShiftClose = lazy(() => import("@/pages/ShiftClose"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const AdminPricing = lazy(() => import("@/pages/AdminPricing"));
+const AdminEmployees = lazy(() => import("@/pages/AdminEmployees"));
 const OwnerSurvey = lazy(() => import("@/pages/OwnerSurvey"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -31,6 +32,7 @@ export function App() {
               <Route path="/shift-close" element={<ShiftClose />} />
               <Route path="/admin" element={<Admin />} />
               <Route path="/admin/pricing" element={<AdminPricing />} />
+              <Route path="/admin/employees" element={<AdminEmployees />} />
               <Route path="/admin/survey" element={<OwnerSurvey />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

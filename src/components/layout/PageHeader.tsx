@@ -15,7 +15,13 @@ export function PageHeader({ title, rightSection, backTo = "/" }: PageHeaderProp
   return (
     <Group justify="space-between" py="md">
       <Group gap="sm">
-        <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => navigate(backTo)}>
+        <ActionIcon
+          variant="subtle"
+          color="gray"
+          size="lg"
+          onClick={() => navigate(backTo)}
+          aria-label="Powrót"
+        >
           <IconArrowLeft size={22} />
         </ActionIcon>
         <Text fw={700} fz={24}>

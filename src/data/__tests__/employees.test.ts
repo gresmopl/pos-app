@@ -27,6 +27,8 @@ describe("mockEmployees", () => {
       expect(e.todayRevenue).toBeGreaterThanOrEqual(0);
       expect(e.todayServices).toBeGreaterThanOrEqual(0);
       expect(e.tipBalance).toBeGreaterThanOrEqual(0);
+      expect(e.commissionServicePercent).toBeGreaterThanOrEqual(0);
+      expect(e.commissionProductPercent).toBeGreaterThanOrEqual(0);
     });
   });
 
