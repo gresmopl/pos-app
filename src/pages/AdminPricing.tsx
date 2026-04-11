@@ -17,12 +17,14 @@ import {
   TextInput,
   NumberInput,
   Textarea,
+  Select,
   Button,
 } from "@mantine/core";
 import { IconPlus, IconPencil, IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SERVICE_CATEGORIES } from "@/lib/constants";
 
 type PricingItem = {
   id: string;
@@ -56,6 +58,7 @@ export default function PricingPage() {
     initialValues: {
       name: "",
       price: 0 as number | string,
+      category: "Strzyżenie" as string,
       durationMinutes: "",
       description: "",
       descriptionLong: "",
@@ -84,6 +87,7 @@ export default function PricingPage() {
     editForm.setValues({
       name: item.name,
       price: item.price,
+      category: item.category || "Strzyżenie",
       durationMinutes: svc?.durationMinutes ?? "",
       description: item.description || "",
       descriptionLong: item.descriptionLong || "",
@@ -99,6 +103,7 @@ export default function PricingPage() {
     const {
       name: editName,
       price: editPrice,
+      category,
       durationMinutes,
       description,
       descriptionLong,
@@ -113,7 +118,7 @@ export default function PricingPage() {
           name: editName,
           price,
           durationMinutes: duration,
-          category: editItem?.category || "Inne",
+          category,
           description: description || undefined,
           descriptionLong: descriptionLong || undefined,
         };
@@ -321,11 +326,18 @@ export default function PricingPage() {
             {...editForm.getInputProps("price")}
           />
           {tab === "services" && (
-            <TextInput
-              label="Czas trwania (min)"
-              placeholder="np. 45 lub 30-45"
-              {...editForm.getInputProps("durationMinutes")}
-            />
+            <>
+              <Select
+                label="Kategoria"
+                data={SERVICE_CATEGORIES.map((c) => ({ value: c, label: c }))}
+                {...editForm.getInputProps("category")}
+              />
+              <TextInput
+                label="Czas trwania (min)"
+                placeholder="np. 45 lub 30-45"
+                {...editForm.getInputProps("durationMinutes")}
+              />
+            </>
           )}
           <Textarea
             label="Krótki opis"

@@ -1,15 +1,54 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { Text, Group, Stack, Box, Container, Divider, PinInput, Button } from "@mantine/core";
-import { IconLock } from "@tabler/icons-react";
+import { IconLock, IconRefresh, IconDownload } from "@tabler/icons-react";
 import { MOCK_ADMIN_PIN } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
+
+declare const APP_VERSION: string;
+
+async function forceUpdate(): Promise<void> {
+  const regs = await navigator.serviceWorker.getRegistrations();
+  await Promise.all(regs.map((r) => r.unregister()));
+  const keys = await caches.keys();
+  await Promise.all(keys.map((k) => caches.delete(k)));
+  window.location.reload();
+}
+
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>;
+}
+
+// Catch event at module level (fires before component mounts)
+let savedPrompt: BeforeInstallPromptEvent | null = null;
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  savedPrompt = e as BeforeInstallPromptEvent;
+});
 
 export default function AdminPage() {
   const navigate = useNavigate();
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
+  const [canInstall, setCanInstall] = useState(!!savedPrompt);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      savedPrompt = e as BeforeInstallPromptEvent;
+      setCanInstall(true);
+    };
+    window.addEventListener("beforeinstallprompt", handler);
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const handleInstall = async (): Promise<void> => {
+    if (!savedPrompt) return;
+    await savedPrompt.prompt();
+    savedPrompt = null;
+    setCanInstall(false);
+  };
 
   const handlePinComplete = (value: string) => {
     if (value === MOCK_ADMIN_PIN) {
@@ -29,7 +68,7 @@ export default function AdminPage() {
             title="Panel admina"
             rightSection={
               <Text fz="xs" c="dimmed">
-                v{APP_VERSION} {APP_BUILD_DATE}
+                v{APP_VERSION}
               </Text>
             }
           />
@@ -56,9 +95,28 @@ export default function AdminPage() {
                 Nieprawidłowy PIN
               </Text>
             )}
-            <Text fz="xs" c="dimmed">
-              PIN testowy: 1234
-            </Text>
+            <Button
+              variant="subtle"
+              color="gray"
+              size="compact-xs"
+              leftSection={<IconRefresh size={12} />}
+              onClick={forceUpdate}
+              fz={10}
+            >
+              v{APP_VERSION} · Wymuś aktualizację
+            </Button>
+            {canInstall && (
+              <Button
+                variant="subtle"
+                color="gray"
+                size="compact-xs"
+                leftSection={<IconDownload size={12} />}
+                onClick={handleInstall}
+                fz={10}
+              >
+                Zainstaluj na ekranie głównym
+              </Button>
+            )}
           </Stack>
         </Container>
       </Box>
@@ -72,7 +130,7 @@ export default function AdminPage() {
           title="Panel admina"
           rightSection={
             <Text fz="xs" c="dimmed">
-              v{APP_VERSION} {APP_BUILD_DATE}
+              v{APP_VERSION}
             </Text>
           }
         />
@@ -88,6 +146,18 @@ export default function AdminPage() {
             label="Pracownicy"
             description="Profile, prowizje, aktywność"
             onClick={() => navigate("/admin/employees")}
+          />
+          <Divider />
+          <AdminLink
+            label="Urządzenia"
+            description="Rejestracja, zatwierdzanie, blokowanie"
+            onClick={() => navigate("/admin/devices")}
+          />
+          <Divider />
+          <AdminLink
+            label="Ustawienia"
+            description="Dane salonu, kasa, bony, prowizje, płatności"
+            onClick={() => navigate("/admin/settings")}
           />
           <Divider />
           <AdminLink
@@ -133,10 +203,12 @@ function AdminLink({
     >
       <Group justify="space-between" w="100%">
         <div>
-          <Text fw={500} fz="md">
+          <Text fw={500} fz="md" ta="left">
             {label}
           </Text>
-          <Text fz="sm">{description}</Text>
+          <Text fz="sm" ta="left">
+            {description}
+          </Text>
         </div>
         <Text fz="lg" c="dimmed">
           ›

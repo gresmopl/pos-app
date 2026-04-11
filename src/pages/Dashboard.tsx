@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useEmployees, useDailyStats } from "@/hooks/useDbData";
+import { useEmployees, useDailyStats, useSalonSettings } from "@/hooks/useDbData";
 import {
   Text,
   Group,
@@ -31,6 +31,7 @@ import {
   IconWallet,
   IconDoorExit,
   IconScissors,
+  IconBook,
 } from "@tabler/icons-react";
 import { pluralize } from "@/lib/constants";
 
@@ -67,6 +68,7 @@ export default function Dashboard() {
 
   const { data: employees = [], loading: empLoading } = useEmployees();
   const { data: stats } = useDailyStats();
+  const { data: salon } = useSalonSettings();
 
   // Mock: admin widzi utarg, fryzjer nie
   const isAdmin = true; // TODO: replace with real role check
@@ -283,7 +285,7 @@ export default function Dashboard() {
         p="md"
       >
         <Container size="lg">
-          <SimpleGrid cols={3}>
+          <SimpleGrid cols={salon?.knowledgeBaseEnabled ? 4 : 3}>
             <UnstyledButton onClick={() => navigate("/history")}>
               <Stack align="center" gap={4}>
                 <IconHistory size={22} color="var(--mantine-color-blue-filled)" />
@@ -300,6 +302,16 @@ export default function Dashboard() {
                 </Text>
               </Stack>
             </UnstyledButton>
+            {salon?.knowledgeBaseEnabled && (
+              <UnstyledButton onClick={() => navigate("/help")}>
+                <Stack align="center" gap={4}>
+                  <IconBook size={22} color="var(--mantine-color-violet-filled)" />
+                  <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
+                    Katalog
+                  </Text>
+                </Stack>
+              </UnstyledButton>
+            )}
             <UnstyledButton onClick={() => navigate("/shift-close")}>
               <Stack align="center" gap={4}>
                 <IconDoorExit size={22} color="var(--mantine-color-red-filled)" />

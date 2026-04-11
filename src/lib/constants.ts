@@ -11,6 +11,15 @@ export const VOUCHER_EXPIRY_MONTHS = 12;
 // Payment methods
 export const PAYMENT_METHODS = ["cash", "card", "blik", "voucher", "split"] as const;
 
+// Service categories
+export const SERVICE_CATEGORIES = [
+  "Strzyżenie",
+  "Broda",
+  "Combo",
+  "Koloryzacja",
+  "Dodatkowe",
+] as const;
+
 /**
  * Polish noun declension for counts: 1 usługa, 2 usługi, 5 usług.
  * @param count - number

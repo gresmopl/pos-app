@@ -65,14 +65,10 @@ export function LoanTab({ employeeOptions, pendingLoans, onLoan, onPayback }: Lo
         </>
       )}
 
-      <div>
-        <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="xs">
-          Wydałem z własnych
-        </Text>
-        <Text fz="sm" mb="md">
-          Fryzjer wydał resztę z kieszeni (brak drobnych w kasetce).
-        </Text>
-      </div>
+      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+        Wydałem z własnych
+      </Text>
+      <Text fz="sm">Fryzjer wydał resztę z kieszeni (brak drobnych w kasetce).</Text>
 
       <Select
         label="Pracownik"
@@ -86,7 +82,6 @@ export function LoanTab({ employeeOptions, pendingLoans, onLoan, onPayback }: Lo
         placeholder="0"
         min={0}
         suffix=" zł"
-        size="md"
         {...form.getInputProps("amount")}
       />
 

@@ -10,6 +10,8 @@ import type {
   SaveServiceInput,
   SaveProductInput,
   SaveEmployeeInput,
+  UpdateSalonInput,
+  RegisterDeviceInput,
 } from "../types";
 import type {
   Employee,
@@ -19,6 +21,8 @@ import type {
   CashMovement,
   PaymentBreakdownItem,
   Voucher,
+  SalonSettings,
+  DeviceRegistration,
 } from "@/lib/types";
 
 // Map Polish UI payment method names to DB enum values
@@ -77,11 +81,85 @@ function parsePaymentInput(
 }
 
 export function createMockClient(): DbClient {
+  const mockDevices: DeviceRegistration[] = [];
   const mockMovements: CashMovement[] = [];
   const mockVouchers: Voucher[] = [];
   let mockDailyReport: { closedAt: string; floatAmount: number } | null = null;
 
+  const mockSalon: SalonSettings = {
+    id: "a0000000-0000-0000-0000-000000000001",
+    name: "FORMEN DEV",
+    address: "ul. Testowa 1, 00-001 Warszawa",
+    phone: "+48 123 456 789",
+    nip: "1234567890",
+    adminPinHash: "placeholder_admin_1234",
+    operationsPinHash: "placeholder_operations_1234",
+    cashTolerance: 10,
+    monthTarget: 600,
+    voucherExpiryMonths: 12,
+    voucherMinAmount: 1,
+    voucherCodePrefix: "BON-",
+    defaultCommissionService: 40,
+    defaultCommissionProduct: 20,
+    enabledPaymentMethods: ["cash", "card", "blik"],
+    receiptFooter: "Dziękujemy za wizytę w FORMEN!",
+    knowledgeBaseEnabled: false,
+  };
+
   return {
+    salon: {
+      async get() {
+        return mockSalon;
+      },
+      async update(input: UpdateSalonInput) {
+        Object.assign(mockSalon, {
+          ...input,
+          enabledPaymentMethods: input.enabledPaymentMethods ?? mockSalon.enabledPaymentMethods,
+        });
+        return mockSalon;
+      },
+    },
+    devices: {
+      async getByDeviceId(deviceId: string) {
+        return mockDevices.find((d) => d.deviceId === deviceId) ?? null;
+      },
+      async getAll() {
+        return mockDevices;
+      },
+      async register(input: RegisterDeviceInput) {
+        const hasApproved = mockDevices.some((d) => d.status === "approved");
+        const autoApprove = input.deviceType === "admin" && !hasApproved;
+        const now = new Date().toISOString();
+        const device: DeviceRegistration = {
+          id: crypto.randomUUID(),
+          deviceId: input.deviceId,
+          employeeId: input.employeeId ?? null,
+          deviceType: input.deviceType,
+          status: autoApprove ? "approved" : "pending",
+          deviceName: input.deviceName,
+          registeredAt: now,
+          approvedAt: autoApprove ? now : null,
+          lastSeenAt: now,
+        };
+        mockDevices.push(device);
+        return device;
+      },
+      async approve(id: string) {
+        const d = mockDevices.find((d) => d.id === id);
+        if (d) {
+          d.status = "approved";
+          d.approvedAt = new Date().toISOString();
+        }
+      },
+      async block(id: string) {
+        const d = mockDevices.find((d) => d.id === id);
+        if (d) d.status = "blocked";
+      },
+      async updateLastSeen(deviceId: string) {
+        const d = mockDevices.find((d) => d.deviceId === deviceId);
+        if (d) d.lastSeenAt = new Date().toISOString();
+      },
+    },
     employees: {
       async getAll() {
         return mockEmployees;

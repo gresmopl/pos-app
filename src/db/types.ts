@@ -8,6 +8,8 @@ import type {
   CartItem,
   DiscountState,
   Voucher,
+  SalonSettings,
+  DeviceRegistration,
 } from "@/lib/types";
 
 export interface SaveEmployeeInput {
@@ -70,7 +72,45 @@ export interface CreateTransactionInput {
   voucherAmount?: number;
 }
 
+export interface RegisterDeviceInput {
+  deviceId: string;
+  deviceName: string;
+  deviceType: "personal" | "station" | "admin";
+  employeeId?: string;
+}
+
+export interface UpdateSalonInput {
+  name?: string;
+  address?: string;
+  phone?: string;
+  nip?: string;
+  adminPinHash?: string;
+  operationsPinHash?: string;
+  cashTolerance?: number;
+  monthTarget?: number;
+  voucherExpiryMonths?: number;
+  voucherMinAmount?: number;
+  voucherCodePrefix?: string;
+  defaultCommissionService?: number;
+  defaultCommissionProduct?: number;
+  enabledPaymentMethods?: string[];
+  receiptFooter?: string;
+  knowledgeBaseEnabled?: boolean;
+}
+
 export interface DbClient {
+  salon: {
+    get(): Promise<SalonSettings>;
+    update(input: UpdateSalonInput): Promise<SalonSettings>;
+  };
+  devices: {
+    getByDeviceId(deviceId: string): Promise<DeviceRegistration | null>;
+    getAll(): Promise<DeviceRegistration[]>;
+    register(input: RegisterDeviceInput): Promise<DeviceRegistration>;
+    approve(id: string): Promise<void>;
+    block(id: string): Promise<void>;
+    updateLastSeen(deviceId: string): Promise<void>;
+  };
   employees: {
     getAll(): Promise<Employee[]>;
     getActive(): Promise<Employee[]>;

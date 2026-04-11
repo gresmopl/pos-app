@@ -1,29 +1,41 @@
 {
+  "id": "/",
   "name": "FORMEN - System POS",
   "short_name": "FORMEN",
   "description": "System POS dla salonów fryzjerskich",
-  "start_url": "/",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#f5f5f5",
   "theme_color": "#00e676",
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192.png",
+      "src": "./icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/icons/icon-512.png",
+      "src": "./icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "FORMEN POS - ekran główny"
     },
     {
-      "src": "/icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "FORMEN POS - widok desktopowy"
     }
   ]
 }

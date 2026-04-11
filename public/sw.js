@@ -1,11 +1,14 @@
-const CACHE_NAME = "formen-v2";
-const OFFLINE_URL = "/offline.html";
+const CACHE_NAME = "formen-v3";
+
+// Detect base path from SW scope (works for both "/" and "/pos-app/")
+const BASE = self.registration.scope.replace(self.location.origin, "") || "/";
+const OFFLINE_URL = BASE + "offline.html";
 
 const PRECACHE_URLS = [
-  "/",
-  "/offline.html",
-  "/manifest.json",
-  "/icons/icon.svg",
+  BASE,
+  BASE + "offline.html",
+  BASE + "manifest.json",
+  BASE + "icons/icon.svg",
 ];
 
 // Install: precache critical assets

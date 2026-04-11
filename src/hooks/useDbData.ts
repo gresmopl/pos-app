@@ -36,3 +36,7 @@ export function useTodayTransactions() {
 export function useAllTransactions() {
   return useDbQuery(() => db.transactions.getAll());
 }
+
+export function useSalonSettings() {
+  return useDbQuery(() => db.salon.get());
+}

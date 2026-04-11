@@ -25,14 +25,10 @@ export function TopUpTab({ onTopUp }: TopUpTabProps) {
 
   return (
     <Stack gap="md" py="md">
-      <div>
-        <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="xs">
-          Wpłata do kasy
-        </Text>
-        <Text fz="sm" mb="md">
-          Zasilenie kasetki gotówką (np. drobne od szefa).
-        </Text>
-      </div>
+      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+        Wpłata do kasy
+      </Text>
+      <Text fz="sm">Zasilenie kasetki gotówką (np. drobne od szefa).</Text>
 
       <Select
         label="Powód"
@@ -48,7 +44,6 @@ export function TopUpTab({ onTopUp }: TopUpTabProps) {
         placeholder="0"
         min={0}
         suffix=" zł"
-        size="md"
         {...form.getInputProps("amount")}
       />
 

@@ -50,14 +50,10 @@ export function TipTab({ employeeOptions, onWithdraw }: TipTabProps) {
 
   return (
     <Stack gap="md" py="md">
-      <div>
-        <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="xs">
-          Wypłata napiwków
-        </Text>
-        <Text fz="sm" mb="md">
-          Fryzjer pobiera zgromadzone napiwki z kasetki.
-        </Text>
-      </div>
+      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+        Wypłata napiwków
+      </Text>
+      <Text fz="sm">Fryzjer pobiera zgromadzone napiwki z kasetki.</Text>
 
       <Select
         label="Pracownik"
@@ -89,7 +85,6 @@ export function TipTab({ employeeOptions, onWithdraw }: TipTabProps) {
         min={0}
         max={selectedEmployee?.tipBalance ?? 0}
         suffix=" zł"
-        size="md"
         {...form.getInputProps("amount")}
       />
 

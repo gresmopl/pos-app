@@ -54,8 +54,8 @@
 **Czeka na realizacje (z odpowiedzi szefa):**
 
 - [x] **Prowizje** - obliczanie przy finalizacji: od pelnej kwoty (split), od kwoty po rabacie
-- [ ] **Zdjecie kasetki** - opcjonalny przycisk "Dodaj zdjecie" przy zamknieciu zmiany
-- [ ] **Licznik banknotow** - zamiana pola "Gotowka" na grid z nominalami (200/100/50/20/10 zl + monety)
+- [x] **Zdjecie kasetki** - opcjonalny przycisk "Dodaj zdjecie" przy zamknieciu zmiany
+- [x] **Licznik banknotow** - grid z nominalami (200/100/50/20/10/5/2/1 zl) zamiast jednego pola "Gotowka"
 
 **Do dopytania u szefa:**
 
@@ -63,6 +63,8 @@
 - [ ] **Widocznosc prowizji** - czy prowizja ma byc widoczna tylko w raportach miesiecznych (do wyplaty), czy tez na telefonie danego fryzjera? Czy stawki prowizji sa poufne (ustalane indywidualnie z kazdym pracownikiem)?
 - [ ] **Zmiana stawek prowizji w czasie** - czy szef potrzebuje planowac zmiane stawki z wyprzedzeniem (np. "od 1 maja Oliwia 45%")? Jesli tak: osobna tabela harmonogramu czy wystarczy jedno pole "nastepna stawka + data"? Obecnie prowizja brana z biezacej stawki pracownika, zmiana dziala natychmiast
 - [ ] **Podsumowanie dnia na email/PDF** - czy szef chce dostawac raport po zamknieciu zmiany na maila bez otwierania systemu?
+- [ ] **Tolerancja kasowa a v2.1** - wczesniej ustalona tolerancja 10 zl (roznice <= 10 zl = OK). Nowa spec v2.1 pokazuje kazda roznice na czerwono. Czy tolerancja dalej obowiazuje (np. roznica 3 zl = zielone "OK"), czy szef chce widziec kazda roznice?
+- [ ] **Bony papierowe przy zamknieciu zmiany** - szef chce zeby bony papierowe liczyc jako gotowke (np. 1000 zl + 200 zl w bonach = 1200 zl). Problem: system nie wie co jest gotowka a co bonem, wiec zestawienie bonow w panelu admina nie pokryje sie z raportami zmianowymi. Czy to akceptowalne, czy lepiej osobne pole na bony?
 
 ## Faza 2 (pelna funkcjonalnosc)
 
@@ -85,23 +87,22 @@
 - [x] Portfel napiwkow (wyplata z tip_balance, zapis tip_withdrawal)
 - [x] Bony podarunkowe (sprzedaz, realizacja z kodem, saldo, waznosc, split z doplata)
 - [x] Zamkniecie zmiany - ciaglosc salda (opening balance = float z poprzedniego raportu)
-- [ ] Katalog Wiedzy (/help) - dynamiczne opisy uslug/produktow + instrukcja obslugi
-- [ ] Autoryzacja urzadzen (QR pairing, zatwierdzanie, blokowanie)
+- [x] Katalog Wiedzy (/help) - dynamiczne opisy uslug/produktow, zgrupowane po kategoriach, wyszukiwarka
+- [x] Autoryzacja urzadzen (QR pairing, zatwierdzanie, blokowanie)
   - Rekomendacja: UUID w localStorage + tabela device w bazie
   - Flow: pierwsze uruchomienie -> generuj UUID -> ekran rejestracji (nazwa, typ) -> zatwierdzenie przez szefa
   - Tabela device: id, salon_id, name, type (personal/station/admin), employee_id, user_agent, screen_width, is_approved, last_seen_at
   - Kazda operacja (transakcja, ruch kasowy) tagowana device_id
   - Ryzyka: czyszczenie localStorage = utrata tozsamosci (ponowna rejestracja)
   - Widoki: personal = tylko swoje dane, station = wszystko, admin = panel szefa
-- [ ] Ustawienia salonu w panelu admina (/admin/settings)
-  - **Bezpieczenstwo:** PIN admina, PIN operacyjny (obecnie zahardkodowane "1234" w constants.ts)
-  - **Kasa:** tolerancja kasowa (obecnie 10 zl), cel miesieczny uslug (obecnie 600)
-  - **Bony:** waznosc bonow (obecnie 12 mies.), minimalna kwota bonu, prefiks kodu (obecnie "BON-")
-  - **Dane salonu:** nazwa, adres, NIP, telefon - potrzebne do wydruków i naglowkow raportow
-  - **Prowizje:** domyslne stawki dla nowych pracownikow (zeby nie wpisywac 40%/20% za kazdym razem)
-  - **Platnosci:** wlaczanie/wylaczanie metod platnosci (np. salon nie akceptuje BLIK)
-  - **Wydruki:** stopka kwitu ("Dziekujemy za wizyte w FORMEN!")
-  - Realizacja: tabela salon_settings (key-value) lub pola w tabeli salon, ladowanie przy starcie aplikacji
+- [x] Ustawienia salonu w panelu admina (/admin/settings)
+  - Dane salonu (nazwa, adres, telefon, NIP)
+  - Kasa (tolerancja kasowa, cel miesieczny)
+  - Bony (waznosc, min. kwota, prefiks kodu)
+  - Prowizje (domyslne stawki dla nowych pracownikow)
+  - Platnosci (wlaczanie/wylaczanie metod)
+  - Wydruki (stopka kwitu)
+  - TODO: PIN admina i operacyjny (zmiana z ustawien - wymaga integracji z auth)
 - [ ] Zarzadzanie bonami w panelu admina (/admin/vouchers)
   - Lista wszystkich bonow (kod, kwota poczatkowa, saldo, status, data waznosci)
   - Filtr: aktywne / wykorzystane / wygasle
@@ -109,7 +110,7 @@
   - Podglad historii uzycia bonu (ktore transakcje, ile pobrano)
   - Przedluzenie waznosci (szef decyduje, np. klient przychodzi z przeterminowanym)
   - Wymaga: db.vouchers.getAll(), updateExpiry() w adapterach
-- [ ] Multi-salon (RLS policies, izolacja danych)
+- [x] Multi-salon - osobna baza per salon (osobny deploy z innym .env), bez RLS
 
 ## Faza 3 (raporty i finalizacja)
 

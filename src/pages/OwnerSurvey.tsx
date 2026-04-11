@@ -44,6 +44,44 @@ const completedAnswers = [
   { question: "Magazyn kosmetyków", answer: "Nie - sam ogarniam co mam na półce" },
 ];
 
+const openQuestions = [
+  {
+    id: "old-vouchers",
+    question: "Stare bony (sprzed systemu)",
+    description:
+      "Czy są w obiegu bony papierowe wydane przed wdrożeniem systemu? Jeśli tak: ile ich może być, czy mają numer/oznaczenie, datę ważności, jakie saldo?",
+  },
+  {
+    id: "commission-visibility",
+    question: "Widoczność prowizji",
+    description:
+      "Czy prowizja ma być widoczna tylko w raportach miesięcznych, czy też na telefonie fryzjera? Czy stawki prowizji są poufne (ustalane indywidualnie)?",
+  },
+  {
+    id: "commission-schedule",
+    question: "Zmiana stawek prowizji w czasie",
+    description:
+      'Czy potrzebujesz planować zmianę stawki z wyprzedzeniem (np. "od 1 maja Oliwia 45%")? Obecnie zmiana działa natychmiast.',
+  },
+  {
+    id: "daily-email",
+    question: "Podsumowanie dnia na email/PDF",
+    description: "Czy chcesz dostawać raport po zamknięciu zmiany na maila bez otwierania systemu?",
+  },
+  {
+    id: "cash-tolerance",
+    question: "Tolerancja kasowa a nowy ekran",
+    description:
+      "Ustalona tolerancja 10 zł (różnice <= 10 zł = OK). Nowy ekran pokazuje każdą różnicę. Czy tolerancja dalej obowiązuje, czy chcesz widzieć każdą różnicę?",
+  },
+  {
+    id: "paper-vouchers",
+    question: "Bony papierowe przy zamknięciu zmiany",
+    description:
+      "Bony papierowe liczone jako gotówka (1000 zł + 200 zł w bonach = 1200 zł). System nie rozróżnia co jest gotówką a co bonem. Czy to akceptowalne, czy lepiej osobne pole?",
+  },
+];
+
 export default function OwnerSurvey() {
   const [notes, setNotes] = useState("");
 
@@ -92,6 +130,33 @@ export default function OwnerSurvey() {
                   </Text>
                 </Group>
                 {index < completedAnswers.length - 1 && <Divider />}
+              </div>
+            ))}
+          </Stack>
+
+          <Divider />
+
+          {/* Otwarte pytania */}
+          <Group>
+            <Badge color="yellow" size="lg" variant="light">
+              Do ustalenia
+            </Badge>
+            <Text fz="sm" c="dimmed">
+              6 pytań czeka na odpowiedź szefa
+            </Text>
+          </Group>
+          <Stack gap={0}>
+            {openQuestions.map((item, index) => (
+              <div key={item.id}>
+                <Stack gap={4} py="xs">
+                  <Text fz="sm" fw={500}>
+                    {item.question}
+                  </Text>
+                  <Text fz="xs" c="dimmed">
+                    {item.description}
+                  </Text>
+                </Stack>
+                {index < openQuestions.length - 1 && <Divider />}
               </div>
             ))}
           </Stack>

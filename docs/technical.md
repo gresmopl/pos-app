@@ -32,6 +32,38 @@ Docelowo: Progressive Web App (PWA) z offline fallback.
 
 GitHub Pages wymaga basename `/pos-app` w BrowserRouter - wykrywane automatycznie w `main.tsx`.
 
+### Konfiguracja srodowisk (.env)
+
+Aplikacja uzywa zmiennych `VITE_*` ladowanych przez Vite z plikow `.env`:
+
+| Plik               | Kiedy uzywany                                              | W repo? | Adapter    |
+| ------------------ | ---------------------------------------------------------- | ------- | ---------- |
+| `.env.development` | `npm run dev` + GitHub Actions/Vercel (--mode development) | TAK     | `supabase` |
+| `.env.production`  | `npm run build` (domyslny mode production)                 | NIE     | `rest`     |
+| `.env.example`     | Szablon dla nowych developerow                             | TAK     | -          |
+
+**Zmienne:**
+
+| Zmienna                  | Opis                               | Przyklad                           |
+| ------------------------ | ---------------------------------- | ---------------------------------- |
+| `VITE_DB_ADAPTER`        | Adapter bazy: mock/supabase/rest   | `supabase`                         |
+| `VITE_DB_ENV`            | Srodowisko: development/production | `development`                      |
+| `VITE_SUPABASE_URL`      | URL projektu Supabase              | `https://xxx.supabase.co`          |
+| `VITE_SUPABASE_ANON_KEY` | Klucz publiczny (anon) Supabase    | `eyJ...` (bezpieczny w repo - RLS) |
+| `VITE_API_URL`           | URL REST API (produkcja)           | `https://formen.example.com`       |
+
+**Dlaczego `.env.development` jest w repo:**
+Klucz `anon` Supabase jest publiczny - trafia do bundla JS w przegladarce. Bezpieczenstwo zapewnia Row Level Security (RLS), nie ukrywanie klucza. `.env.production` zawiera konfiguracje MyDevil i jest w `.gitignore`.
+
+**GitHub Actions / Vercel:** build z `--mode development` laduje `.env.development` z repo. Bez tego fallback na adapter `mock`.
+
+**Jak zmienic baze na produkcyjna (MyDevil):**
+
+1. Utworz `.env.production` lokalnie z `VITE_DB_ADAPTER=rest` i `VITE_API_URL`
+2. Zbuduj: `npm run build` (Vite domyslnie uzywa mode production)
+3. Wgraj `dist/` na MyDevil przez SFTP
+4. GitHub Pages i Vercel dalej uzywaja Supabase DEV (niezalezne)
+
 ### Strategia hostingu
 
 **Faza 2 (obecna - development):**
@@ -61,8 +93,8 @@ GitHub Pages wymaga basename `/pos-app` w BrowserRouter - wykrywane automatyczni
 
 ```
 src/
-  main.tsx              Entry point: BrowserRouter + MantineProvider + theme
-  App.tsx               Routing (React Router v7) + ErrorBoundary + Suspense
+  main.tsx              Entry point: BrowserRouter + MantineProvider + DeviceProvider
+  App.tsx               Routing (React Router v7) + DeviceGate + ErrorBoundary + Suspense
   globals.css           Globalne style, animacje, @media print
 
   pages/                Strony (lazy-loaded przez React.lazy)
@@ -73,6 +105,11 @@ src/
     ShiftClose.tsx      Zamkniecie zmiany: rozliczenie kasowe + bonowe, raport
     Admin.tsx           Panel admina (PIN gate)
     AdminPricing.tsx    Cennik CRUD
+    AdminEmployees.tsx  Pracownicy CRUD
+    AdminSettings.tsx   Ustawienia salonu (dane, kasa, bony, prowizje, platnosci)
+    AdminDevices.tsx    Zarzadzanie urzadzeniami (zatwierdzanie, blokowanie)
+    KnowledgeBase.tsx   Katalog Wiedzy (opisy uslug/produktow, wyszukiwarka)
+    OwnerSurvey.tsx     Ankieta dla szefa
     NotFound.tsx        Strona 404
 
   components/
@@ -96,16 +133,20 @@ src/
       SettleModal.tsx   Rozliczenie zakupow (paragon + zwrot reszty)
       MovementHistory.tsx  Lista operacji kasowych
       types.ts          Re-export CashMovement z lib/types
+    DeviceGate.tsx      Bramka urzadzen (rejestracja, oczekiwanie, blokada)
     ErrorBoundary.tsx   Obsluga crashy runtime
     PageSkeleton.tsx    Loading skeleton (code splitting)
     SwipeBack.tsx       Swipe back z lewej krawedzi
     ServiceWorkerRegistration.tsx  Rejestracja SW (PWA)
 
+  contexts/
+    DeviceContext.tsx  Provider + useDevice (UUID localStorage, status, register, refetch)
+
   hooks/
     useCart.ts          Koszyk POS (addToCart, removeFromCart, tip, discount, total)
     useMovements.ts     Ruchy kasowe z persystencja DB (7 handlerow async)
     useDbQuery.ts       Generyczny hook async (loading/error/refetch)
-    useDbData.ts        Hooki zasobowe (useEmployees, useServices, useProducts, ...)
+    useDbData.ts        Hooki zasobowe (useEmployees, useServices, useSalonSettings, ...)
 
   db/                   Warstwa bazy danych
     config.ts           Konfiguracja srodowiskowa (VITE_DB_ADAPTER)
@@ -149,12 +190,17 @@ Zdefiniowany w `App.tsx` z lazy loading (code splitting):
 | `/history`           | History        | Historia transakcji                |
 | `/cash`              | Cash           | Ruchy kasowe                       |
 | `/shift-close`       | ShiftClose     | Zamkniecie zmiany                  |
+| `/help`              | KnowledgeBase  | Katalog Wiedzy (opisy uslug/prod.) |
 | `/admin`             | Admin          | Panel admina (PIN)                 |
 | `/admin/pricing`     | AdminPricing   | Cennik CRUD                        |
 | `/admin/employees`   | AdminEmployees | Pracownicy CRUD                    |
+| `/admin/settings`    | AdminSettings  | Ustawienia salonu                  |
+| `/admin/devices`     | AdminDevices   | Zarzadzanie urzadzeniami           |
+| `/admin/survey`      | OwnerSurvey    | Ankieta dla szefa                  |
 | `*`                  | NotFound       | Strona 404                         |
 
 Nawigacja: `useNavigate()` z React Router. Brak nested routes.
+Cala aplikacja owinieta w `DeviceGate` - blokuje dostep do niezarejestrowanych/oczekujacych/zablokowanych urzadzen.
 
 ---
 
@@ -175,13 +221,16 @@ Trzy adaptery w `src/db/adapters/`, wybierane przez `VITE_DB_ADAPTER`:
 Kazdy adapter implementuje:
 
 ```
+salon:          get(), update()
+devices:        getByDeviceId(), getAll(), register(), approve(), block(), updateLastSeen()
 employees:      getAll(), getActive(), getById(id), create(), update(), toggleActive()
 stats:          getDaily()
 services:       getAll(), getActive(), create(), update(), toggleActive()
 products:       getAll(), getActive(), create(), update(), toggleActive()
-transactions:   getAll(), getByEmployee(), getToday(), getSince(), create()
+transactions:   getAll(), getByEmployee(), getToday(), getSince(), create(), cancel()
 cashMovements:  getToday(), getSince(), create(), updateStatus()
-dailyReports:   create(), getToday(), getLastClosedAt()
+vouchers:       getByCode(), redeem()
+dailyReports:   create(), getToday(), getLastClosedAt(), getLastFloat()
 ```
 
 ### Hooki async
@@ -192,6 +241,7 @@ dailyReports:   create(), getToday(), getLastClosedAt()
 - **useProducts** - produkty (aktywne)
 - **useTodayTransactions** - transakcje z dzis
 - **useDailyStats** - statystyki salonowe
+- **useSalonSettings** - konfiguracja salonu
 
 ### Mapowanie metod platnosci
 
@@ -246,7 +296,7 @@ UI: `"percent"` / `"amount"` -> DB enum: `"percentage"` / `"amount"`. Mapowanie 
 
 - **useState** w kazdej stronie
 - **Custom hooks**: useCart (koszyk POS), useMovements (ruchy kasowe z DB)
-- Brak globalnego store (Redux/Zustand/Context) - nie jest potrzebny
+- **DeviceContext** - jedyny globalny context (UUID urzadzenia, status, rejestracja)
 
 ### Persystencja
 
@@ -359,6 +409,34 @@ Wiele zamkniec dziennie dozwolone (brak blokady).
 
 Docelowo: PIN-y hashowane w bazie (Salon.admin_pin_hash), RLS per salon.
 
+### Autoryzacja urzadzen
+
+Flow rejestracji:
+
+```
+1. Pierwsze uruchomienie -> generuj UUID -> localStorage (formen_device_id)
+2. DeviceGate sprawdza status w DB (device_registration)
+3. Brak wpisu -> ekran rejestracji (nazwa, typ, opcjonalnie pracownik)
+4. Typ "admin" wymaga PIN-u szefa (4321) i jest auto-approved jesli brak innych zatwierdzonych
+5. Typ "personal"/"station" -> status "pending" -> szef zatwierdza w /admin/devices
+6. Po zatwierdzeniu -> pelny dostep do aplikacji
+```
+
+Typy urzadzen:
+
+| Typ        | Opis                  | Kto uzywa    |
+| ---------- | --------------------- | ------------ |
+| `personal` | Telefon pracownika    | Fryzjer      |
+| `station`  | Wspolny tablet salonu | Caly zespol  |
+| `admin`    | Urzadzenie szefa      | Szef/manager |
+
+Ryzyka: czyszczenie localStorage = utrata tozsamosci (ponowna rejestracja).
+
+### Multi-salon
+
+Architektura: osobna baza danych per salon (osobny deploy z innym `.env`).
+Szef z dwoma salonami: 2 PWA na telefonie (osobne subdomeny/origin).
+
 ---
 
 ## 10. Typy domenowe
@@ -377,6 +455,9 @@ Zdefiniowane w `src/lib/types.ts`:
 | CashMovement         | Operacja kasowa (typ, kwota, status, paymentMethod) | Cash, ShiftClose         |
 | CartItem             | Pozycja w koszyku (ilosc, typ)                      | POS                      |
 | DiscountState        | Stan rabatu (typ + wartosc)                         | POS                      |
+| Voucher              | Bon podarunkowy (kod, wartosc, saldo, waznosc)      | Cash, POS                |
+| SalonSettings        | Konfiguracja salonu (dane, kasa, bony, prowizje)    | AdminSettings, Dashboard |
+| DeviceRegistration   | Rejestracja urzadzenia (UUID, typ, status)          | DeviceGate, AdminDevices |
 
 ---
 

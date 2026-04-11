@@ -41,13 +41,21 @@ TRUNCATE TABLE salon CASCADE;
 -- ============================================
 -- SALON
 -- ============================================
-INSERT INTO salon (id, name, address, admin_pin_hash, operations_pin_hash)
+INSERT INTO salon (id, name, address, phone, nip, admin_pin_hash, operations_pin_hash,
+  cash_tolerance, month_target, voucher_expiry_months, voucher_min_amount, voucher_code_prefix,
+  default_commission_service, default_commission_product, enabled_payment_methods, receipt_footer)
 VALUES (
   'a0000000-0000-0000-0000-000000000001',
   'FORMEN DEV',
   'ul. Testowa 1, 00-001 Warszawa',
+  '+48 123 456 789',
+  '1234567890',
   'placeholder_admin_1234',       -- docelowo: crypt('1234', gen_salt('bf'))
-  'placeholder_operations_1234'   -- docelowo: crypt('1234', gen_salt('bf'))
+  'placeholder_operations_1234',  -- docelowo: crypt('1234', gen_salt('bf'))
+  10.00, 600, 12, 1.00, 'BON-',
+  40.00, 20.00,
+  'cash,card,blik',
+  'Dziękujemy za wizytę w FORMEN!'
 );
 
 -- ============================================

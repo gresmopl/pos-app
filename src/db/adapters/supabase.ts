@@ -7,6 +7,8 @@ import type {
   SaveServiceInput,
   SaveProductInput,
   SaveEmployeeInput,
+  UpdateSalonInput,
+  RegisterDeviceInput,
 } from "../types";
 import type { DbConfig } from "../config";
 import type {
@@ -19,6 +21,8 @@ import type {
   CashMovement,
   PaymentBreakdownItem,
   Voucher,
+  SalonSettings,
+  DeviceRegistration,
 } from "@/lib/types";
 
 export function createSupabaseClient(config: DbConfig): DbClient {
@@ -263,7 +267,165 @@ export function createSupabaseClient(config: DbConfig): DbClient {
     });
   }
 
+  function mapSalon(row: Record<string, unknown>): SalonSettings {
+    const methods = (row.enabled_payment_methods as string) || "cash,card,blik";
+    return {
+      id: row.id as string,
+      name: row.name as string,
+      address: (row.address as string) || "",
+      phone: (row.phone as string) || "",
+      nip: (row.nip as string) || "",
+      adminPinHash: (row.admin_pin_hash as string) || "",
+      operationsPinHash: (row.operations_pin_hash as string) || "",
+      cashTolerance: Number(row.cash_tolerance) || 10,
+      monthTarget: Number(row.month_target) || 600,
+      voucherExpiryMonths: Number(row.voucher_expiry_months) || 12,
+      voucherMinAmount: Number(row.voucher_min_amount) || 1,
+      voucherCodePrefix: (row.voucher_code_prefix as string) || "BON-",
+      defaultCommissionService: Number(row.default_commission_service) || 40,
+      defaultCommissionProduct: Number(row.default_commission_product) || 20,
+      enabledPaymentMethods: methods.split(",").filter(Boolean),
+      receiptFooter: (row.receipt_footer as string) || "",
+      knowledgeBaseEnabled: (row.knowledge_base_enabled as boolean) ?? false,
+    };
+  }
+
+  function mapDevice(row: Record<string, unknown>): DeviceRegistration {
+    const emp = row.employee as Record<string, unknown> | null;
+    return {
+      id: row.id as string,
+      deviceId: row.device_id as string,
+      employeeId: (row.employee_id as string) || null,
+      employeeName: emp?.name as string | undefined,
+      deviceType: row.device_type as DeviceRegistration["deviceType"],
+      status: row.status as DeviceRegistration["status"],
+      deviceName: (row.device_name as string) || "",
+      registeredAt: row.registered_at as string,
+      approvedAt: (row.approved_at as string) || null,
+      lastSeenAt: (row.last_seen_at as string) || null,
+    };
+  }
+
   return {
+    salon: {
+      async get() {
+        const { data, error } = await supabase
+          .from("salon")
+          .select("*")
+          .eq("id", SALON_ID)
+          .single();
+        if (error) throw error;
+        return mapSalon(data as Record<string, unknown>);
+      },
+      async update(input: UpdateSalonInput) {
+        const dbInput: Record<string, unknown> = {};
+        if (input.name !== undefined) dbInput.name = input.name;
+        if (input.address !== undefined) dbInput.address = input.address;
+        if (input.phone !== undefined) dbInput.phone = input.phone;
+        if (input.nip !== undefined) dbInput.nip = input.nip;
+        if (input.adminPinHash !== undefined) dbInput.admin_pin_hash = input.adminPinHash;
+        if (input.operationsPinHash !== undefined)
+          dbInput.operations_pin_hash = input.operationsPinHash;
+        if (input.cashTolerance !== undefined) dbInput.cash_tolerance = input.cashTolerance;
+        if (input.monthTarget !== undefined) dbInput.month_target = input.monthTarget;
+        if (input.voucherExpiryMonths !== undefined)
+          dbInput.voucher_expiry_months = input.voucherExpiryMonths;
+        if (input.voucherMinAmount !== undefined)
+          dbInput.voucher_min_amount = input.voucherMinAmount;
+        if (input.voucherCodePrefix !== undefined)
+          dbInput.voucher_code_prefix = input.voucherCodePrefix;
+        if (input.defaultCommissionService !== undefined)
+          dbInput.default_commission_service = input.defaultCommissionService;
+        if (input.defaultCommissionProduct !== undefined)
+          dbInput.default_commission_product = input.defaultCommissionProduct;
+        if (input.enabledPaymentMethods !== undefined)
+          dbInput.enabled_payment_methods = input.enabledPaymentMethods.join(",");
+        if (input.receiptFooter !== undefined) dbInput.receipt_footer = input.receiptFooter;
+        if (input.knowledgeBaseEnabled !== undefined)
+          dbInput.knowledge_base_enabled = input.knowledgeBaseEnabled;
+
+        const { data, error } = await supabase
+          .from("salon")
+          .update(dbInput)
+          .eq("id", SALON_ID)
+          .select()
+          .single();
+        if (error) throw error;
+        return mapSalon(data as Record<string, unknown>);
+      },
+    },
+    devices: {
+      async getByDeviceId(deviceId: string) {
+        const { data, error } = await supabase
+          .from("device_registration")
+          .select("*, employee:employee_id(name)")
+          .eq("device_id", deviceId)
+          .eq("salon_id", SALON_ID)
+          .maybeSingle();
+        if (error) throw error;
+        if (!data) return null;
+        return mapDevice(data as Record<string, unknown>);
+      },
+      async getAll() {
+        const { data, error } = await supabase
+          .from("device_registration")
+          .select("*, employee:employee_id(name)")
+          .eq("salon_id", SALON_ID)
+          .order("registered_at", { ascending: false });
+        if (error) throw error;
+        return (data ?? []).map((r) => mapDevice(r as Record<string, unknown>));
+      },
+      async register(input: RegisterDeviceInput) {
+        // First admin device auto-approved (no one else can approve it)
+        let status = "pending";
+        if (input.deviceType === "admin") {
+          const { count } = await supabase
+            .from("device_registration")
+            .select("id", { count: "exact", head: true })
+            .eq("status", "approved");
+          if (!count) status = "approved";
+        }
+        const now = new Date().toISOString();
+        const { data, error } = await supabase
+          .from("device_registration")
+          .insert({
+            device_id: input.deviceId,
+            salon_id: SALON_ID,
+            device_name: input.deviceName,
+            device_type: input.deviceType,
+            employee_id: input.employeeId || null,
+            status,
+            approved_at: status === "approved" ? now : null,
+            last_seen_at: now,
+          })
+          .select("*, employee:employee_id(name)")
+          .single();
+        if (error) throw error;
+        return mapDevice(data as Record<string, unknown>);
+      },
+      async approve(id: string) {
+        const { error } = await supabase
+          .from("device_registration")
+          .update({ status: "approved", approved_at: new Date().toISOString() })
+          .eq("id", id);
+        if (error) throw error;
+      },
+      async block(id: string) {
+        const { error } = await supabase
+          .from("device_registration")
+          .update({ status: "blocked" })
+          .eq("id", id);
+        if (error) throw error;
+      },
+      async updateLastSeen(deviceId: string) {
+        const { error } = await supabase
+          .from("device_registration")
+          .update({ last_seen_at: new Date().toISOString() })
+          .eq("device_id", deviceId)
+          .eq("salon_id", SALON_ID);
+        if (error) throw error;
+      },
+    },
     employees: {
       async getAll() {
         const { data, error } = await supabase

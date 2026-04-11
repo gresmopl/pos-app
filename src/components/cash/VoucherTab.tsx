@@ -1,5 +1,5 @@
 import { useState, useId } from "react";
-import { Text, Group, Stack, Box, NumberInput, SegmentedControl, Button } from "@mantine/core";
+import { Text, Stack, Box, NumberInput, SegmentedControl, Button } from "@mantine/core";
 import { IconGift, IconCheck } from "@tabler/icons-react";
 
 interface VoucherTabProps {
@@ -12,10 +12,15 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
   const [payment, setPayment] = useState("cash");
   const [success, setSuccess] = useState(false);
   const [code, setCode] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   const handleSale = () => {
     const amount = Number(value);
-    if (!amount || amount <= 0) return;
+    if (!amount || amount <= 0) {
+      setError("Podaj kwotę bonu");
+      return;
+    }
+    setError(null);
 
     const generatedCode = `BON-${Date.now().toString(36).toUpperCase()}`;
     setCode(generatedCode);
@@ -74,23 +79,22 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
 
   return (
     <Stack gap="md" py="md">
-      <div>
-        <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="xs">
-          Sprzedaż bonu podarunkowego
-        </Text>
-        <Text fz="sm" mb="md">
-          Bon nie jest przypisany do fryzjera - wpływa do kasy salonu.
-        </Text>
-      </div>
+      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+        Sprzedaż bonu podarunkowego
+      </Text>
+      <Text fz="sm">Bon nie jest przypisany do fryzjera - wpływa do kasy salonu.</Text>
 
       <NumberInput
         label="Kwota bonu"
         placeholder="0"
         value={value}
-        onChange={setValue}
+        onChange={(v) => {
+          setValue(v);
+          setError(null);
+        }}
         min={1}
         suffix=" zł"
-        size="md"
+        error={error}
       />
 
       <SegmentedControl
@@ -108,7 +112,6 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
         size="lg"
         color="green"
         fullWidth
-        disabled={!Number(value)}
         onClick={handleSale}
         leftSection={<IconGift size={20} />}
       >
