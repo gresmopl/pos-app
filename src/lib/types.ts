@@ -101,6 +101,39 @@ export interface Voucher {
   createdAt: string;
 }
 
+export interface SalonSettings {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  nip: string;
+  adminPinHash: string;
+  operationsPinHash: string;
+  cashTolerance: number;
+  monthTarget: number;
+  voucherExpiryMonths: number;
+  voucherMinAmount: number;
+  voucherCodePrefix: string;
+  defaultCommissionService: number;
+  defaultCommissionProduct: number;
+  enabledPaymentMethods: string[];
+  receiptFooter: string;
+  knowledgeBaseEnabled: boolean;
+}
+
+export interface DeviceRegistration {
+  id: string;
+  deviceId: string;
+  employeeId: string | null;
+  employeeName?: string;
+  deviceType: "personal" | "station" | "admin";
+  status: "pending" | "approved" | "blocked";
+  deviceName: string;
+  registeredAt: string;
+  approvedAt: string | null;
+  lastSeenAt: string | null;
+}
+
 export interface CartItem {
   cartId: string;
   id: string;

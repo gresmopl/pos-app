@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router";
 import { SwipeBack } from "@/components/SwipeBack";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
+import { DeviceGate } from "@/components/DeviceGate";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -13,6 +14,9 @@ const ShiftClose = lazy(() => import("@/pages/ShiftClose"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const AdminPricing = lazy(() => import("@/pages/AdminPricing"));
 const AdminEmployees = lazy(() => import("@/pages/AdminEmployees"));
+const KnowledgeBase = lazy(() => import("@/pages/KnowledgeBase"));
+const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
+const AdminDevices = lazy(() => import("@/pages/AdminDevices"));
 const OwnerSurvey = lazy(() => import("@/pages/OwnerSurvey"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -22,22 +26,27 @@ export function App() {
       <SwipeBack />
       <ServiceWorkerRegistration />
       <ErrorBoundary>
-        <div className="page-transition">
-          <Suspense fallback={<PageSkeleton />}>
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/pos" element={<POS />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/cash" element={<Cash />} />
-              <Route path="/shift-close" element={<ShiftClose />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/admin/pricing" element={<AdminPricing />} />
-              <Route path="/admin/employees" element={<AdminEmployees />} />
-              <Route path="/admin/survey" element={<OwnerSurvey />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Suspense>
-        </div>
+        <DeviceGate>
+          <div className="page-transition">
+            <Suspense fallback={<PageSkeleton />}>
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/pos" element={<POS />} />
+                <Route path="/history" element={<History />} />
+                <Route path="/cash" element={<Cash />} />
+                <Route path="/shift-close" element={<ShiftClose />} />
+                <Route path="/help" element={<KnowledgeBase />} />
+                <Route path="/admin" element={<Admin />} />
+                <Route path="/admin/pricing" element={<AdminPricing />} />
+                <Route path="/admin/employees" element={<AdminEmployees />} />
+                <Route path="/admin/settings" element={<AdminSettings />} />
+                <Route path="/admin/devices" element={<AdminDevices />} />
+                <Route path="/admin/survey" element={<OwnerSurvey />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </div>
+        </DeviceGate>
       </ErrorBoundary>
     </>
   );

@@ -18,21 +18,6 @@ import {
 } from "@mantine/core";
 import { IconPrinter, IconCheck } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { CASH_TOLERANCE } from "@/lib/constants";
-
-function diffColor(diff: number, tolerance: number) {
-  if (Math.abs(diff) <= tolerance) return "green";
-  return diff > 0 ? "blue" : "red";
-}
-
-function diffLabel(diff: number, tolerance: number) {
-  if (Math.abs(diff) <= tolerance) return " (OK)";
-  return diff > 0 ? " (nadwyżka)" : " (brak)";
-}
-
-function formatDiff(diff: number) {
-  return `${diff > 0 ? "+" : ""}${diff.toLocaleString("pl-PL")} zł`;
-}
 
 function calcExpectedCash(
   openingBalance: number,
@@ -57,26 +42,20 @@ function calcExpectedCash(
   return openingBalance + systemCash + cashIn - cashOut;
 }
 
-export default function ShiftClosePage() {
+export default function ShiftClosePage(): React.JSX.Element {
   const navigate = useNavigate();
 
   const form = useForm({
     initialValues: {
       closingEmployee: "" as string,
-      cashAmount: "" as number | string,
       floatAmount: "" as number | string,
-      vouchersAmount: "" as number | string,
+      envelopeAmount: "" as number | string,
     },
     validate: {
       closingEmployee: (v) => (v ? null : "Wybierz pracownika"),
-      cashAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
-      floatAmount: (v, values) =>
-        Number(v) < 0
-          ? "Kwota nie może być ujemna"
-          : Number(v) > Number(values.cashAmount)
-            ? "Drobne nie mogą być większe niż gotówka"
-            : null,
-      vouchersAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
+      floatAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
+      envelopeAmount: (v) =>
+        Number(v) < 0 ? "Kwota nie może być ujemna" : !Number(v) ? "Podaj kwotę do koperty" : null,
     },
   });
 
@@ -90,7 +69,7 @@ export default function ShiftClosePage() {
   const [openingBalance, setOpeningBalance] = useState(0);
 
   useEffect(() => {
-    async function load() {
+    async function load(): Promise<void> {
       const [since, lastFloat] = await Promise.all([
         db.dailyReports.getLastClosedAt(),
         db.dailyReports.getLastFloat(),
@@ -111,61 +90,52 @@ export default function ShiftClosePage() {
     label: e.name,
   }));
 
-  // === SYSTEM VALUES (from payment breakdown for accuracy) ===
+  // === SYSTEM VALUES ===
   let systemCash = 0;
-  let systemCard = 0;
-  let systemBlik = 0;
-  let systemVoucher = 0;
-  const systemTotal = transactions.reduce((sum, t) => sum + t.totalAmount, 0);
+  let systemNonCash = 0;
 
   for (const tx of transactions) {
     if (tx.paymentBreakdown && tx.paymentBreakdown.length > 0) {
       for (const pd of tx.paymentBreakdown) {
-        if (pd.method === "cash") systemCash += pd.amount;
-        else if (pd.method === "card") systemCard += pd.amount;
-        else if (pd.method === "blik") systemBlik += pd.amount;
-        else if (pd.method === "voucher") systemVoucher += pd.amount;
+        if (pd.method === "cash" || pd.method === "voucher") {
+          systemCash += pd.amount;
+        } else {
+          systemNonCash += pd.amount;
+        }
       }
+    } else if (tx.paymentMethod === "cash" || tx.paymentMethod === "voucher") {
+      systemCash += tx.totalAmount;
     } else {
-      // Fallback for old transactions without breakdown
-      if (tx.paymentMethod === "cash") systemCash += tx.totalAmount;
-      else if (tx.paymentMethod === "card") systemCard += tx.totalAmount;
-      else if (tx.paymentMethod === "blik") systemBlik += tx.totalAmount;
-      else if (tx.paymentMethod === "voucher") systemVoucher += tx.totalAmount;
+      systemNonCash += tx.totalAmount;
     }
   }
 
-  // === EXPECTED VALUES (transactions + movements) ===
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
-  const expectedVouchers = systemVoucher;
 
   // === FORM VALUES ===
-  const cash = Number(form.values.cashAmount) || 0;
-  const vouchers = Number(form.values.vouchersAmount) || 0;
   const floatVal = Number(form.values.floatAmount) || 0;
-
-  const deposit = Math.max(0, cash - floatVal) + vouchers;
-  const cashDifference = cash - expectedCash;
-  const voucherDifference = vouchers - expectedVouchers;
+  const envelopeVal = Number(form.values.envelopeAmount) || 0;
+  const actualCash = floatVal + envelopeVal;
+  const difference = actualCash - expectedCash;
 
   const closingName = form.values.closingEmployee
     ? employees.find((e) => e.id === form.values.closingEmployee)?.name
     : null;
 
-  const handleConfirm = async () => {
+  const handleConfirm = async (): Promise<void> => {
     if (isSubmitting) return;
     setIsSubmitting(true);
     try {
       await db.dailyReports.create({
         closingEmployeeId: form.values.closingEmployee,
         expectedCash,
-        actualCash: cash,
-        expectedVouchers,
-        actualVouchersValue: vouchers,
+        actualCash,
+        expectedVouchers: systemNonCash,
+        actualVouchersValue: 0,
         floatAmount: floatVal,
-        depositAmount: deposit,
-        difference: cashDifference,
-        voucherDifference,
+        depositAmount: envelopeVal,
+        difference,
+        voucherDifference: 0,
       });
       setConfirmModal(false);
       setDone(true);
@@ -176,51 +146,7 @@ export default function ShiftClosePage() {
     }
   };
 
-  // === MOVEMENTS SUMMARY (for display) ===
-  const movementsSummary = [
-    ...(openingBalance > 0
-      ? [{ label: "Pogotowie kasowe", amount: openingBalance, sign: "+" as const }]
-      : []),
-    {
-      label: "Wpłaty do kasy",
-      amount: movements.filter((m) => m.type === "top_up").reduce((s, m) => s + m.amount, 0),
-      sign: "+" as const,
-    },
-    {
-      label: "Sprzedaż bonów (gotówka)",
-      amount: movements
-        .filter((m) => m.type === "voucher_sale" && m.paymentMethod === "cash")
-        .reduce((s, m) => s + m.amount, 0),
-      sign: "+" as const,
-    },
-    {
-      label: "Zwroty z zakupów",
-      amount: movements
-        .filter((m) => m.type === "expense_settle")
-        .reduce((s, m) => s + m.amount, 0),
-      sign: "+" as const,
-    },
-    {
-      label: "Wypłaty napiwków",
-      amount: movements
-        .filter((m) => m.type === "tip_withdrawal")
-        .reduce((s, m) => s + m.amount, 0),
-      sign: "-" as const,
-    },
-    {
-      label: "Pobrania na zakupy",
-      amount: movements.filter((m) => m.type === "expense_take").reduce((s, m) => s + m.amount, 0),
-      sign: "-" as const,
-    },
-    {
-      label: "Zwroty pożyczek",
-      amount: movements
-        .filter((m) => m.type === "barber_payback")
-        .reduce((s, m) => s + m.amount, 0),
-      sign: "-" as const,
-    },
-  ].filter((r) => r.amount > 0);
-
+  // === SUCCESS SCREEN ===
   if (done) {
     return (
       <Box mih="100vh">
@@ -242,7 +168,7 @@ export default function ShiftClosePage() {
               Raport kasowy gotowy. Zamykał: {closingName}
             </Text>
 
-            {/* Receipt preview */}
+            {/* Receipt */}
             <Box
               w="100%"
               p="md"
@@ -262,56 +188,22 @@ export default function ShiftClosePage() {
                 Zamykał: {closingName}
               </Text>
               <Divider mb="sm" variant="dashed" />
-              {openingBalance > 0 && (
-                <Group justify="space-between" mb={4}>
-                  <Text fz="xs">Pogotowie kasowe:</Text>
-                  <Text fz="xs" fw={600}>
-                    {openingBalance.toLocaleString("pl-PL")} zł
-                  </Text>
-                </Group>
-              )}
+
               <Group justify="space-between" mb={4}>
-                <Text fz="xs">Gotówka (policzona):</Text>
+                <Text fz="xs">Sprzedaż Karta / BLIK:</Text>
                 <Text fz="xs" fw={600}>
-                  {cash.toLocaleString("pl-PL")} zł
+                  {systemNonCash.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
               <Group justify="space-between" mb={4}>
-                <Text fz="xs">Gotówka (oczekiwana):</Text>
+                <Text fz="xs">Oczekiwana gotówka:</Text>
                 <Text fz="xs" fw={600}>
                   {expectedCash.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
-              <Group justify="space-between" mb={4}>
-                <Text fz="xs">Różnica gotówkowa:</Text>
-                <Text fz="xs" fw={600} c={diffColor(cashDifference, CASH_TOLERANCE)}>
-                  {formatDiff(cashDifference)}
-                  {diffLabel(cashDifference, CASH_TOLERANCE)}
-                </Text>
-              </Group>
+
               <Divider my="sm" variant="dashed" />
-              <Group justify="space-between" mb={4}>
-                <Text fz="xs">Bony (policzone):</Text>
-                <Text fz="xs" fw={600}>
-                  {vouchers.toLocaleString("pl-PL")} zł
-                </Text>
-              </Group>
-              <Group justify="space-between" mb={4}>
-                <Text fz="xs">Bony (oczekiwane):</Text>
-                <Text fz="xs" fw={600}>
-                  {expectedVouchers.toLocaleString("pl-PL")} zł
-                </Text>
-              </Group>
-              {voucherDifference !== 0 && (
-                <Group justify="space-between" mb={4}>
-                  <Text fz="xs">Różnica bonowa:</Text>
-                  <Text fz="xs" fw={600} c={diffColor(voucherDifference, CASH_TOLERANCE)}>
-                    {formatDiff(voucherDifference)}
-                    {diffLabel(voucherDifference, CASH_TOLERANCE)}
-                  </Text>
-                </Group>
-              )}
-              <Divider my="sm" variant="dashed" />
+
               <Group justify="space-between" mb={4}>
                 <Text fz="xs">Drobne na jutro:</Text>
                 <Text fz="xs" fw={600}>
@@ -319,13 +211,25 @@ export default function ShiftClosePage() {
                 </Text>
               </Group>
               <Group justify="space-between" mb={4}>
-                <Text fz="sm" fw={700}>
-                  DO KOPERTY:
-                </Text>
-                <Text fz="sm" fw={700}>
-                  {deposit.toLocaleString("pl-PL")} zł
+                <Text fz="xs">Do koperty:</Text>
+                <Text fz="xs" fw={600}>
+                  {envelopeVal.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
+
+              {difference !== 0 && (
+                <>
+                  <Divider my="sm" variant="dashed" />
+                  <Group justify="space-between" mb={4}>
+                    <Text fz="xs">Różnica kasowa:</Text>
+                    <Text fz="xs" fw={600} c={difference > 0 ? "blue" : "red"}>
+                      {difference > 0 ? "+" : ""}
+                      {difference.toLocaleString("pl-PL")} zł
+                      {difference > 0 ? " (nadwyżka)" : " (manko)"}
+                    </Text>
+                  </Group>
+                </>
+              )}
             </Box>
 
             <Group>
@@ -344,6 +248,7 @@ export default function ShiftClosePage() {
     );
   }
 
+  // === MAIN FORM ===
   return (
     <Box mih="100vh" pb={160}>
       <Container size="lg">
@@ -351,179 +256,93 @@ export default function ShiftClosePage() {
 
         <Divider />
 
-        {/* ===== SYSTEM SUMMARY ===== */}
-        <Box py="md">
-          <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="sm">
-            Sprzedaż od ostatniego zamknięcia
-          </Text>
-          <Stack gap={4}>
-            <Group justify="space-between">
-              <Text fz="sm">Gotówka:</Text>
-              <Text fz="sm" fw={600}>
-                {systemCash.toLocaleString("pl-PL")} zł
-              </Text>
-            </Group>
-            <Group justify="space-between">
-              <Text fz="sm">Karta/BLIK:</Text>
-              <Text fz="sm" fw={600}>
-                {(systemCard + systemBlik).toLocaleString("pl-PL")} zł
-              </Text>
-            </Group>
-            <Group justify="space-between">
-              <Text fz="sm">Bony (płatność bonem):</Text>
-              <Text fz="sm" fw={600}>
-                {systemVoucher.toLocaleString("pl-PL")} zł
-              </Text>
-            </Group>
-            <Divider my={4} />
-            <Group justify="space-between">
-              <Text fz="sm" fw={700}>
-                Razem:
-              </Text>
-              <Text fz="sm" fw={700}>
-                {systemTotal.toLocaleString("pl-PL")} zł
-              </Text>
-            </Group>
-          </Stack>
-        </Box>
-
-        {/* ===== MOVEMENTS AFFECTING CASH ===== */}
-        {movementsSummary.length > 0 && (
-          <>
-            <Divider />
-            <Box py="md">
-              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="sm">
-                Ruchy kasowe
-              </Text>
-              <Stack gap={4}>
-                {movementsSummary.map((row) => (
-                  <Group key={row.label} justify="space-between">
-                    <Text fz="sm">{row.label}:</Text>
-                    <Text fz="sm" fw={600} c={row.sign === "+" ? "green" : "red"}>
-                      {row.sign}
-                      {row.amount.toLocaleString("pl-PL")} zł
-                    </Text>
-                  </Group>
-                ))}
-                <Divider my={4} />
-                <Group justify="space-between">
-                  <Text fz="sm" fw={700}>
-                    Oczekiwana gotówka:
-                  </Text>
-                  <Text fz="sm" fw={700}>
-                    {expectedCash.toLocaleString("pl-PL")} zł
-                  </Text>
-                </Group>
-              </Stack>
-            </Box>
-          </>
-        )}
-
-        <Divider />
-
-        {/* ===== FORM ===== */}
-        <Stack gap="md" py="md">
-          <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-            Wprowadź stan fizyczny
-          </Text>
-
+        {/* KROK 1: Identyfikacja */}
+        <Stack gap="sm" py="sm">
           <Select
-            label="Zamyka zmianę"
+            label="Kto zamyka zmianę?"
             placeholder="Wybierz pracownika..."
             data={employeeOptions}
             {...form.getInputProps("closingEmployee")}
           />
-
-          <NumberInput
-            label="Gotówka (zł)"
-            description="Policz banknoty i monety"
-            placeholder="0"
-            min={0}
-            suffix=" zł"
-            size="md"
-            {...form.getInputProps("cashAmount")}
-          />
-
-          <NumberInput
-            label="Drobne na jutro (zł)"
-            description="Pogotowie kasowe na następną zmianę"
-            placeholder="0"
-            min={0}
-            suffix=" zł"
-            size="md"
-            {...form.getInputProps("floatAmount")}
-          />
-
-          <NumberInput
-            label="Bony papierowe (zł)"
-            description="Suma wartości bonów zebranych od klientów"
-            placeholder="0"
-            min={0}
-            suffix=" zł"
-            size="md"
-            {...form.getInputProps("vouchersAmount")}
-          />
         </Stack>
 
-        <Divider />
-
-        {/* ===== CALCULATED RESULT ===== */}
-        {(cash > 0 || vouchers > 0) && (
-          <Box py="md">
-            <Stack gap="sm">
+        {form.values.closingEmployee && (
+          <>
+            {/* KROK 2: Podglad systemowy */}
+            <Divider />
+            <Stack gap="xs" pt="sm">
+              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+                Podgląd systemowy
+              </Text>
               <Group justify="space-between">
-                <Text fz="sm">Gotówka do koperty:</Text>
+                <Text fz="sm">Sprzedaż Karta / BLIK:</Text>
                 <Text fz="sm" fw={600}>
-                  {Math.max(0, cash - floatVal).toLocaleString("pl-PL")} zł
+                  {systemNonCash.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
-              {vouchers > 0 && (
-                <Group justify="space-between">
-                  <Text fz="sm">Bony do koperty:</Text>
-                  <Text fz="sm" fw={600}>
-                    {vouchers.toLocaleString("pl-PL")} zł
-                  </Text>
-                </Group>
-              )}
               <Divider />
-              <Group justify="space-between">
-                <Text fz="md" fw={600}>
-                  Do koperty (razem):
+              <div>
+                <Text fz="sm" fw={700}>
+                  Oczekiwana gotówka/bony w szufladzie:
                 </Text>
-                <Text fz={28} fw={700} c="green">
-                  {deposit.toLocaleString("pl-PL")} zł
+                <Text fz="lg" fw={700} c="green" lh={1.2}>
+                  {expectedCash.toLocaleString("pl-PL")} zł
                 </Text>
-              </Group>
-
-              {/* Cash difference */}
-              <Group justify="space-between">
-                <Text fz="sm" c="dimmed">
-                  Różnica gotówkowa:
-                </Text>
-                <Text fz="sm" fw={600} c={diffColor(cashDifference, CASH_TOLERANCE)}>
-                  {formatDiff(cashDifference)}
-                  {diffLabel(cashDifference, CASH_TOLERANCE)}
-                </Text>
-              </Group>
-
-              {/* Voucher difference */}
-              {(vouchers > 0 || expectedVouchers > 0) && (
-                <Group justify="space-between">
-                  <Text fz="sm" c="dimmed">
-                    Różnica bonowa:
-                  </Text>
-                  <Text fz="sm" fw={600} c={diffColor(voucherDifference, CASH_TOLERANCE)}>
-                    {formatDiff(voucherDifference)}
-                    {diffLabel(voucherDifference, CASH_TOLERANCE)}
-                  </Text>
-                </Group>
-              )}
+              </div>
             </Stack>
-          </Box>
+
+            {/* KROK 3: Inputy fryzjera */}
+            <Divider mt="sm" />
+            <Stack gap="sm" py="sm">
+              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+                Wprowadź stan fizyczny
+              </Text>
+
+              <NumberInput
+                label="Drobne na jutro"
+                description="Pogotowie kasowe zostawiane w szufladzie na start kolejnego dnia"
+                placeholder="0"
+                min={0}
+                suffix=" zł"
+                {...form.getInputProps("floatAmount")}
+              />
+
+              <NumberInput
+                label="Do koperty"
+                description="Utarg gotówkowy wyciągnięty z kasy dla szefa"
+                placeholder="0"
+                min={0}
+                suffix=" zł"
+                {...form.getInputProps("envelopeAmount")}
+              />
+            </Stack>
+
+            {/* KROK 4: Weryfikacja na zywo */}
+            {(floatVal > 0 || envelopeVal > 0) && (
+              <>
+                <Divider />
+                <Box py="sm">
+                  <Stack gap="sm" align="center">
+                    {difference === 0 ? (
+                      <Text fz="lg" fw={700} c="green" ta="center">
+                        Stan kasy się zgadza!
+                      </Text>
+                    ) : (
+                      <Text fz="lg" fw={700} c="red" ta="center">
+                        {difference < 0
+                          ? `Manko: ${difference.toLocaleString("pl-PL")} zł`
+                          : `Nadwyżka: +${difference.toLocaleString("pl-PL")} zł`}
+                      </Text>
+                    )}
+                  </Stack>
+                </Box>
+              </>
+            )}
+          </>
         )}
       </Container>
 
-      {/* ===== BOTTOM CTA ===== */}
+      {/* BOTTOM CTA */}
       <Box
         style={{
           position: "fixed",
@@ -541,22 +360,21 @@ export default function ShiftClosePage() {
             fullWidth
             size="lg"
             color="dark"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !form.values.closingEmployee}
             onClick={() => {
               if (form.validate().hasErrors) return;
-              if (!cash && !vouchers) return;
               setConfirmModal(true);
             }}
             leftSection={<IconPrinter size={20} />}
             fz="md"
             fw={600}
           >
-            Zatwierdź i drukuj raport
+            Zatwierdź i drukuj
           </Button>
         </Container>
       </Box>
 
-      {/* ===== CONFIRM MODAL ===== */}
+      {/* CONFIRM MODAL */}
       <Modal
         opened={confirmModal}
         onClose={() => setConfirmModal(false)}
@@ -571,7 +389,7 @@ export default function ShiftClosePage() {
           <Text fz="sm">
             Zamykasz zmianę. Do koperty trafi{" "}
             <Text span fw={700}>
-              {deposit.toLocaleString("pl-PL")} zł
+              {envelopeVal.toLocaleString("pl-PL")} zł
             </Text>
             . Drobne na jutro:{" "}
             <Text span fw={700}>
@@ -579,21 +397,12 @@ export default function ShiftClosePage() {
             </Text>
             .
           </Text>
-          {(cashDifference !== 0 || voucherDifference !== 0) && (
-            <Stack gap={4}>
-              {cashDifference !== 0 && (
-                <Text fz="sm" c={diffColor(cashDifference, CASH_TOLERANCE)}>
-                  Różnica gotówkowa: {formatDiff(cashDifference)}
-                  {Math.abs(cashDifference) <= CASH_TOLERANCE ? " (w tolerancji)" : ""}
-                </Text>
-              )}
-              {voucherDifference !== 0 && (
-                <Text fz="sm" c={diffColor(voucherDifference, CASH_TOLERANCE)}>
-                  Różnica bonowa: {formatDiff(voucherDifference)}
-                  {Math.abs(voucherDifference) <= CASH_TOLERANCE ? " (w tolerancji)" : ""}
-                </Text>
-              )}
-            </Stack>
+          {difference !== 0 && (
+            <Text fz="sm" c={difference > 0 ? "blue" : "red"}>
+              {difference < 0
+                ? `Manko: ${difference.toLocaleString("pl-PL")} zł`
+                : `Nadwyżka: +${difference.toLocaleString("pl-PL")} zł`}
+            </Text>
           )}
           <Group justify="flex-end">
             <Button variant="subtle" onClick={() => setConfirmModal(false)}>

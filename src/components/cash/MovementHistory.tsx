@@ -11,8 +11,8 @@ export function MovementHistory({ movements }: MovementHistoryProps) {
 
   return (
     <>
-      <Divider my="md" />
-      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="sm">
+      <Divider />
+      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mt="sm">
         Dzisiejsze operacje
       </Text>
       <Stack gap={0}>
@@ -59,7 +59,7 @@ export function MovementHistory({ movements }: MovementHistoryProps) {
                     )}
                   </Box>
                   <div style={{ minWidth: 0 }}>
-                    <Text fw={500} fz="sm" lineClamp={1}>
+                    <Text fw={500} fz="sm" lineClamp={2}>
                       {m.description}
                       {m.status === "settled" && " (rozliczono)"}
                     </Text>

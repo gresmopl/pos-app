@@ -1,6 +1,65 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.61] - 2026-04-12
+- fix: PIN szefa (4321) wymagany przy rejestracji urzadzenia typu "admin"
+- fix: error handling z notyfikacjami w panelu urzadzen (approve/block)
+- fix: <b> -> Mantine Text span w ekranie oczekiwania
+- fix: zbedny useCallback usuniety w AdminDevices
+- fix: History - zmniejszony odstep miedzy godzina a nazwiskiem (w=50, gap=xs)
+- fix: KnowledgeBase - opis uslugi zawija sie na malych ekranach (usunieto lineClamp)
+- docs: aktualizacja technical.md (routing, DbClient, DeviceContext, autoryzacja, multi-salon)
+- docs: aktualizacja CLAUDE.md (nowe moduly, bezpieczenstwo, multi-salon)
+
+[0.1.60] - 2026-04-11
+- feat: autoryzacja urzadzen - DeviceGate blokuje aplikacje dla niezarejestrowanych/oczekujacych/zablokowanych
+- feat: DeviceContext z UUID w localStorage, automatyczny status check
+- feat: ekran rejestracji (nazwa, typ, pracownik), oczekiwania i blokady
+- feat: panel zarzadzania urzadzeniami (/admin/devices) - zatwierdzanie, blokowanie, odblokowanie
+- feat: DeviceProvider + DeviceGate owijaja cala aplikacje
+- feat: devices w DbClient - implementacja we wszystkich 3 adapterach (mock, supabase, rest)
+
+[0.1.59] - 2026-04-11
+- feat: Katalog Wiedzy (/help) - opisy uslug i produktow dla pracownikow
+- feat: uslugi zgrupowane po kategoriach z rozwijalnymi opisami szczegolowymi
+- feat: wyszukiwarka pelnotekstowa (nazwa, kategoria, opis)
+- feat: ikona "Katalog" w bottom bar na Dashboard (warunkowo, wlaczana w ustawieniach)
+- feat: toggle "Katalog Wiedzy" w ustawieniach salonu (domyslnie wylaczony)
+
+[0.1.58] - 2026-04-11
+- feat: ustawienia salonu (/admin/settings) - dane, kasa, bony, prowizje, platnosci, wydruki
+- feat: schemat salon rozszerzony o phone, nip, cash_tolerance, month_target, voucher_*, commissions, payment_methods, receipt_footer
+- feat: salon.get() i salon.update() w trzech adapterach (mock, supabase, rest)
+- feat: hook useSalonSettings() do ladowania konfiguracji
+- feat: pole kategorii (Select) przy dodawaniu/edycji uslug w AdminPricing
+- feat: SERVICE_CATEGORIES w constants.ts (Strzyzenie, Broda, Combo, Koloryzacja, Dodatkowe)
+
+[0.1.57] - 2026-04-11
+- refactor: ShiftClose v2.1 - uproszczone zamkniecie zmiany (4 kroki zamiast rozbudowanego formularza)
+- remove: licznik banknotow, zdjecie kasetki, osobne pole bonow, tolerancja kasowa
+- feat: bony traktowane jako gotowka przy zamknieciu (systemCash = cash + voucher)
+- feat: "Sprzedaz Karta / BLIK" + "Oczekiwana gotowka/bony w szufladzie" jako glowne pozycje
+- feat: 2 inputy: "Drobne na jutro" + "Do koperty" z weryfikacja na zywo (Manko/Nadwyzka)
+- feat: krokowy flow - pola pojawiaja sie po wyborze pracownika
+- feat: walidacja "Do koperty" - nie mozna zamknac zmiany z 0 zl w kopercie
+- feat: przycisk "Wymusz aktualizacje" w Panelu Admina (czysci SW cache + przeladowuje)
+- feat: przycisk "Zainstaluj na ekranie glownym" w Panelu Admina (PWA beforeinstallprompt)
+- feat: wersja z build timestamp (v0.1.57.YYMMDD.HHmm)
+- fix: VoucherTab - przycisk zawsze aktywny z walidacja po kliknieciu (spojnosc z innymi zakladkami)
+- fix: jednolite odstepy w zakladkach Ruchy kasowe (usuniete podwojne marginesy mb+gap)
+- fix: jednolity rozmiar inputow we wszystkich zakladkach (usuniete size="md" z NumberInput)
+- fix: AdminLink - tekst justowany do lewej (ta="left" na label i description)
+- fix: manifest.json - dodano id, screenshots, maskable purpose; usunieto brakujaca ikone SVG
+- fix: przeniesiono forceUpdate z Dashboard do Admin (czystosc ekranu glownego)
+
+[0.1.56] - 2026-04-11
+- feat: licznik banknotow przy zamknieciu zmiany (grid 200/100/50/20/10/5/2/1 zl z automatyczna suma)
+- feat: opcjonalne zdjecie kasetki przy zamknieciu zmiany (FileButton + Image preview)
+- fix: PWA manifest - sciezki wzgledne (./) zamiast bezwzglednych (/) - ikony dzialaja na GitHub Pages
+- fix: Service Worker dynamiczny base path (scope-based) - dziala na / i /pos-app/
+- fix: ServiceWorkerRegistration uzywa import.meta.env.BASE_URL
+- docs: dokumentacja konfiguracji srodowisk (.env) w technical.md i CLAUDE.md
+
 [0.1.55] - 2026-04-11
 - fix: pusty stan w AddItemModal gdy brak wynikow wyszukiwania ("Brak wynikow" / "Brak uslug")
 - fix: aria-label "Powrot" na przycisku wstecz w PageHeader (a11y)

@@ -20,6 +20,57 @@ export function createRestClient(config: DbConfig): DbClient {
   }
 
   return {
+    salon: {
+      async get() {
+        return fetchApi(apiUrl, "/api/salon");
+      },
+      async update(input) {
+        const r = await fetch(`${apiUrl}/api/salon`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+    },
+    devices: {
+      async getByDeviceId(deviceId: string) {
+        const r = await fetch(`${apiUrl}/api/devices?deviceId=${encodeURIComponent(deviceId)}`);
+        if (r.status === 404) return null;
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async getAll() {
+        return fetchApi(apiUrl, "/api/devices");
+      },
+      async register(input) {
+        // Server handles auto-approve logic for first admin device
+        const r = await fetch(`${apiUrl}/api/devices`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async approve(id) {
+        const r = await fetch(`${apiUrl}/api/devices/${id}/approve`, { method: "POST" });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
+      async block(id) {
+        const r = await fetch(`${apiUrl}/api/devices/${id}/block`, { method: "POST" });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
+      async updateLastSeen(deviceId) {
+        const r = await fetch(`${apiUrl}/api/devices/heartbeat`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ deviceId }),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
+    },
     employees: {
       async getAll() {
         return fetchApi(apiUrl, "/api/employees");

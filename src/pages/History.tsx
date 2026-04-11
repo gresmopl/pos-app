@@ -246,8 +246,8 @@ export default function HistoryPage() {
                     onClick={() => setExpandedId(isExpanded ? null : transaction.id)}
                   >
                     <Group justify="space-between" wrap="nowrap">
-                      <Group gap="md" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-                        <Text fz="xs" c="dimmed" w={75} style={{ flexShrink: 0 }}>
+                      <Group gap="xs" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
+                        <Text fz="xs" c="dimmed" w={50} style={{ flexShrink: 0 }}>
                           {formatTime(transaction.timestamp)}
                         </Text>
                         <div style={{ minWidth: 0, flex: 1 }}>
@@ -281,7 +281,7 @@ export default function HistoryPage() {
                   </UnstyledButton>
 
                   <Collapse expanded={isExpanded}>
-                    <Box px="xs" pb="sm" ml={57}>
+                    <Box px="xs" pb="sm" ml={60}>
                       <Stack gap={4}>
                         {transaction.items.map((item, i) => (
                           <Group key={i} justify="space-between">

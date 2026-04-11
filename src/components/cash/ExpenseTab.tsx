@@ -87,7 +87,6 @@ export function ExpenseTab({
         placeholder="0"
         min={0}
         suffix=" zł"
-        size="md"
         {...form.getInputProps("amount")}
       />
 

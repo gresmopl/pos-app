@@ -1,19 +1,11 @@
 # FORMEN - POS dla salonow fryzjerskich
 
-## Opis
+POS dla meskich salonow fryzjerskich (sprzedaz, napiwki, prowizje, bony, kasa, zamkniecie zmiany).
+Bez integracji z drukarka fiskalna (Bingo Online) i rezerwacjami (Booksy).
 
-Aplikacja POS (Point of Sale) dla meskich salonow fryzjerskich. Zastepuje stara aplikacje .NET z XML.
-Obsluguje sprzedaz uslug i kosmetykow, napiwki, prowizje, bony, ruchy kasowe, zamkniecie zmiany.
-Nie integruje sie z drukarka fiskalna (Bingo Online) ani rezerwacjami (Booksy).
+## Dokumentacja
 
-## Dokumentacja szczegolowa
-
-- **docs/analytical.md** - procesy biznesowe, role, obiekty domenowe, flow modulow
-- **docs/technical.md** - architektura, stack, routing, deploy, testy
-- **src/db/schema.sql** - schemat bazy PostgreSQL
-- **src/db/seed.sql** - dane testowe DEV
-- **TODO.md** - lista zadan
-- **changelog.txt** - historia zmian
+docs/analytical.md (biznes), docs/technical.md (architektura), src/db/schema.sql (DB), TODO.md (zadania), changelog.txt
 
 ## Stack
 
@@ -33,20 +25,12 @@ Nie integruje sie z drukarka fiskalna (Bingo Online) ani rezerwacjami (Booksy).
 | `dev`  | Supabase DEV (free)   | GitHub Pages | `supabase` |
 | `main` | MyDevil PostgreSQL 16 | MyDevil MD1  | `rest`     |
 
-Adapter konfigurowany przez `VITE_DB_ADAPTER` w `.env.development` / `.env.production`.
-Trzy adaptery: `mock` (testy), `supabase` (DEV - Supabase JS SDK), `rest` (produkcja - czysty PG przez REST API).
+`VITE_DB_ADAPTER` w .env: `mock` (testy), `supabase` (DEV), `rest` (PROD). Szczegoly: docs/technical.md
 
-## Struktura katalogow
+## Struktura
 
-```
-src/
-  pages/          - strony (Dashboard, POS, History, Cash, ShiftClose, Admin, AdminPricing, AdminEmployees)
-  components/     - komponenty (layout/, pos/, cash/)
-  hooks/          - useCart, useMovements, useDbQuery, useDbData
-  db/             - warstwa bazy (adapters/, config, client, types, schema.sql, seed.sql)
-  lib/            - types.ts (centralne typy), constants.ts (stale)
-  data/           - mock dane (employees, services, products, transactions)
-```
+`src/pages/` (strony), `src/components/` (layout/, pos/, cash/), `src/hooks/` (useCart, useDbQuery),
+`src/db/` (adaptery, schema), `src/lib/` (types.ts, constants.ts), `src/data/` (mock)
 
 ## Konwencje kodu
 
@@ -59,20 +43,11 @@ src/
 
 ## Warstwa bazy danych
 
-- Wzorzec adapter w src/db/ (mock / supabase / rest)
-- Generyczny hook `useDbQuery<T>` (async fetch z loading/error/refetch)
-- Hooki zasobowe: useEmployees, useServices, useProducts, useTodayTransactions, useDailyStats
-- Zapis: db.transactions.create() (transaction + items + payment_detail + tip_balance + commission)
-- Testy mockuja modul @/db (vi.mock)
-- Schemat DB w src/db/schema.sql (standardowy PostgreSQL, bez Supabase-specific)
-- RLS wylaczone na DEV
-
-## Kluczowe typy danych
-
-- **Service**: name, price, price_from (bool), duration_minutes (VARCHAR "30-45"), category, description, description_long
-- **Product**: name, price, description (bez magazynu)
-- **Transaction**: employee_id (nullable dla bonow), items, tip, discount, payment_method, device_id
-- **CashMovement**: tip_withdrawal, expense_take, top_up, barber_loan, barber_payback, voucher_sale
+- Wzorzec adapter w src/db/ (mock / supabase / rest). Schemat: src/db/schema.sql
+- Hook `useDbQuery<T>` + hooki zasobowe (useEmployees, useServices, useProducts, useSalonSettings, ...)
+- Zapis: db.transactions.create(), db.services._, db.products._, db.cashMovements._, db.salon._, db.devices.\*
+- DeviceContext (src/contexts/) - jedyny globalny context (UUID, status urzadzenia)
+- Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts
 
 ## Decyzje szefa (potwierdzone 2026-04-10)
 
@@ -91,26 +66,19 @@ src/
 
 ## Bezpieczenstwo
 
-- **PIN admina** - Panel Szefa (cennik, prowizje, raporty). Wymagany ZAWSZE, nawet na urzadzeniu admin
-- **PIN operacyjny** - cofniecie transakcji. Szef moze udostepnic zaufanemu pracownikowi
-- Fryzjerzy bez PIN-u (klik na karte = POS)
-- Typy urzadzen: personal (telefon fryzjera), station (tablet kasa), admin (telefon szefa)
-- Dezaktywacja zamiast usuwania (pracownicy, urzadzenia, uslugi, produkty)
+- **PIN admina** (Panel Szefa - ZAWSZE), **PIN operacyjny** (cofniecie tx). Fryzjerzy bez PIN-u
+- **Autoryzacja urzadzen**: UUID w localStorage, DeviceGate blokuje aplikacje, szef zatwierdza w /admin/devices
+- Typy urzadzen: personal / station / admin. Pierwszy admin auto-approved (PIN 4321)
+- Multi-salon: osobna baza per salon (osobny deploy z innym .env), bez RLS
+
+## Claude Code setup (.claude/)
+
+- **Hooki** (auto): ochrona main, ochrona configow, quality check (prettier+tsc), security scan
+- **Rules** (auto, scoped): typescript, database, react-mantine, tests
+- **Komendy**: `/review`, `/deploy-check`, `/phase-status`
+- **Agenty**: ts-reviewer, db-reviewer, test-writer
+- **MCP**: context7 (aktualne docs Mantine/React/Supabase)
 
 ## Fazy
 
-- **Faza 1 (zrealizowana):** MVP z mock danymi, pelny UI, testy, deploy GitHub Pages
-- **Faza 2 (w trakcie):** Integracja z PostgreSQL, autoryzacja urzadzen, bony, portfel napiwkow
-- **Faza 3:** Raporty miesieczne, drukarka USB, PWA offline, baza klientow
-
-## Pomysly do rozwazenia
-
-1. Dedykowane skeleton per strona
-2. Ruchy kasowe: filtr/paginacja
-3. Pasek motywacyjny - doprecyzowanie algorytmow (target, Y/Y, rekord)
-4. Swipe na transakcji w historii (cofnij, drukuj)
-5. Licznik banknotow w zamknieciu zmiany
-
-## Znane braki
-
-Pelna lista w TODO.md. Glowne: brak CI/CD quality gate.
+Faza 1 (done) -> Faza 2 (w trakcie) -> Faza 3. Szczegoly: TODO.md, uzyj `/phase-status`

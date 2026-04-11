@@ -8,6 +8,7 @@ import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "./globals.css";
 import { themes, defaultThemeKey } from "@/themes";
+import { DeviceProvider } from "@/contexts/DeviceContext";
 import { App } from "./App";
 
 // GitHub Pages SPA redirect: restore path from 404.html redirect
@@ -27,7 +28,9 @@ createRoot(document.getElementById("root")!).render(
       <MantineProvider theme={themes[defaultThemeKey]} defaultColorScheme="auto">
         <Notifications position="top-center" autoClose={3000} />
         <ModalsProvider>
-          <App />
+          <DeviceProvider>
+            <App />
+          </DeviceProvider>
         </ModalsProvider>
       </MantineProvider>
     </BrowserRouter>
