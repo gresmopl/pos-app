@@ -376,15 +376,8 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         return (data ?? []).map((r) => mapDevice(r as Record<string, unknown>));
       },
       async register(input: RegisterDeviceInput) {
-        // First admin device auto-approved (no one else can approve it)
-        let status = "pending";
-        if (input.deviceType === "admin") {
-          const { count } = await supabase
-            .from("device_registration")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "approved");
-          if (!count) status = "approved";
-        }
+        // Admin devices auto-approved (PIN verified on frontend)
+        const status = input.deviceType === "admin" ? "approved" : "pending";
         const now = new Date().toISOString();
         const { data, error } = await supabase
           .from("device_registration")

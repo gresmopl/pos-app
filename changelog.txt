@@ -1,6 +1,10 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.62] - 2026-04-12
+- fix: kazde urzadzenie admin z poprawnym PIN auto-zatwierdzane (nie tylko pierwsze)
+- fix: PIN szefa zmieniony na standardowy 1234
+
 [0.1.61] - 2026-04-12
 - fix: PIN szefa (4321) wymagany przy rejestracji urzadzenia typu "admin"
 - fix: error handling z notyfikacjami w panelu urzadzen (approve/block)

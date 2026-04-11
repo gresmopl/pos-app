@@ -127,8 +127,7 @@ export function createMockClient(): DbClient {
         return mockDevices;
       },
       async register(input: RegisterDeviceInput) {
-        const hasApproved = mockDevices.some((d) => d.status === "approved");
-        const autoApprove = input.deviceType === "admin" && !hasApproved;
+        const autoApprove = input.deviceType === "admin";
         const now = new Date().toISOString();
         const device: DeviceRegistration = {
           id: crypto.randomUUID(),

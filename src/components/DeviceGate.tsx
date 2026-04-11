@@ -15,7 +15,7 @@ import {
 import { useForm } from "@mantine/form";
 import { IconDeviceMobile, IconClock, IconShieldOff, IconLock } from "@tabler/icons-react";
 
-const DEVICE_ADMIN_PIN = "4321";
+const DEVICE_ADMIN_PIN = "1234";
 
 const DEVICE_TYPES = [
   { value: "personal", label: "Telefon pracownika" },
