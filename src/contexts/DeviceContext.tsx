@@ -89,3 +89,20 @@ export function useDevice(): DeviceContextValue {
   if (!ctx) throw new Error("useDevice must be used within DeviceProvider");
   return ctx;
 }
+
+interface DeviceRole {
+  isAdmin: boolean;
+  isStation: boolean;
+  isPersonal: boolean;
+  lockedEmployeeId: string | null;
+}
+
+export function useDeviceRole(): DeviceRole {
+  const { device } = useDevice();
+  return {
+    isAdmin: device?.deviceType === "admin",
+    isStation: device?.deviceType === "station",
+    isPersonal: device?.deviceType === "personal",
+    lockedEmployeeId: device?.deviceType === "personal" ? (device.employeeId ?? null) : null,
+  };
+}

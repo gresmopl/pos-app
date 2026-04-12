@@ -103,6 +103,15 @@
   - Platnosci (wlaczanie/wylaczanie metod)
   - Wydruki (stopka kwitu)
   - TODO: PIN admina i operacyjny (zmiana z ustawien - wymaga integracji z auth)
+- [x] Widok per typ urzadzenia (personal / station / admin)
+  - personal (telefon pracownika): POS pokazuje TYLKO przypisanego pracownika (bez listy wyboru)
+  - personal: Historia filtrowana tylko do tego pracownika
+  - personal: Kasa/Zamkniecie zmiany - pracownik pre-wybrany, select zablokowany (disabled)
+  - personal: Dashboard - tylko statystyki przypisanego pracownika
+  - personal: brak dostepu do /admin/\*
+  - station (tablet): pelny widok - wszyscy pracownicy, wszystkie zakladki
+  - admin (szef): pelny widok + dostep do /admin/\*
+  - Implementacja: useDeviceRole() hook w DeviceContext
 - [ ] Zarzadzanie bonami w panelu admina (/admin/vouchers)
   - Lista wszystkich bonow (kod, kwota poczatkowa, saldo, status, data waznosci)
   - Filtr: aktywne / wykorzystane / wygasle

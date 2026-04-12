@@ -247,10 +247,10 @@ export default function PricingPage() {
                   <ActionIcon
                     variant="subtle"
                     color="gray"
-                    size="sm"
+                    size="md"
                     onClick={() => openEdit(item)}
                   >
-                    <IconPencil size={16} />
+                    <IconPencil size={18} />
                   </ActionIcon>
                   <Switch
                     checked={item.isActive}

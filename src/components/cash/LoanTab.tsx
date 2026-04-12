@@ -8,12 +8,19 @@ interface LoanTabProps {
   pendingLoans: CashMovement[];
   onLoan: (employeeId: string, amount: number) => void;
   onPayback: (loan: CashMovement) => void;
+  lockedEmployeeId?: string | null;
 }
 
-export function LoanTab({ employeeOptions, pendingLoans, onLoan, onPayback }: LoanTabProps) {
+export function LoanTab({
+  employeeOptions,
+  pendingLoans,
+  onLoan,
+  onPayback,
+  lockedEmployeeId,
+}: LoanTabProps) {
   const form = useForm({
     initialValues: {
-      employee: "" as string,
+      employee: (lockedEmployeeId ?? "") as string,
       amount: "" as number | string,
     },
     validate: {
@@ -50,9 +57,9 @@ export function LoanTab({ employeeOptions, pendingLoans, onLoan, onPayback }: Lo
                   <Button
                     variant="light"
                     color="green"
-                    size="xs"
+                    size="sm"
                     onClick={() => onPayback(loan)}
-                    leftSection={<IconHandGrab size={14} />}
+                    leftSection={<IconHandGrab size={16} />}
                   >
                     Zwróć
                   </Button>
@@ -74,6 +81,7 @@ export function LoanTab({ employeeOptions, pendingLoans, onLoan, onPayback }: Lo
         label="Pracownik"
         placeholder="Wybierz..."
         data={employeeOptions}
+        disabled={!!lockedEmployeeId}
         {...form.getInputProps("employee")}
       />
 

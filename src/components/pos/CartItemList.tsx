@@ -31,29 +31,29 @@ export function CartItemList({ items, onUpdateQuantity, onRemove }: CartItemList
                 {item.quantity > 1 && ` · ${item.price.toLocaleString("pl-PL")} zł/szt.`}
               </Text>
             </div>
-            <Group gap="xs" wrap="nowrap" style={{ flexShrink: 0 }}>
+            <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
               <ActionIcon
                 variant="light"
                 color="gray"
-                size="sm"
+                size="lg"
                 onClick={() => onUpdateQuantity(item.cartId, -1)}
                 aria-label="Mniej"
               >
-                <Text fz="sm" fw={700}>
+                <Text fz="md" fw={700}>
                   −
                 </Text>
               </ActionIcon>
-              <Text fw={600} fz="sm" w={20} ta="center">
+              <Text fw={600} fz="md" w={24} ta="center">
                 {item.quantity}
               </Text>
               <ActionIcon
                 variant="light"
                 color="gray"
-                size="sm"
+                size="lg"
                 onClick={() => onUpdateQuantity(item.cartId, 1)}
                 aria-label="Więcej"
               >
-                <Text fz="sm" fw={700}>
+                <Text fz="md" fw={700}>
                   +
                 </Text>
               </ActionIcon>
@@ -63,11 +63,11 @@ export function CartItemList({ items, onUpdateQuantity, onRemove }: CartItemList
               <ActionIcon
                 variant="subtle"
                 color="red"
-                size="sm"
+                size="lg"
                 onClick={() => onRemove(item.cartId)}
                 aria-label="Usuń"
               >
-                <IconTrash size={16} />
+                <IconTrash size={20} />
               </ActionIcon>
             </Group>
           </Group>

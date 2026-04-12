@@ -10,6 +10,7 @@ import { TopUpTab } from "@/components/cash/TopUpTab";
 import { LoanTab } from "@/components/cash/LoanTab";
 import { VoucherTab } from "@/components/cash/VoucherTab";
 import { SettleModal } from "@/components/cash/SettleModal";
+import { useDeviceRole } from "@/contexts/DeviceContext";
 
 export default function CashPage() {
   const tabsId = useId();
@@ -36,6 +37,7 @@ export default function CashPage() {
   } = useMovements();
 
   const { data: employees = [] } = useEmployees();
+  const { lockedEmployeeId } = useDeviceRole();
 
   const employeeOptions = employees.map((e) => ({
     value: e.id,
@@ -86,7 +88,11 @@ export default function CashPage() {
         )}
 
         {tab === "tips" && (
-          <TipTab employeeOptions={employeeOptions} onWithdraw={handleTipWithdrawal} />
+          <TipTab
+            employeeOptions={employeeOptions}
+            onWithdraw={handleTipWithdrawal}
+            lockedEmployeeId={lockedEmployeeId}
+          />
         )}
 
         {tab === "expenses" && (
@@ -95,6 +101,7 @@ export default function CashPage() {
             pendingExpenses={pendingExpenses}
             onTake={handleExpenseTake}
             onSettleClick={openSettleModal}
+            lockedEmployeeId={lockedEmployeeId}
           />
         )}
 
@@ -106,6 +113,7 @@ export default function CashPage() {
             pendingLoans={pendingLoans}
             onLoan={handleBarberLoan}
             onPayback={handleBarberPayback}
+            lockedEmployeeId={lockedEmployeeId}
           />
         )}
 

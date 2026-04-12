@@ -1,6 +1,15 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.63] - 2026-04-12
+- feat: widok per typ urzadzenia (personal/station/admin)
+  - personal: Dashboard pokazuje tylko przypisanego pracownika, brak ikony admina
+  - personal: Historia filtrowana do pracownika, ukryty filtr po pracownikach
+  - personal: Kasa - pracownik pre-wybrany i zablokowany (napiwki, zakupy, zwroty)
+  - personal: Zamkniecie zmiany - pracownik pre-wybrany i zablokowany
+  - admin guard: /admin/* dostepne tylko dla urzadzen admin (reszta redirect na /)
+  - hook useDeviceRole() w DeviceContext
+
 [0.1.62] - 2026-04-12
 - fix: kazde urzadzenie admin z poprawnym PIN auto-zatwierdzane (nie tylko pierwsze)
 - fix: PIN szefa zmieniony na standardowy 1234
