@@ -18,6 +18,7 @@ import {
 } from "@mantine/core";
 import { IconPrinter, IconCheck } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useDeviceRole } from "@/contexts/DeviceContext";
 
 function calcExpectedCash(
   openingBalance: number,
@@ -44,10 +45,11 @@ function calcExpectedCash(
 
 export default function ShiftClosePage(): React.JSX.Element {
   const navigate = useNavigate();
+  const { lockedEmployeeId } = useDeviceRole();
 
   const form = useForm({
     initialValues: {
-      closingEmployee: "" as string,
+      closingEmployee: (lockedEmployeeId ?? "") as string,
       floatAmount: "" as number | string,
       envelopeAmount: "" as number | string,
     },
@@ -262,6 +264,7 @@ export default function ShiftClosePage(): React.JSX.Element {
             label="Kto zamyka zmianę?"
             placeholder="Wybierz pracownika..."
             data={employeeOptions}
+            disabled={!!lockedEmployeeId}
             {...form.getInputProps("closingEmployee")}
           />
         </Stack>

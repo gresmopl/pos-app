@@ -8,6 +8,7 @@ interface ExpenseTabProps {
   pendingExpenses: CashMovement[];
   onTake: (employeeId: string, amount: number, desc: string) => void;
   onSettleClick: (expense: CashMovement) => void;
+  lockedEmployeeId?: string | null;
 }
 
 export function ExpenseTab({
@@ -15,10 +16,11 @@ export function ExpenseTab({
   pendingExpenses,
   onTake,
   onSettleClick,
+  lockedEmployeeId,
 }: ExpenseTabProps) {
   const form = useForm({
     initialValues: {
-      employee: "" as string,
+      employee: (lockedEmployeeId ?? "") as string,
       amount: "" as number | string,
       desc: "",
     },
@@ -55,9 +57,9 @@ export function ExpenseTab({
                   </div>
                   <Button
                     variant="light"
-                    size="xs"
+                    size="sm"
                     onClick={() => onSettleClick(exp)}
-                    leftSection={<IconReceipt size={14} />}
+                    leftSection={<IconReceipt size={16} />}
                   >
                     Rozlicz
                   </Button>
@@ -79,6 +81,7 @@ export function ExpenseTab({
         label="Pracownik"
         placeholder="Wybierz..."
         data={employeeOptions}
+        disabled={!!lockedEmployeeId}
         {...form.getInputProps("employee")}
       />
 

@@ -34,6 +34,7 @@ import {
   IconBook,
 } from "@tabler/icons-react";
 import { pluralize } from "@/lib/constants";
+import { useDeviceRole } from "@/contexts/DeviceContext";
 
 const statusColor: Record<string, string> = {
   available: "green",
@@ -69,11 +70,13 @@ export default function Dashboard() {
   const { data: employees = [], loading: empLoading } = useEmployees();
   const { data: stats } = useDailyStats();
   const { data: salon } = useSalonSettings();
+  const { isAdmin, isPersonal, lockedEmployeeId } = useDeviceRole();
 
-  // Mock: admin widzi utarg, fryzjer nie
-  const isAdmin = true; // TODO: replace with real role check
+  const visibleEmployees = lockedEmployeeId
+    ? employees.filter((e) => e.id === lockedEmployeeId)
+    : employees;
 
-  const totalRevenue = employees.reduce((s, e) => s + e.todayRevenue, 0);
+  const totalRevenue = visibleEmployees.reduce((s, e) => s + e.todayRevenue, 0);
   const diff = (stats?.todayServices ?? 0) - (stats?.yesterdayServices ?? 0);
   const yearDiff =
     stats && stats.lastYearServices > 0
@@ -112,15 +115,17 @@ export default function Dashboard() {
             >
               {isDark ? <IconSun size={20} /> : <IconMoon size={20} />}
             </ActionIcon>
-            <ActionIcon
-              variant="subtle"
-              color="gray"
-              size="lg"
-              aria-label="Ustawienia"
-              onClick={() => navigate("/admin")}
-            >
-              <IconSettings size={20} />
-            </ActionIcon>
+            {!isPersonal && (
+              <ActionIcon
+                variant="subtle"
+                color="gray"
+                size="lg"
+                aria-label="Ustawienia"
+                onClick={() => navigate("/admin")}
+              >
+                <IconSettings size={20} />
+              </ActionIcon>
+            )}
           </Group>
         </Group>
 
@@ -203,7 +208,7 @@ export default function Dashboard() {
                 Ładowanie...
               </Text>
             )}
-            {!empLoading && employees.length === 0 && (
+            {!empLoading && visibleEmployees.length === 0 && (
               <Stack align="center" gap="sm" py="xl">
                 <Text fz="sm" c="dimmed" ta="center">
                   Brak pracowników. Dodaj pierwszego pracownika w Panelu Admina.
@@ -213,12 +218,14 @@ export default function Dashboard() {
                 </Button>
               </Stack>
             )}
-            {stats?.todayServices === 0 && employees.length > 0 && (
+            {stats?.todayServices === 0 && visibleEmployees.length > 0 && (
               <Text fz="xs" c="dimmed" ta="center" py="sm">
-                Wybierz fryzjera aby rozpocząć pierwszy rachunek
+                {isPersonal
+                  ? "Kliknij aby rozpocząć rachunek"
+                  : "Wybierz fryzjera aby rozpocząć pierwszy rachunek"}
               </Text>
             )}
-            {employees.map((employee, index) => (
+            {visibleEmployees.map((employee, index) => (
               <div key={employee.id}>
                 <UnstyledButton
                   w="100%"
@@ -264,7 +271,7 @@ export default function Dashboard() {
                     )}
                   </Group>
                 </UnstyledButton>
-                {index < employees.length - 1 && <Divider />}
+                {index < visibleEmployees.length - 1 && <Divider />}
               </div>
             ))}
           </Stack>

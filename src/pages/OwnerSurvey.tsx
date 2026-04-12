@@ -10,9 +10,79 @@ import {
   Textarea,
   CopyButton,
   Badge,
+  Radio,
 } from "@mantine/core";
 import { IconClipboard, IconCheck } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+
+interface OpenQuestion {
+  id: string;
+  question: string;
+  description: string;
+  options: { value: string; label: string }[];
+}
+
+const openQuestions: OpenQuestion[] = [
+  {
+    id: "old-vouchers",
+    question: "Stare bony (sprzed systemu)",
+    description: "Czy są w obiegu bony papierowe wydane przed wdrożeniem systemu?",
+    options: [
+      { value: "none", label: "Nie ma starych bonów" },
+      { value: "import", label: "Są - trzeba je wprowadzić do systemu" },
+      { value: "ignore", label: "Są - ale pomijamy, niech wygasną" },
+    ],
+  },
+  {
+    id: "commission-visibility",
+    question: "Widoczność prowizji dla fryzjera",
+    description: "Czy fryzjer ma widzieć swoją prowizję na telefonie na bieżąco?",
+    options: [
+      { value: "reports-only", label: "Tylko w raportach miesięcznych" },
+      { value: "live", label: "Na bieżąco na telefonie" },
+      { value: "amounts-only", label: "Kwoty tak, ale stawki % ukryte" },
+    ],
+  },
+  {
+    id: "commission-schedule",
+    question: "Zmiana stawek prowizji w czasie",
+    description:
+      'Czy potrzebujesz planować zmianę stawki z wyprzedzeniem (np. "od 1 maja Oliwia 45%")?',
+    options: [
+      { value: "immediate", label: "Zmiana natychmiastowa wystarczy" },
+      { value: "scheduled", label: "Chcę planować z wyprzedzeniem" },
+    ],
+  },
+  {
+    id: "daily-email",
+    question: "Podsumowanie dnia na email",
+    description: "Czy chcesz dostawać raport po zamknięciu zmiany na maila?",
+    options: [
+      { value: "yes", label: "Tak, email z podsumowaniem" },
+      { value: "no", label: "Nie, sprawdzam sam w aplikacji" },
+    ],
+  },
+  {
+    id: "cash-tolerance",
+    question: "Tolerancja kasowa a nowy ekran",
+    description: "Ustalona tolerancja 10 zł. Nowy ekran pokazuje każdą różnicę.",
+    options: [
+      { value: "keep", label: "Tolerancja 10 zł nadal obowiązuje" },
+      { value: "show-all", label: "Chcę widzieć każdą różnicę" },
+      { value: "change", label: "Zmienić tolerancję na inną kwotę" },
+    ],
+  },
+  {
+    id: "paper-vouchers",
+    question: "Bony papierowe przy zamknięciu zmiany",
+    description:
+      "Bony papierowe liczone jako gotówka. System nie rozróżnia co jest gotówką a co bonem.",
+    options: [
+      { value: "ok", label: "OK - bony liczone razem z gotówką" },
+      { value: "separate", label: "Chcę osobne pole na bony papierowe" },
+    ],
+  },
+];
 
 const completedAnswers = [
   {
@@ -44,57 +114,42 @@ const completedAnswers = [
   { question: "Magazyn kosmetyków", answer: "Nie - sam ogarniam co mam na półce" },
 ];
 
-const openQuestions = [
-  {
-    id: "old-vouchers",
-    question: "Stare bony (sprzed systemu)",
-    description:
-      "Czy są w obiegu bony papierowe wydane przed wdrożeniem systemu? Jeśli tak: ile ich może być, czy mają numer/oznaczenie, datę ważności, jakie saldo?",
-  },
-  {
-    id: "commission-visibility",
-    question: "Widoczność prowizji",
-    description:
-      "Czy prowizja ma być widoczna tylko w raportach miesięcznych, czy też na telefonie fryzjera? Czy stawki prowizji są poufne (ustalane indywidualnie)?",
-  },
-  {
-    id: "commission-schedule",
-    question: "Zmiana stawek prowizji w czasie",
-    description:
-      'Czy potrzebujesz planować zmianę stawki z wyprzedzeniem (np. "od 1 maja Oliwia 45%")? Obecnie zmiana działa natychmiast.',
-  },
-  {
-    id: "daily-email",
-    question: "Podsumowanie dnia na email/PDF",
-    description: "Czy chcesz dostawać raport po zamknięciu zmiany na maila bez otwierania systemu?",
-  },
-  {
-    id: "cash-tolerance",
-    question: "Tolerancja kasowa a nowy ekran",
-    description:
-      "Ustalona tolerancja 10 zł (różnice <= 10 zł = OK). Nowy ekran pokazuje każdą różnicę. Czy tolerancja dalej obowiązuje, czy chcesz widzieć każdą różnicę?",
-  },
-  {
-    id: "paper-vouchers",
-    question: "Bony papierowe przy zamknięciu zmiany",
-    description:
-      "Bony papierowe liczone jako gotówka (1000 zł + 200 zł w bonach = 1200 zł). System nie rozróżnia co jest gotówką a co bonem. Czy to akceptowalne, czy lepiej osobne pole?",
-  },
-];
-
-export default function OwnerSurvey() {
+export default function OwnerSurvey(): React.JSX.Element {
+  const [answers, setAnswers] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState("");
 
-  const generateNotesSummary = () => {
+  const answeredCount = Object.keys(answers).length;
+  const allAnswered = answeredCount === openQuestions.length;
+
+  const handleAnswer = (questionId: string, value: string): void => {
+    setAnswers((prev) => ({ ...prev, [questionId]: value }));
+  };
+
+  const generateSummary = (): string => {
     const lines = [
-      "FORMEN - Nowe uwagi / pytania od szefa",
+      "FORMEN - Odpowiedzi szefa",
       `Data: ${new Date().toLocaleDateString("pl-PL")}`,
       "=".repeat(45),
-      "",
-      notes.trim(),
     ];
+
+    if (answeredCount > 0) {
+      lines.push("", "NOWE ODPOWIEDZI:");
+      for (const q of openQuestions) {
+        const val = answers[q.id];
+        if (!val) continue;
+        const option = q.options.find((o) => o.value === val);
+        lines.push(`- ${q.question}: ${option?.label ?? val}`);
+      }
+    }
+
+    if (notes.trim()) {
+      lines.push("", "UWAGI:", notes.trim());
+    }
+
     return lines.join("\n");
   };
+
+  const hasSomethingToCopy = answeredCount > 0 || notes.trim();
 
   return (
     <Box mih="100vh" pb={40}>
@@ -103,21 +158,84 @@ export default function OwnerSurvey() {
         <Divider />
 
         <Stack gap="md" py="md">
+          {/* === OTWARTE PYTANIA === */}
           <Group>
-            <Badge color="green" size="lg" variant="light">
-              Zakończona
+            <Badge color={allAnswered ? "green" : "yellow"} size="lg" variant="light">
+              {allAnswered ? "Gotowe" : "Do ustalenia"}
             </Badge>
             <Text fz="sm" c="dimmed">
-              Wszystkie 18 pytań zostało rozpatrzonych (2026-04-10)
+              {answeredCount} z {openQuestions.length} odpowiedzi
             </Text>
           </Group>
 
+          <Stack gap={0}>
+            {openQuestions.map((item, index) => (
+              <div key={item.id}>
+                <Stack gap="xs" py="sm">
+                  <Text fz="sm" fw={600}>
+                    {item.question}
+                  </Text>
+                  <Text fz="xs" c="dimmed">
+                    {item.description}
+                  </Text>
+                  <Radio.Group
+                    value={answers[item.id] ?? ""}
+                    onChange={(val) => handleAnswer(item.id, val)}
+                  >
+                    <Stack gap={6} mt={4}>
+                      {item.options.map((opt) => (
+                        <Radio key={opt.value} value={opt.value} label={opt.label} size="sm" />
+                      ))}
+                    </Stack>
+                  </Radio.Group>
+                </Stack>
+                {index < openQuestions.length - 1 && <Divider />}
+              </div>
+            ))}
+          </Stack>
+
           <Divider />
 
-          {/* Podsumowanie odpowiedzi */}
+          {/* === UWAGI === */}
           <Text fz="xs" c="dimmed" tt="uppercase" lts={1}>
-            Podjęte decyzje
+            Dodatkowe uwagi
           </Text>
+          <Textarea
+            placeholder="np. Chcę zmienić tolerancję kasową na 20 zł..."
+            minRows={3}
+            autosize
+            value={notes}
+            onChange={(e) => setNotes(e.currentTarget.value)}
+          />
+
+          {hasSomethingToCopy && (
+            <CopyButton value={generateSummary()}>
+              {({ copied, copy }) => (
+                <Button
+                  color={copied ? "green" : "blue"}
+                  leftSection={copied ? <IconCheck size={18} /> : <IconClipboard size={18} />}
+                  onClick={copy}
+                  size="lg"
+                  fullWidth
+                >
+                  {copied ? "Skopiowano!" : "Kopiuj odpowiedzi do schowka"}
+                </Button>
+              )}
+            </CopyButton>
+          )}
+
+          <Divider my="xs" />
+
+          {/* === PODJĘTE DECYZJE === */}
+          <Group>
+            <Badge color="green" size="lg" variant="light">
+              Zakończone
+            </Badge>
+            <Text fz="sm" c="dimmed">
+              18 pytań rozpatrzonych (2026-04-10)
+            </Text>
+          </Group>
+
           <Stack gap={0}>
             {completedAnswers.map((item, index) => (
               <div key={index}>
@@ -133,68 +251,6 @@ export default function OwnerSurvey() {
               </div>
             ))}
           </Stack>
-
-          <Divider />
-
-          {/* Otwarte pytania */}
-          <Group>
-            <Badge color="yellow" size="lg" variant="light">
-              Do ustalenia
-            </Badge>
-            <Text fz="sm" c="dimmed">
-              6 pytań czeka na odpowiedź szefa
-            </Text>
-          </Group>
-          <Stack gap={0}>
-            {openQuestions.map((item, index) => (
-              <div key={item.id}>
-                <Stack gap={4} py="xs">
-                  <Text fz="sm" fw={500}>
-                    {item.question}
-                  </Text>
-                  <Text fz="xs" c="dimmed">
-                    {item.description}
-                  </Text>
-                </Stack>
-                {index < openQuestions.length - 1 && <Divider />}
-              </div>
-            ))}
-          </Stack>
-
-          <Divider />
-
-          {/* Nowe uwagi */}
-          <Text fz="xs" c="dimmed" tt="uppercase" lts={1}>
-            Nowe uwagi lub pytania
-          </Text>
-          <Text fz="sm" c="dimmed">
-            Jeśli chcesz coś zmienić, zgłosić błąd lub masz nowy pomysł - wpisz tutaj i skopiuj
-            tekst.
-          </Text>
-
-          <Textarea
-            placeholder="np. Chcę zmienić tolerancję kasową na 20 zł..."
-            minRows={4}
-            autosize
-            value={notes}
-            onChange={(e) => setNotes(e.currentTarget.value)}
-          />
-
-          {notes.trim() && (
-            <CopyButton value={generateNotesSummary()}>
-              {({ copied, copy }) => (
-                <Button
-                  color={copied ? "green" : "blue"}
-                  leftSection={copied ? <IconCheck size={18} /> : <IconClipboard size={18} />}
-                  onClick={copy}
-                  size="lg"
-                  fullWidth
-                >
-                  {copied ? "Skopiowano!" : "Kopiuj do schowka"}
-                </Button>
-              )}
-            </CopyButton>
-          )}
         </Stack>
       </Container>
     </Box>

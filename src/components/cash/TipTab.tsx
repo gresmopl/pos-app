@@ -8,15 +8,16 @@ import { useEmployees } from "@/hooks/useDbData";
 interface TipTabProps {
   employeeOptions: { value: string; label: string }[];
   onWithdraw: (employeeId: string, amount: number) => Promise<void>;
+  lockedEmployeeId?: string | null;
 }
 
-export function TipTab({ employeeOptions, onWithdraw }: TipTabProps) {
+export function TipTab({ employeeOptions, onWithdraw, lockedEmployeeId }: TipTabProps) {
   const { data: employees = [], refetch } = useEmployees();
   const [submitting, setSubmitting] = useState(false);
 
   const form = useForm({
     initialValues: {
-      employee: "" as string,
+      employee: (lockedEmployeeId ?? "") as string,
       amount: "" as number | string,
     },
     validate: {
@@ -59,6 +60,7 @@ export function TipTab({ employeeOptions, onWithdraw }: TipTabProps) {
         label="Pracownik"
         placeholder="Wybierz..."
         data={employeeOptions}
+        disabled={!!lockedEmployeeId}
         {...form.getInputProps("employee")}
       />
 

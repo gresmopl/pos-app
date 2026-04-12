@@ -279,12 +279,13 @@ export function PaymentModal({
                 <Text fz="xs" c="dimmed">
                   Wybierz metodę dopłaty:
                 </Text>
-                <Group gap="sm">
+                <Stack gap="xs">
                   <Button
+                    fullWidth
                     variant="light"
                     color="green"
-                    size="xs"
-                    leftSection={<IconCash size={16} />}
+                    size="md"
+                    leftSection={<IconCash size={20} />}
                     onClick={() =>
                       onSelectMethod(
                         "Bon + Gotówka",
@@ -297,10 +298,11 @@ export function PaymentModal({
                     Gotówka
                   </Button>
                   <Button
+                    fullWidth
                     variant="light"
                     color="blue"
-                    size="xs"
-                    leftSection={<IconCreditCard size={16} />}
+                    size="md"
+                    leftSection={<IconCreditCard size={20} />}
                     onClick={() =>
                       onSelectMethod(
                         "Bon + Karta",
@@ -313,10 +315,11 @@ export function PaymentModal({
                     Karta
                   </Button>
                   <Button
+                    fullWidth
                     variant="light"
                     color="pink"
-                    size="xs"
-                    leftSection={<IconDeviceMobile size={16} />}
+                    size="md"
+                    leftSection={<IconDeviceMobile size={20} />}
                     onClick={() =>
                       onSelectMethod(
                         "Bon + BLIK",
@@ -328,7 +331,7 @@ export function PaymentModal({
                   >
                     BLIK
                   </Button>
-                </Group>
+                </Stack>
               </>
             )}
           </>

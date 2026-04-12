@@ -133,21 +133,21 @@ function DeviceCard({
       </Stack>
 
       {device.status === "pending" && (
-        <Group mt="sm" gap="xs">
+        <Group mt="sm" gap="sm">
           <Button
-            size="xs"
+            size="sm"
             color="green"
-            leftSection={<IconCheck size={14} />}
+            leftSection={<IconCheck size={16} />}
             onClick={handleApprove}
             loading={loading}
           >
             Zatwierdź
           </Button>
           <Button
-            size="xs"
+            size="sm"
             color="red"
             variant="light"
-            leftSection={<IconBan size={14} />}
+            leftSection={<IconBan size={16} />}
             onClick={handleBlock}
             loading={loading}
           >
@@ -159,10 +159,10 @@ function DeviceCard({
       {device.status === "approved" && (
         <Group mt="sm">
           <Button
-            size="xs"
+            size="sm"
             color="red"
             variant="light"
-            leftSection={<IconBan size={14} />}
+            leftSection={<IconBan size={16} />}
             onClick={handleBlock}
             loading={loading}
           >
@@ -174,10 +174,10 @@ function DeviceCard({
       {device.status === "blocked" && (
         <Group mt="sm">
           <Button
-            size="xs"
+            size="sm"
             color="green"
             variant="light"
-            leftSection={<IconCheck size={14} />}
+            leftSection={<IconCheck size={16} />}
             onClick={handleApprove}
             loading={loading}
           >

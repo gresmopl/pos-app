@@ -34,6 +34,7 @@ import {
 } from "@tabler/icons-react";
 import { MOCK_OPERATIONS_PIN } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useDeviceRole } from "@/contexts/DeviceContext";
 
 const paymentIcon: Record<string, typeof IconCash> = {
   cash: IconCash,
@@ -60,6 +61,7 @@ function getPaymentLabel(t: Transaction): string {
 
 export default function HistoryPage() {
   const { data: employees = [] } = useEmployees();
+  const { isPersonal, lockedEmployeeId } = useDeviceRole();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   useEffect(() => {
@@ -82,8 +84,11 @@ export default function HistoryPage() {
 
   const uniqueEmployees = Array.from(new Set(transactions.map((t) => t.employeeName)));
 
+  const lockedEmployee = lockedEmployeeId ? employees.find((e) => e.id === lockedEmployeeId) : null;
+
   const filtered = transactions.filter((t) => {
-    if (filter !== "all" && t.employeeName !== filter) return false;
+    if (lockedEmployee && t.employeeName !== lockedEmployee.name) return false;
+    if (!lockedEmployee && filter !== "all" && t.employeeName !== filter) return false;
     if (paymentFilter !== "all" && t.paymentMethod !== paymentFilter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
@@ -135,40 +140,42 @@ export default function HistoryPage() {
         </Box>
 
         {/* ===== FILTER: EMPLOYEE ===== */}
-        <ScrollArea type="auto" offsetScrollbars scrollbarSize={4}>
-          <Group gap="xs" wrap="nowrap" mb="xs">
-            <UnstyledButton onClick={() => setFilter("all")} style={{ flexShrink: 0 }}>
-              <Avatar
-                size={36}
-                radius="xl"
-                color={filter === "all" ? "green" : "gray"}
-                variant={filter === "all" ? "filled" : "light"}
-              >
-                <IconUsers size={18} />
-              </Avatar>
-            </UnstyledButton>
-            {uniqueEmployees.map((name) => {
-              const emp = employees.find((e) => e.name === name);
-              const avatar = emp?.avatar ?? name.slice(0, 2).toUpperCase();
-              return (
-                <UnstyledButton
-                  key={name}
-                  onClick={() => setFilter(name)}
-                  style={{ flexShrink: 0 }}
+        {!isPersonal && (
+          <ScrollArea type="auto" offsetScrollbars scrollbarSize={4}>
+            <Group gap="xs" wrap="nowrap" mb="xs">
+              <UnstyledButton onClick={() => setFilter("all")} style={{ flexShrink: 0 }}>
+                <Avatar
+                  size={36}
+                  radius="xl"
+                  color={filter === "all" ? "green" : "gray"}
+                  variant={filter === "all" ? "filled" : "light"}
                 >
-                  <Avatar
-                    size={36}
-                    radius="xl"
-                    color={filter === name ? "green" : "gray"}
-                    variant={filter === name ? "filled" : "light"}
+                  <IconUsers size={18} />
+                </Avatar>
+              </UnstyledButton>
+              {uniqueEmployees.map((name) => {
+                const emp = employees.find((e) => e.name === name);
+                const avatar = emp?.avatar ?? name.slice(0, 2).toUpperCase();
+                return (
+                  <UnstyledButton
+                    key={name}
+                    onClick={() => setFilter(name)}
+                    style={{ flexShrink: 0 }}
                   >
-                    {avatar}
-                  </Avatar>
-                </UnstyledButton>
-              );
-            })}
-          </Group>
-        </ScrollArea>
+                    <Avatar
+                      size={36}
+                      radius="xl"
+                      color={filter === name ? "green" : "gray"}
+                      variant={filter === name ? "filled" : "light"}
+                    >
+                      {avatar}
+                    </Avatar>
+                  </UnstyledButton>
+                );
+              })}
+            </Group>
+          </ScrollArea>
+        )}
 
         {/* ===== FILTER: PAYMENT METHOD ===== */}
         <ScrollArea type="auto" offsetScrollbars scrollbarSize={4}>
@@ -328,8 +335,8 @@ export default function HistoryPage() {
                             <Button
                               variant="subtle"
                               color="red"
-                              size="xs"
-                              leftSection={<IconArrowBackUp size={14} />}
+                              size="sm"
+                              leftSection={<IconArrowBackUp size={16} />}
                               onClick={(e) => {
                                 e.stopPropagation();
                                 setUndoTransactionId(transaction.id);

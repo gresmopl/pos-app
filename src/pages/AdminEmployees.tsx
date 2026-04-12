@@ -166,8 +166,8 @@ export default function AdminEmployeesPage() {
       </Group>
       <Group gap="sm" wrap="nowrap">
         {!inactive && (
-          <ActionIcon variant="subtle" color="gray" size="sm" onClick={() => openEdit(emp)}>
-            <IconPencil size={16} />
+          <ActionIcon variant="subtle" color="gray" size="md" onClick={() => openEdit(emp)}>
+            <IconPencil size={18} />
           </ActionIcon>
         )}
         <Switch checked={emp.isActive} onChange={() => toggleActive(emp.id)} size="sm" />
