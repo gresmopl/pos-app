@@ -26,7 +26,7 @@ export function TipTab({ employeeOptions, onWithdraw, lockedEmployeeId }: TipTab
         const n = Number(v);
         if (!n || n <= 0) return "Podaj kwotę";
         const emp = employees.find((e) => e.id === form.values.employee);
-        if (emp && n > emp.tipBalance) return "Kwota przekracza dostępne napiwki";
+        if (emp && n > emp.tipBalance) return "Kwota przekracza saldo portfela";
         return null;
       },
     },
@@ -43,7 +43,7 @@ export function TipTab({ employeeOptions, onWithdraw, lockedEmployeeId }: TipTab
       form.reset();
     } catch (err) {
       console.error("[TipTab] Withdrawal failed:", err);
-      notifications.show({ message: "Błąd wypłaty napiwku", color: "red" });
+      notifications.show({ message: "Błąd wypłaty z portfela", color: "red" });
     } finally {
       setSubmitting(false);
     }
@@ -52,9 +52,12 @@ export function TipTab({ employeeOptions, onWithdraw, lockedEmployeeId }: TipTab
   return (
     <Stack gap="md" py="md">
       <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-        Wypłata napiwków
+        Wypłata z portfela
       </Text>
-      <Text fz="sm">Fryzjer pobiera zgromadzone napiwki z kasetki.</Text>
+      <Text fz="sm">
+        Fryzjer pobiera z kasetki pieniądze należne: napiwki z karty/BLIK oraz własne wpłaty
+        drobnych.
+      </Text>
 
       <Select
         label="Pracownik"
@@ -73,7 +76,7 @@ export function TipTab({ employeeOptions, onWithdraw, lockedEmployeeId }: TipTab
           }}
         >
           <Text fz="xs" c="dimmed">
-            Dostępne napiwki · {selectedEmployee.name}
+            Do wypłaty · {selectedEmployee.name}
           </Text>
           <Text fw={700} fz={28}>
             {selectedEmployee.tipBalance.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł

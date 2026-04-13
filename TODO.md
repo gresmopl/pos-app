@@ -57,14 +57,14 @@
 - [x] **Zdjecie kasetki** - opcjonalny przycisk "Dodaj zdjecie" przy zamknieciu zmiany
 - [x] **Licznik banknotow** - grid z nominalami (200/100/50/20/10/5/2/1 zl) zamiast jednego pola "Gotowka"
 
-**Do dopytania u szefa:**
+**Rozwiazane (odpowiedzi szefa 2026-04-13):**
 
-- [ ] **Stare bony (sprzed systemu)** - czy sa w obiegu bony papierowe wydane przed wdrozeniem systemu? Jesli tak, prosze opisac: ile ich moze byc, czy maja jakis numer/oznaczenie, czy maja date waznosci, czy wiadomo jakie maja saldo. Opis wlasny szefa (wolne pole - kazdy salon moze miec inny schemat bonow, wazne zeby szef opisal jak to u niego wyglada)
-- [ ] **Widocznosc prowizji** - czy prowizja ma byc widoczna tylko w raportach miesiecznych (do wyplaty), czy tez na telefonie danego fryzjera? Czy stawki prowizji sa poufne (ustalane indywidualnie z kazdym pracownikiem)?
-- [ ] **Zmiana stawek prowizji w czasie** - czy szef potrzebuje planowac zmiane stawki z wyprzedzeniem (np. "od 1 maja Oliwia 45%")? Jesli tak: osobna tabela harmonogramu czy wystarczy jedno pole "nastepna stawka + data"? Obecnie prowizja brana z biezacej stawki pracownika, zmiana dziala natychmiast
-- [ ] **Podsumowanie dnia na email/PDF** - czy szef chce dostawac raport po zamknieciu zmiany na maila bez otwierania systemu?
-- [ ] **Tolerancja kasowa a v2.1** - wczesniej ustalona tolerancja 10 zl (roznice <= 10 zl = OK). Nowa spec v2.1 pokazuje kazda roznice na czerwono. Czy tolerancja dalej obowiazuje (np. roznica 3 zl = zielone "OK"), czy szef chce widziec kazda roznice?
-- [ ] **Bony papierowe przy zamknieciu zmiany** - szef chce zeby bony papierowe liczyc jako gotowke (np. 1000 zl + 200 zl w bonach = 1200 zl). Problem: system nie wie co jest gotowka a co bonem, wiec zestawienie bonow w panelu admina nie pokryje sie z raportami zmianowymi. Czy to akceptowalne, czy lepiej osobne pole na bony?
+- [x] **Stare bony (sprzed systemu)** - NIE MA starych bonow, nie trzeba migrowac
+- [x] **Widocznosc prowizji** - na biezaco na telefonie fryzjera (personal view na Dashboard)
+- [x] **Zmiana stawek prowizji w czasie** - zmiana natychmiastowa wystarczy (obecna implementacja OK, brak harmonogramu)
+- [x] **Podsumowanie dnia na email/PDF** - NIE, szef sprawdza sam w aplikacji
+- [x] **Tolerancja kasowa a v2.1** - pokazywac kazda roznice (brak tolerancji, CASH_TOLERANCE usuniete)
+- [x] **Bony papierowe przy zamknieciu zmiany** - OK, bony liczone razem z gotowka (bez osobnego pola)
 
 ## Faza 2 (pelna funkcjonalnosc)
 
@@ -120,6 +120,11 @@
   - Przedluzenie waznosci (szef decyduje, np. klient przychodzi z przeterminowanym)
   - Wymaga: db.vouchers.getAll(), updateExpiry() w adapterach
 - [x] Multi-salon - osobna baza per salon (osobny deploy z innym .env), bez RLS
+- [x] Wplata do kasy zintegrowana z Portfelem wirtualnym (2026-04-13)
+  - nowy typ own_cash_deposit: powieksza oczekiwana gotowke + dopisuje do tipBalance pracownika
+  - zakladka "Wplata" -> "Wplata do kasy" (jeden typ, pole Pracownik wymagane)
+  - zakladka "Napiwki" -> "Portfel" (jedna suma)
+  - zakladka "Zwrot" usunieta (redundantna)
 
 ## Faza 3 (raporty i finalizacja)
 

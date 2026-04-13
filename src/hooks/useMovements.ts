@@ -26,8 +26,6 @@ export function useMovements() {
     (m) => m.type === "expense_take" && m.status === "pending"
   );
 
-  const pendingLoans = movements.filter((m) => m.type === "barber_loan" && m.status === "pending");
-
   const showSuccess = useCallback((msg: string) => {
     setSuccessMsg(msg);
     if (successTimer.current) clearTimeout(successTimer.current);
@@ -99,51 +97,18 @@ export function useMovements() {
     );
   }, [settleTarget, settleCost, showSuccess]);
 
-  const handleTopUp = useCallback(
-    async (amount: number, reason: string) => {
-      const movement = await db.cashMovements.create({
-        type: "top_up",
-        amount,
-        description: reason,
-      });
-      setMovements((prev) => [movement, ...prev]);
-      showSuccess(`Wpłacono ${amount} zł do kasy`);
-    },
-    [showSuccess]
-  );
-
-  const handleBarberLoan = useCallback(
+  const handleOwnCashDeposit = useCallback(
     async (employeeId: string, amount: number) => {
       const movement = await db.cashMovements.create({
-        type: "barber_loan",
+        type: "own_cash_deposit",
         employeeId,
         amount,
-        description: "Wydał z własnych (reszta)",
-        status: "pending",
+        description: "Wpłata do kasy (własne pieniądze)",
       });
       setMovements((prev) => [movement, ...prev]);
-      showSuccess(`Zarejestrowano dług kasetki: ${amount} zł dla ${movement.employeeName}`);
-    },
-    [showSuccess]
-  );
-
-  const handleBarberPayback = useCallback(
-    async (loan: CashMovement) => {
-      // Mark original loan as settled
-      await db.cashMovements.updateStatus(loan.id, "settled");
-
-      // Create payback movement
-      const movement = await db.cashMovements.create({
-        type: "barber_payback",
-        amount: loan.amount,
-        description: `Zwrot za resztę dla ${loan.employeeName}`,
-      });
-
-      setMovements((prev) => [
-        movement,
-        ...prev.map((m) => (m.id === loan.id ? { ...m, status: "settled" as const } : m)),
-      ]);
-      showSuccess(`Zwrócono ${loan.amount} zł dla ${loan.employeeName}`);
+      showSuccess(
+        `Wpłacono ${amount} zł do kasy · ${movement.employeeName} (dopisane do portfela)`
+      );
     },
     [showSuccess]
   );
@@ -173,7 +138,6 @@ export function useMovements() {
     movements,
     successMsg,
     pendingExpenses,
-    pendingLoans,
     settleModal,
     settleTarget,
     settleCost,
@@ -183,9 +147,7 @@ export function useMovements() {
     handleTipWithdrawal,
     handleExpenseTake,
     handleSettle,
-    handleTopUp,
-    handleBarberLoan,
-    handleBarberPayback,
+    handleOwnCashDeposit,
     handleVoucherSale,
   };
 }

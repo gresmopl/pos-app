@@ -37,7 +37,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), src/db/schema.sql
 - Jezyk kodu: angielski. Jezyk interfejsu: polski
 - Mantine components (bez shadcn, bez surowego Tailwind)
 - Centralne typy: src/lib/types.ts. Props lokalne przy komponentach
-- Centralne stale: src/lib/constants.ts (CASH_TOLERANCE=10, VOUCHER_EXPIRY_MONTHS=12, pluralize())
+- Centralne stale: src/lib/constants.ts (VOUCHER_EXPIRY_MONTHS=12, pluralize())
 - Code splitting: React.lazy + Suspense + PageSkeleton
 - Walidacja: @mantine/form (useForm + getInputProps)
 
@@ -49,7 +49,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), src/db/schema.sql
 - DeviceContext (src/contexts/) - jedyny globalny context (UUID, status urzadzenia)
 - Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts
 
-## Decyzje szefa (potwierdzone 2026-04-10)
+## Decyzje szefa (potwierdzone 2026-04-10 i 2026-04-13)
 
 1. Prowizja od split payment - od pelnej kwoty (niezaleznie od metody)
 2. Prowizja od rabatu - od kwoty PO rabacie
@@ -57,12 +57,17 @@ docs/analytical.md (biznes), docs/technical.md (architektura), src/db/schema.sql
 4. Bon wazny 12 miesiecy, reszta zostaje na bonie
 5. Cofniecie transakcji - bez limitu czasowego, ostatnia tx az do zamkniecia zmiany
 6. Transparentnosc - pracownik widzi kwoty systemowe na ekranie zamkniecia
-7. Tolerancja roznic kasowych: do 10 zl (CASH_TOLERANCE)
+7. Tolerancja roznic kasowych: brak - pokazuj KAZDA roznice (v2.1)
 8. BEZ presetow napiwkow i bonow - tylko pola na kwote
 9. BEZ magazynu kosmetykow
-10. BEZ powiadomien - szef sam sprawdza
+10. BEZ powiadomien - szef sam sprawdza (bez emaila/PDF po zamknieciu zmiany)
 11. Napiwki gotowkowe "do reki" - system NIE sledzi
 12. Limit rabatu - brak, szef ufa pracownikom
+13. Prowizja widoczna na biezaco na telefonie fryzjera (personal view)
+14. Zmiana stawek prowizji - natychmiastowa, bez harmonogramu
+15. Stare bony (papierowe sprzed systemu) - nie wystepuja, bez migracji
+16. Bony papierowe przy zamknieciu zmiany liczone razem z gotowka (bez osobnego pola)
+17. Wplata do kasy - JEDEN typ dla wszystkich (bez rozroznienia szef/pracownik); kwota zasila kasetke + Portfel pracownika (obsluguje tez sytuacje "fryzjer wydal reszte z wlasnych")
 
 ## Bezpieczenstwo
 

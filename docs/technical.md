@@ -125,10 +125,9 @@ src/
       SplitPaymentModal.tsx  Platnosc gotowka + karta
       ConfirmModal.tsx  Potwierdzenie przed finalizacja
     cash/
-      TipTab.tsx        Zakladka wyplaty napiwkow (async z DB)
-      ExpenseTab.tsx    Zakladka zakupow salonowych
-      TopUpTab.tsx      Zakladka wplaty do kasy
-      LoanTab.tsx       Zakladka "wydalem z wlasnych"
+      TipTab.tsx        Zakladka Portfel - wyplata z tipBalance (async z DB)
+      ExpenseTab.tsx    Zakladka Zakupy salonowe
+      DepositTab.tsx    Zakladka Wplata do kasy (zasila kasetke + Portfel pracownika)
       VoucherTab.tsx    Zakladka sprzedazy bonu (generuje kod + zapis do DB)
       SettleModal.tsx   Rozliczenie zakupow (paragon + zwrot reszty)
       MovementHistory.tsx  Lista operacji kasowych
@@ -161,7 +160,7 @@ src/
 
   lib/
     types.ts            Centralne typy domenowe (Employee, Transaction, CashMovement, ...)
-    constants.ts        Stale (PINy mock, CASH_TOLERANCE, VOUCHER_EXPIRY_MONTHS, pluralize())
+    constants.ts        Stale (PINy mock, VOUCHER_EXPIRY_MONTHS, pluralize())
 
   data/                 Mock dane (fallback + testy)
     employees.ts        Pracownicy + statystyki
@@ -367,8 +366,8 @@ Adapter tworzy: transaction row, transaction_item rows, payment_detail row(s), a
 
 ```
 Cash.tsx (orkiestrator)
-  -> SegmentedControl (5 zakladek)
-  -> TipTab / ExpenseTab / TopUpTab / LoanTab / VoucherTab
+  -> SegmentedControl (4 zakladki: Portfel / Zakupy / Wplata do kasy / Bon)
+  -> TipTab / ExpenseTab / DepositTab / VoucherTab
   -> useMovements: handlery async -> db.cashMovements.create() -> stan lokalny
   -> MovementHistory wyswietla liste
 ```
@@ -378,6 +377,7 @@ useMovements laduje ruchy z DB przy starcie (`getSince(lastClosedAt)`) i dodaje 
 Side effects w adapterze:
 
 - `tip_withdrawal`: insert do tip_withdrawal + decrement tip_balance (RPC)
+- `own_cash_deposit`: insert do cash_movement + increment tip_balance (RPC) - wplata zasila Portfel pracownika
 - `voucher_sale`: insert do voucher (kod, wartosc, 12 mies. waznosc)
 
 ### Zamkniecie zmiany (ShiftClose)
@@ -386,11 +386,11 @@ Side effects w adapterze:
 1. Ladowanie danych: transakcje + ruchy kasowe "od ostatniego zamkniecia"
 2. Obliczenie systemowych wartosci z paymentBreakdown (per metoda, nie per transakcja)
 3. Obliczenie oczekiwanej gotowki:
-   expectedCash = systemCash + cashIn(top_up, expense_settle, voucher_sale cash)
+   expectedCash = systemCash + cashIn(top_up, expense_settle, own_cash_deposit, voucher_sale cash)
                              - cashOut(tip_withdrawal, expense_take, barber_payback)
 4. Obliczenie oczekiwanych bonow: expectedVouchers = suma platnosci voucher
 5. Pracownik wpisuje: gotowka, drobne, bony papierowe
-6. Roznice: gotowkowa + bonowa (tolerancja 10 zl = OK)
+6. Roznice: gotowkowa + bonowa (kazda roznica pokazywana, brak tolerancji)
 7. db.dailyReports.create() -> raport kasowy -> wydruk
 ```
 

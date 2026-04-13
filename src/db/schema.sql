@@ -20,7 +20,7 @@ CREATE TYPE voucher_status AS ENUM ('active', 'used', 'expired');
 CREATE TYPE cash_movement_direction AS ENUM ('in', 'out');
 CREATE TYPE cash_movement_reason AS ENUM (
   'tip_withdrawal', 'expense_take', 'expense_settle',
-  'top_up', 'barber_loan', 'barber_payback',
+  'top_up', 'barber_loan', 'barber_payback', 'own_cash_deposit',
   'voucher_sale', 'shift_close', 'float'
 );
 CREATE TYPE expense_status AS ENUM ('pending', 'settled');
