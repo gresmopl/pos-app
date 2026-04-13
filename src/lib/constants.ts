@@ -2,9 +2,6 @@
 export const MOCK_ADMIN_PIN = "1234";
 export const MOCK_OPERATIONS_PIN = "1234";
 
-// Cash tolerance for shift close difference (PLN)
-export const CASH_TOLERANCE = 10;
-
 // Voucher expiry (months from sale date)
 export const VOUCHER_EXPIRY_MONTHS = 12;
 

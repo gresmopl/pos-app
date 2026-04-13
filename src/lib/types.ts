@@ -79,6 +79,7 @@ export interface CashMovement {
     | "top_up"
     | "barber_loan"
     | "barber_payback"
+    | "own_cash_deposit"
     | "voucher_sale"
     | "shift_close"
     | "float";

@@ -6,21 +6,19 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { MovementHistory } from "@/components/cash/MovementHistory";
 import { TipTab } from "@/components/cash/TipTab";
 import { ExpenseTab } from "@/components/cash/ExpenseTab";
-import { TopUpTab } from "@/components/cash/TopUpTab";
-import { LoanTab } from "@/components/cash/LoanTab";
+import { DepositTab } from "@/components/cash/DepositTab";
 import { VoucherTab } from "@/components/cash/VoucherTab";
 import { SettleModal } from "@/components/cash/SettleModal";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 
 export default function CashPage() {
   const tabsId = useId();
-  const [tab, setTab] = useState("tips");
+  const [tab, setTab] = useState("wallet");
 
   const {
     movements,
     successMsg,
     pendingExpenses,
-    pendingLoans,
     settleModal,
     settleTarget,
     settleCost,
@@ -30,9 +28,7 @@ export default function CashPage() {
     handleTipWithdrawal,
     handleExpenseTake,
     handleSettle,
-    handleTopUp,
-    handleBarberLoan,
-    handleBarberPayback,
+    handleOwnCashDeposit,
     handleVoucherSale,
   } = useMovements();
 
@@ -59,10 +55,9 @@ export default function CashPage() {
             onChange={setTab}
             size="xs"
             data={[
-              { label: "Napiwki", value: "tips" },
+              { label: "Portfel", value: "wallet" },
               { label: "Zakupy", value: "expenses" },
-              { label: "Wpłata", value: "topup" },
-              { label: "Zwrot", value: "loan" },
+              { label: "Wpłata do kasy", value: "deposit" },
               { label: "Bon", value: "voucher" },
             ]}
           />
@@ -87,7 +82,7 @@ export default function CashPage() {
           </Box>
         )}
 
-        {tab === "tips" && (
+        {tab === "wallet" && (
           <TipTab
             employeeOptions={employeeOptions}
             onWithdraw={handleTipWithdrawal}
@@ -105,14 +100,10 @@ export default function CashPage() {
           />
         )}
 
-        {tab === "topup" && <TopUpTab onTopUp={handleTopUp} />}
-
-        {tab === "loan" && (
-          <LoanTab
+        {tab === "deposit" && (
+          <DepositTab
             employeeOptions={employeeOptions}
-            pendingLoans={pendingLoans}
-            onLoan={handleBarberLoan}
-            onPayback={handleBarberPayback}
+            onDeposit={handleOwnCashDeposit}
             lockedEmployeeId={lockedEmployeeId}
           />
         )}

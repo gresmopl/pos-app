@@ -357,6 +357,9 @@ export function createMockClient(): DbClient {
         if (input.type === "tip_withdrawal" && emp) {
           emp.tipBalance = Math.max(0, emp.tipBalance - input.amount);
         }
+        if (input.type === "own_cash_deposit" && emp) {
+          emp.tipBalance += input.amount;
+        }
         if (input.type === "voucher_sale" && input.voucherCode) {
           mockVouchers.push({
             id: crypto.randomUUID(),

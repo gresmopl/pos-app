@@ -1,5 +1,5 @@
 import { Text, Group, Stack, Box, Divider } from "@mantine/core";
-import { IconArrowUp, IconArrowDown, IconGift, IconReceipt } from "@tabler/icons-react";
+import { IconArrowUp, IconArrowDown, IconGift, IconReceipt, IconWallet } from "@tabler/icons-react";
 import type { CashMovement } from "./types";
 
 interface MovementHistoryProps {
@@ -20,6 +20,7 @@ export function MovementHistory({ movements }: MovementHistoryProps) {
           const isOut = ["tip_withdrawal", "expense_take", "barber_payback"].includes(m.type);
           const isDebt = m.type === "barber_loan";
           const isVoucher = m.type === "voucher_sale";
+          const isOwnDeposit = m.type === "own_cash_deposit";
 
           const bgColor = isDebt
             ? "var(--mantine-color-yellow-light)"
@@ -50,6 +51,8 @@ export function MovementHistory({ movements }: MovementHistoryProps) {
                   >
                     {isDebt ? (
                       <IconReceipt size={14} color={iconColor} />
+                    ) : isOwnDeposit ? (
+                      <IconWallet size={14} color={iconColor} />
                     ) : isVoucher ? (
                       <IconGift size={14} color={iconColor} />
                     ) : isOut ? (

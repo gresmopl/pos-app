@@ -1,6 +1,36 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.65] - 2026-04-13
+- feat: nowa logika wplat drobnych zintegrowana z Portfelem wirtualnym (decyzja szefa 2026-04-13)
+  - zakladka "Wplata" przemianowana na "Wplata do kasy" (jeden typ - bez rozroznienia szef/pracownik)
+  - pole Pracownik wymagane; kwota powieksza oczekiwana gotowke w kasetce + dopisuje sie do tipBalance pracownika
+  - komunikat podpowiadajacy: "Rowniez gdy dales klientowi reszte z wlasnych"
+  - zakladka "Napiwki" przemianowana na "Portfel" (jedna suma, bez rozbicia)
+  - zakladka "Zwrot" usunieta (redundantna - nowa mechanika obsluguje obie sytuacje)
+- feat: nowy typ CashMovement - own_cash_deposit (types.ts, schema.sql, mock/supabase adaptery)
+  - mock: emp.tipBalance += amount
+  - supabase: RPC increment_tip_balance
+- feat: ikona Portfel (IconWallet) w MovementHistory dla own_cash_deposit
+- refactor: useMovements - usuniete handleBarberLoan/handleBarberPayback/handleTopUp/pendingLoans
+- refactor: usuniete TopUpTab.tsx i LoanTab.tsx
+- test: nowy test "handles own cash deposit", zaktualizowane testy useMovements (49 passing)
+
+[0.1.64] - 2026-04-13
+- feat: prowizja na biezaco na telefonie fryzjera (personal view Dashboard)
+  - lib/commission.ts: transactionCommission(), sumCommission() - obliczanie wg decyzji szefa (kwota netto po rabacie, split = pelna kwota)
+  - Dashboard: sekcja "Twoja prowizja dzisiaj" dla urzadzen personal (kwota + stawki usluga/produkt + utarg)
+- change: tolerancja kasowa usunieta - kazda roznica pokazywana na czerwono (decyzja szefa 2026-04-13, zgodne z v2.1)
+  - usuniety CASH_TOLERANCE z constants.ts
+  - aktualizacja CLAUDE.md i docs/technical.md
+- docs: zamkniete 6 otwartych pytan do szefa (TODO.md):
+  - brak starych bonow papierowych
+  - prowizja widoczna na telefonie fryzjera (nie tylko raporty)
+  - zmiana stawek natychmiastowa (bez harmonogramu)
+  - bez raportu na email/PDF po zmianie
+  - bony papierowe przy zamknieciu zmiany liczone razem z gotowka
+- chore: .mcp.json - cmd /c wrapper dla npx (naprawa ostrzezenia /doctor Windows)
+
 [0.1.63] - 2026-04-12
 - feat: widok per typ urzadzenia (personal/station/admin)
   - personal: Dashboard pokazuje tylko przypisanego pracownika, brak ikony admina

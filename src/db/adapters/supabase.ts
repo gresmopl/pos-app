@@ -85,6 +85,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
     top_up: "in",
     barber_loan: "out",
     barber_payback: "out",
+    own_cash_deposit: "in",
     voucher_sale: "in",
     shift_close: "out",
     float: "in",
@@ -1004,6 +1005,14 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           await supabase.rpc("increment_tip_balance", {
             emp_id: input.employeeId,
             delta: -input.amount,
+          });
+        }
+
+        // Own cash deposit: employee puts own money in drawer, gets credit in virtual wallet
+        if (input.type === "own_cash_deposit" && input.employeeId) {
+          await supabase.rpc("increment_tip_balance", {
+            emp_id: input.employeeId,
+            delta: input.amount,
           });
         }
 

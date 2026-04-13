@@ -1,6 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useEmployees, useDailyStats, useSalonSettings } from "@/hooks/useDbData";
+import {
+  useEmployees,
+  useDailyStats,
+  useSalonSettings,
+  useTodayTransactions,
+} from "@/hooks/useDbData";
+import { sumCommission } from "@/lib/commission";
 import {
   Text,
   Group,
@@ -70,6 +76,7 @@ export default function Dashboard() {
   const { data: employees = [], loading: empLoading } = useEmployees();
   const { data: stats } = useDailyStats();
   const { data: salon } = useSalonSettings();
+  const { data: todayTxs = [] } = useTodayTransactions();
   const { isAdmin, isPersonal, lockedEmployeeId } = useDeviceRole();
 
   const visibleEmployees = lockedEmployeeId
@@ -77,6 +84,10 @@ export default function Dashboard() {
     : employees;
 
   const totalRevenue = visibleEmployees.reduce((s, e) => s + e.todayRevenue, 0);
+
+  const personalEmployee =
+    isPersonal && lockedEmployeeId ? employees.find((e) => e.id === lockedEmployeeId) : undefined;
+  const personalCommission = personalEmployee ? sumCommission(todayTxs, personalEmployee) : 0;
   const diff = (stats?.todayServices ?? 0) - (stats?.yesterdayServices ?? 0);
   const yearDiff =
     stats && stats.lastYearServices > 0
@@ -191,6 +202,42 @@ export default function Dashboard() {
               </Text>
               <Text fw={700} fz={32} c="green">
                 {totalRevenue.toLocaleString("pl-PL")} zł
+              </Text>
+            </Box>
+            <Divider />
+          </>
+        )}
+
+        {/* ===== PERSONAL COMMISSION (fryzjer na swoim telefonie) ===== */}
+        {isPersonal && personalEmployee && (
+          <>
+            <Box py="md">
+              <Group justify="space-between" align="flex-start">
+                <div>
+                  <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+                    Twoja prowizja dzisiaj
+                  </Text>
+                  <Text fw={700} fz={32} c="green">
+                    {personalCommission.toLocaleString("pl-PL", {
+                      maximumFractionDigits: 2,
+                    })}{" "}
+                    zł
+                  </Text>
+                </div>
+                <Stack gap={0} align="flex-end">
+                  <Text fz="xs" c="dimmed" tt="uppercase" lts={1}>
+                    Stawki
+                  </Text>
+                  <Text fz="sm" fw={600}>
+                    Usługi: {personalEmployee.commissionServicePercent}%
+                  </Text>
+                  <Text fz="sm" fw={600}>
+                    Produkty: {personalEmployee.commissionProductPercent}%
+                  </Text>
+                </Stack>
+              </Group>
+              <Text fz="xs" c="dimmed" mt={4}>
+                Utarg dzisiaj: {personalEmployee.todayRevenue.toLocaleString("pl-PL")} zł
               </Text>
             </Box>
             <Divider />

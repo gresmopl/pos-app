@@ -5,19 +5,17 @@ import { renderHook, act } from "@testing-library/react";
 vi.mock("@/db", () => ({
   db: {
     employees: {
-      getAll: vi
-        .fn()
-        .mockResolvedValue([
-          {
-            id: "1",
-            name: "Jan",
-            avatar: "",
-            role: "barber",
-            todayRevenue: 0,
-            todayServices: 0,
-            tipBalance: 0,
-          },
-        ]),
+      getAll: vi.fn().mockResolvedValue([
+        {
+          id: "1",
+          name: "Jan",
+          avatar: "",
+          role: "barber",
+          todayRevenue: 0,
+          todayServices: 0,
+          tipBalance: 0,
+        },
+      ]),
       getById: vi.fn().mockImplementation((id: string) => {
         if (id === "1") {
           return Promise.resolve({
@@ -72,7 +70,6 @@ describe("useMovements", () => {
     expect(result.current.movements).toEqual([]);
     expect(result.current.successMsg).toBeNull();
     expect(result.current.pendingExpenses).toEqual([]);
-    expect(result.current.pendingLoans).toEqual([]);
   });
 
   it("handles tip withdrawal", async () => {
@@ -92,31 +89,13 @@ describe("useMovements", () => {
     expect(result.current.pendingExpenses).toHaveLength(1);
   });
 
-  it("handles top up", async () => {
+  it("handles own cash deposit", async () => {
     const { result } = await renderAndFlush();
-    await act(async () => result.current.handleTopUp(200, "Drobne"));
-    expect(result.current.movements[0].type).toBe("top_up");
+    await act(async () => result.current.handleOwnCashDeposit("1", 200));
+    expect(result.current.movements[0].type).toBe("own_cash_deposit");
     expect(result.current.movements[0].amount).toBe(200);
-  });
-
-  it("handles barber loan with pending status", async () => {
-    const { result } = await renderAndFlush();
-    await act(async () => result.current.handleBarberLoan("1", 30));
-    expect(result.current.movements[0].type).toBe("barber_loan");
-    expect(result.current.movements[0].status).toBe("pending");
-    expect(result.current.pendingLoans).toHaveLength(1);
-  });
-
-  it("handles barber payback - creates new entry and settles loan", async () => {
-    const { result } = await renderAndFlush();
-    await act(async () => result.current.handleBarberLoan("1", 30));
-    const loan = result.current.movements[0];
-    await act(async () => result.current.handleBarberPayback(loan));
-
-    expect(result.current.movements).toHaveLength(2);
-    expect(result.current.movements[0].type).toBe("barber_payback");
-    expect(result.current.movements[1].status).toBe("settled");
-    expect(result.current.pendingLoans).toHaveLength(0);
+    expect(result.current.movements[0].employeeName).toBe("Jan");
+    expect(result.current.successMsg).toContain("portfela");
   });
 
   it("handles voucher sale", async () => {
@@ -128,7 +107,7 @@ describe("useMovements", () => {
 
   it("clears success message after 3 seconds", async () => {
     const { result } = await renderAndFlush();
-    await act(async () => result.current.handleTopUp(100, "Test"));
+    await act(async () => result.current.handleOwnCashDeposit("1", 100));
     expect(result.current.successMsg).not.toBeNull();
     act(() => vi.advanceTimersByTime(3000));
     expect(result.current.successMsg).toBeNull();

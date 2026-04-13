@@ -30,6 +30,7 @@ function calcExpectedCash(
       (m) =>
         m.type === "top_up" ||
         m.type === "expense_settle" ||
+        m.type === "own_cash_deposit" ||
         (m.type === "voucher_sale" && m.paymentMethod === "cash")
     )
     .reduce((sum, m) => sum + m.amount, 0);
