@@ -15,6 +15,17 @@ export interface Employee {
   isActive: boolean;
 }
 
+export interface DailyReportSummary {
+  id: string;
+  closedAt: string;
+  closingEmployeeName: string;
+  expectedCash: number;
+  actualCash: number;
+  difference: number;
+  floatAmount: number;
+  depositAmount: number;
+}
+
 export interface DailyStats {
   todayServices: number;
   yesterdayServices: number;

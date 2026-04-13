@@ -10,6 +10,7 @@ import type {
   Voucher,
   SalonSettings,
   DeviceRegistration,
+  DailyReportSummary,
 } from "@/lib/types";
 
 export interface SaveEmployeeInput {
@@ -159,5 +160,6 @@ export interface DbClient {
     getToday(): Promise<{ closedAt: string } | null>;
     getLastClosedAt(): Promise<string | null>;
     getLastFloat(): Promise<number>;
+    getRecent(limit: number): Promise<DailyReportSummary[]>;
   };
 }

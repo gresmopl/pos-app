@@ -23,6 +23,7 @@ import type {
   Voucher,
   SalonSettings,
   DeviceRegistration,
+  DailyReportSummary,
 } from "@/lib/types";
 
 // Map Polish UI payment method names to DB enum values
@@ -84,7 +85,17 @@ export function createMockClient(): DbClient {
   const mockDevices: DeviceRegistration[] = [];
   const mockMovements: CashMovement[] = [];
   const mockVouchers: Voucher[] = [];
-  let mockDailyReport: { closedAt: string; floatAmount: number } | null = null;
+  interface MockReport {
+    id: string;
+    closedAt: string;
+    closingEmployeeName: string;
+    expectedCash: number;
+    actualCash: number;
+    difference: number;
+    floatAmount: number;
+    depositAmount: number;
+  }
+  const mockDailyReports: MockReport[] = [];
 
   const mockSalon: SalonSettings = {
     id: "a0000000-0000-0000-0000-000000000001",
@@ -395,16 +406,34 @@ export function createMockClient(): DbClient {
     },
     dailyReports: {
       async create(input: CreateDailyReportInput): Promise<void> {
-        mockDailyReport = { closedAt: new Date().toISOString(), floatAmount: input.floatAmount };
+        const emp = mockEmployees.find((e) => e.id === input.closingEmployeeId);
+        mockDailyReports.push({
+          id: crypto.randomUUID(),
+          closedAt: new Date().toISOString(),
+          closingEmployeeName: emp?.name ?? "-",
+          expectedCash: input.expectedCash,
+          actualCash: input.actualCash,
+          difference: input.difference,
+          floatAmount: input.floatAmount,
+          depositAmount: input.depositAmount,
+        });
       },
       async getToday(): Promise<{ closedAt: string } | null> {
-        return mockDailyReport;
+        const last = mockDailyReports[mockDailyReports.length - 1];
+        return last ? { closedAt: last.closedAt } : null;
       },
       async getLastClosedAt(): Promise<string | null> {
-        return mockDailyReport?.closedAt ?? null;
+        const last = mockDailyReports[mockDailyReports.length - 1];
+        return last?.closedAt ?? null;
       },
       async getLastFloat(): Promise<number> {
-        return mockDailyReport?.floatAmount ?? 0;
+        const last = mockDailyReports[mockDailyReports.length - 1];
+        return last?.floatAmount ?? 0;
+      },
+      async getRecent(limit: number): Promise<DailyReportSummary[]> {
+        return [...mockDailyReports]
+          .sort((a, b) => b.closedAt.localeCompare(a.closedAt))
+          .slice(0, limit);
       },
     },
     vouchers: {

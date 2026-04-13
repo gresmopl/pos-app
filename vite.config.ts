@@ -10,9 +10,13 @@ const isGitHubPages = process.env.GITHUB_ACTIONS === "true";
 export default defineConfig({
   base: isGitHubPages ? "/pos-app/" : "/",
   define: (() => {
-    const now = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    const stamp = `${pad(now.getFullYear() % 100)}${pad(now.getMonth() + 1)}${pad(now.getDate())}.${pad(now.getHours())}${pad(now.getMinutes())}`;
+    // Timestamp w strefie Europe/Warsaw (spojny miedzy buildem lokalnym i GitHub Actions w UTC)
+    // toLocaleString("sv-SE") zwraca format "2026-04-13 11:47:00"
+    const parts = new Date().toLocaleString("sv-SE", { timeZone: "Europe/Warsaw" });
+    const [date, time] = parts.split(" ");
+    const [yyyy, mm, dd] = date.split("-");
+    const [hh, mi] = time.split(":");
+    const stamp = `${yyyy.slice(2)}${mm}${dd}.${hh}${mi}`;
     return {
       APP_VERSION: JSON.stringify(`${pkg.version}.${stamp}`),
     };

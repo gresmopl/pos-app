@@ -40,3 +40,14 @@ export function useAllTransactions() {
 export function useSalonSettings() {
   return useDbQuery(() => db.salon.get());
 }
+
+export function useRecentReports(limit: number) {
+  return useDbQuery(() => db.dailyReports.getRecent(limit));
+}
+
+export function useTransactionsSinceLastClose() {
+  return useDbQuery(async () => {
+    const since = await db.dailyReports.getLastClosedAt();
+    return db.transactions.getSince(since);
+  });
+}

@@ -4,7 +4,8 @@ import {
   useEmployees,
   useDailyStats,
   useSalonSettings,
-  useTodayTransactions,
+  useRecentReports,
+  useTransactionsSinceLastClose,
 } from "@/hooks/useDbData";
 import { sumCommission } from "@/lib/commission";
 import {
@@ -76,18 +77,27 @@ export default function Dashboard() {
   const { data: employees = [], loading: empLoading } = useEmployees();
   const { data: stats } = useDailyStats();
   const { data: salon } = useSalonSettings();
-  const { data: todayTxs = [] } = useTodayTransactions();
+  const { data: txsSinceClose = [] } = useTransactionsSinceLastClose();
+  const { data: recentReports = [] } = useRecentReports(2);
   const { isAdmin, isPersonal, lockedEmployeeId } = useDeviceRole();
 
   const visibleEmployees = lockedEmployeeId
     ? employees.filter((e) => e.id === lockedEmployeeId)
     : employees;
 
-  const totalRevenue = visibleEmployees.reduce((s, e) => s + e.todayRevenue, 0);
+  // Utarg od ostatniego shift_close (dla wszystkich widokow)
+  const revenueSinceClose = txsSinceClose
+    .filter((tx) => !lockedEmployeeId || tx.employeeId === lockedEmployeeId)
+    .reduce((s, tx) => s + (tx.totalAmount - tx.tipAmount), 0);
 
   const personalEmployee =
     isPersonal && lockedEmployeeId ? employees.find((e) => e.id === lockedEmployeeId) : undefined;
-  const personalCommission = personalEmployee ? sumCommission(todayTxs, personalEmployee) : 0;
+  const personalCommission = personalEmployee
+    ? sumCommission(
+        txsSinceClose.filter((tx) => tx.employeeId === lockedEmployeeId),
+        personalEmployee
+      )
+    : 0;
   const diff = (stats?.todayServices ?? 0) - (stats?.yesterdayServices ?? 0);
   const yearDiff =
     stats && stats.lastYearServices > 0
@@ -198,10 +208,10 @@ export default function Dashboard() {
           <>
             <Box py="md">
               <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Utarg dzisiaj
+                Utarg od ostatniego zamknięcia
               </Text>
               <Text fw={700} fz={32} c="green">
-                {totalRevenue.toLocaleString("pl-PL")} zł
+                {revenueSinceClose.toLocaleString("pl-PL")} zł
               </Text>
             </Box>
             <Divider />
@@ -215,7 +225,7 @@ export default function Dashboard() {
               <Group justify="space-between" align="flex-start">
                 <div>
                   <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                    Twoja prowizja dzisiaj
+                    Twoja prowizja (od ostatniego zamknięcia)
                   </Text>
                   <Text fw={700} fz={32} c="green">
                     {personalCommission.toLocaleString("pl-PL", {
@@ -236,9 +246,20 @@ export default function Dashboard() {
                   </Text>
                 </Stack>
               </Group>
-              <Text fz="xs" c="dimmed" mt={4}>
-                Utarg dzisiaj: {personalEmployee.todayRevenue.toLocaleString("pl-PL")} zł
-              </Text>
+              <Group justify="space-between" mt="xs">
+                <Text fz="xs" c="dimmed">
+                  Utarg: {revenueSinceClose.toLocaleString("pl-PL")} zł
+                </Text>
+                <Text fz="xs" c="dimmed">
+                  Do wypłaty z Portfela:{" "}
+                  <Text span fw={700} c="green">
+                    {personalEmployee.tipBalance.toLocaleString("pl-PL", {
+                      minimumFractionDigits: 2,
+                    })}{" "}
+                    zł
+                  </Text>
+                </Text>
+              </Group>
             </Box>
             <Divider />
           </>
@@ -323,6 +344,64 @@ export default function Dashboard() {
             ))}
           </Stack>
         </Box>
+
+        {/* ===== OSTATNIE ZAMKNIECIA KASY ===== */}
+        {recentReports.length > 0 && (
+          <>
+            <Divider />
+            <Box py="md">
+              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="sm">
+                Ostatnie zamknięcia kasy
+              </Text>
+              <Stack gap="xs">
+                {recentReports.map((r) => {
+                  const d = new Date(r.closedAt);
+                  const dateStr = d.toLocaleDateString("pl-PL", {
+                    day: "2-digit",
+                    month: "2-digit",
+                  });
+                  const timeStr = d.toLocaleTimeString("pl-PL", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  const diffColor =
+                    r.difference === 0 ? "green" : r.difference < 0 ? "red" : "blue";
+                  const diffLabel =
+                    r.difference === 0
+                      ? "OK"
+                      : r.difference < 0
+                        ? `Manko ${r.difference.toLocaleString("pl-PL")} zł`
+                        : `Nadwyżka +${r.difference.toLocaleString("pl-PL")} zł`;
+                  return (
+                    <Box
+                      key={r.id}
+                      p="sm"
+                      style={{
+                        borderRadius: "var(--mantine-radius-md)",
+                        border: "1px solid var(--mantine-color-default-border)",
+                      }}
+                    >
+                      <Group justify="space-between" wrap="nowrap">
+                        <div>
+                          <Text fw={600} fz="sm">
+                            {dateStr} · {timeStr}
+                          </Text>
+                          <Text fz="xs" c="dimmed">
+                            Zamykał: {r.closingEmployeeName} · do koperty{" "}
+                            {r.depositAmount.toLocaleString("pl-PL")} zł
+                          </Text>
+                        </div>
+                        <Text fw={700} fz="sm" c={diffColor} style={{ whiteSpace: "nowrap" }}>
+                          {diffLabel}
+                        </Text>
+                      </Group>
+                    </Box>
+                  );
+                })}
+              </Stack>
+            </Box>
+          </>
+        )}
       </Container>
 
       {/* ===== BOTTOM BAR ===== */}
