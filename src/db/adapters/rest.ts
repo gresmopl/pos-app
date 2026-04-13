@@ -236,6 +236,12 @@ export function createRestClient(config: DbConfig): DbClient {
         const data = await r.json();
         return data.floatAmount ?? 0;
       },
+      async getRecent(limit: number) {
+        const r = await fetch(`${apiUrl}/api/daily-reports/recent?limit=${limit}`);
+        if (r.status === 404) return [];
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
     },
     vouchers: {
       async getByCode(code: string) {

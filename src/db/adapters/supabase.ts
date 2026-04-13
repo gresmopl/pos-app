@@ -23,6 +23,7 @@ import type {
   Voucher,
   SalonSettings,
   DeviceRegistration,
+  DailyReportSummary,
 } from "@/lib/types";
 
 export function createSupabaseClient(config: DbConfig): DbClient {
@@ -1112,6 +1113,32 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           .maybeSingle();
         if (error) throw error;
         return data ? Number(data.float_amount) : 0;
+      },
+
+      async getRecent(limit: number): Promise<DailyReportSummary[]> {
+        const { data, error } = await supabase
+          .from("daily_report")
+          .select(
+            "id, closed_at, expected_cash, actual_cash, difference, float_amount, deposit_amount, employee:closing_employee_id(name)"
+          )
+          .eq("salon_id", SALON_ID)
+          .order("closed_at", { ascending: false })
+          .limit(limit);
+        if (error) throw error;
+        return (data ?? []).map((r) => {
+          const emp = r.employee as { name: string } | { name: string }[] | null;
+          const name = Array.isArray(emp) ? (emp[0]?.name ?? "-") : (emp?.name ?? "-");
+          return {
+            id: r.id as string,
+            closedAt: r.closed_at as string,
+            closingEmployeeName: name,
+            expectedCash: Number(r.expected_cash),
+            actualCash: Number(r.actual_cash),
+            difference: Number(r.difference),
+            floatAmount: Number(r.float_amount),
+            depositAmount: Number(r.deposit_amount),
+          };
+        });
       },
     },
 

@@ -22,67 +22,7 @@ interface OpenQuestion {
   options: { value: string; label: string }[];
 }
 
-const openQuestions: OpenQuestion[] = [
-  {
-    id: "old-vouchers",
-    question: "Stare bony (sprzed systemu)",
-    description: "Czy są w obiegu bony papierowe wydane przed wdrożeniem systemu?",
-    options: [
-      { value: "none", label: "Nie ma starych bonów" },
-      { value: "import", label: "Są - trzeba je wprowadzić do systemu" },
-      { value: "ignore", label: "Są - ale pomijamy, niech wygasną" },
-    ],
-  },
-  {
-    id: "commission-visibility",
-    question: "Widoczność prowizji dla fryzjera",
-    description: "Czy fryzjer ma widzieć swoją prowizję na telefonie na bieżąco?",
-    options: [
-      { value: "reports-only", label: "Tylko w raportach miesięcznych" },
-      { value: "live", label: "Na bieżąco na telefonie" },
-      { value: "amounts-only", label: "Kwoty tak, ale stawki % ukryte" },
-    ],
-  },
-  {
-    id: "commission-schedule",
-    question: "Zmiana stawek prowizji w czasie",
-    description:
-      'Czy potrzebujesz planować zmianę stawki z wyprzedzeniem (np. "od 1 maja Oliwia 45%")?',
-    options: [
-      { value: "immediate", label: "Zmiana natychmiastowa wystarczy" },
-      { value: "scheduled", label: "Chcę planować z wyprzedzeniem" },
-    ],
-  },
-  {
-    id: "daily-email",
-    question: "Podsumowanie dnia na email",
-    description: "Czy chcesz dostawać raport po zamknięciu zmiany na maila?",
-    options: [
-      { value: "yes", label: "Tak, email z podsumowaniem" },
-      { value: "no", label: "Nie, sprawdzam sam w aplikacji" },
-    ],
-  },
-  {
-    id: "cash-tolerance",
-    question: "Tolerancja kasowa a nowy ekran",
-    description: "Ustalona tolerancja 10 zł. Nowy ekran pokazuje każdą różnicę.",
-    options: [
-      { value: "keep", label: "Tolerancja 10 zł nadal obowiązuje" },
-      { value: "show-all", label: "Chcę widzieć każdą różnicę" },
-      { value: "change", label: "Zmienić tolerancję na inną kwotę" },
-    ],
-  },
-  {
-    id: "paper-vouchers",
-    question: "Bony papierowe przy zamknięciu zmiany",
-    description:
-      "Bony papierowe liczone jako gotówka. System nie rozróżnia co jest gotówką a co bonem.",
-    options: [
-      { value: "ok", label: "OK - bony liczone razem z gotówką" },
-      { value: "separate", label: "Chcę osobne pole na bony papierowe" },
-    ],
-  },
-];
+const openQuestions: OpenQuestion[] = [];
 
 const completedAnswers = [
   {
@@ -112,6 +52,24 @@ const completedAnswers = [
   { question: "Nominały bonów", answer: "Bez presetów - tylko pole na kwotę" },
   { question: "Zdjęcie kasetki", answer: "Opcjonalne (przycisk, można pominąć)" },
   { question: "Magazyn kosmetyków", answer: "Nie - sam ogarniam co mam na półce" },
+  // Odpowiedzi szefa 2026-04-13
+  { question: "Stare bony (sprzed systemu)", answer: "Nie ma starych bonów" },
+  { question: "Widoczność prowizji dla fryzjera", answer: "Na bieżąco na telefonie fryzjera" },
+  { question: "Zmiana stawek prowizji w czasie", answer: "Zmiana natychmiastowa wystarczy" },
+  { question: "Podsumowanie dnia na email", answer: "Nie - sprawdzam sam w aplikacji" },
+  {
+    question: "Tolerancja kasowa a nowy ekran",
+    answer: "Chcę widzieć każdą różnicę (brak tolerancji)",
+  },
+  {
+    question: "Bony papierowe przy zamknięciu zmiany",
+    answer: "OK - bony liczone razem z gotówką",
+  },
+  // Odpowiedz szefa 2026-04-13 (nowa logika Wplat)
+  {
+    question: "Wpłata drobnych do kasy",
+    answer: "Jeden typ dla wszystkich (zasila kasetkę + Portfel pracownika)",
+  },
 ];
 
 export default function OwnerSurvey(): React.JSX.Element {
@@ -232,7 +190,7 @@ export default function OwnerSurvey(): React.JSX.Element {
               Zakończone
             </Badge>
             <Text fz="sm" c="dimmed">
-              18 pytań rozpatrzonych (2026-04-10)
+              {completedAnswers.length} pytań rozpatrzonych (2026-04-10, 2026-04-13)
             </Text>
           </Group>
 

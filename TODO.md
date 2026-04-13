@@ -112,13 +112,6 @@
   - station (tablet): pelny widok - wszyscy pracownicy, wszystkie zakladki
   - admin (szef): pelny widok + dostep do /admin/\*
   - Implementacja: useDeviceRole() hook w DeviceContext
-- [ ] Zarzadzanie bonami w panelu admina (/admin/vouchers)
-  - Lista wszystkich bonow (kod, kwota poczatkowa, saldo, status, data waznosci)
-  - Filtr: aktywne / wykorzystane / wygasle
-  - Laczna kwota zobowiazan (suma sald aktywnych bonow)
-  - Podglad historii uzycia bonu (ktore transakcje, ile pobrano)
-  - Przedluzenie waznosci (szef decyduje, np. klient przychodzi z przeterminowanym)
-  - Wymaga: db.vouchers.getAll(), updateExpiry() w adapterach
 - [x] Multi-salon - osobna baza per salon (osobny deploy z innym .env), bez RLS
 - [x] Wplata do kasy zintegrowana z Portfelem wirtualnym (2026-04-13)
   - nowy typ own_cash_deposit: powieksza oczekiwana gotowke + dopisuje do tipBalance pracownika
@@ -140,6 +133,13 @@
   - Offline queue - kolejkowanie operacji gdy brak internetu, wysylanie po powrocie polaczenia
 - [ ] Baza klientow (historia wizyt)
   - Notatki do transakcji ("klient chce nastepnym razem krotszy fade")
+- [ ] Zarzadzanie bonami w panelu admina (/admin/vouchers) - przeniesione z Fazy 2 (2026-04-13)
+  - Lista wszystkich bonow (kod, kwota poczatkowa, saldo, status, data waznosci)
+  - Filtr: aktywne / wykorzystane / wygasle
+  - Laczna kwota zobowiazan (suma sald aktywnych bonow)
+  - Podglad historii uzycia bonu (ktore transakcje, ile pobrano)
+  - Przedluzenie waznosci (szef decyduje, np. klient przychodzi z przeterminowanym)
+  - Wymaga: db.vouchers.getAll(), updateExpiry() w adapterach
 - [ ] Alert o wygasajacych bonach w panelu admina ("3 bony wygasaja w tym miesiacu, laczna kwota 450 zl")
 - [x] Cofniecie transakcji z bonem zwraca saldo na bon (zaimplementowane)
 - [ ] Audit log operacji administracyjnych - zapis device_id (bez gwarancji unikalnosci urzadzenia)

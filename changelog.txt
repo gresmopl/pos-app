@@ -1,6 +1,22 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.66] - 2026-04-13
+- feat: Dashboard - utarg od ostatniego zamkniecia kasy (zamiast dzisiejszego)
+  - useTransactionsSinceLastClose - transakcje od ostatniego shift_close
+  - dotyczy wszystkich widokow (admin, personal, station)
+  - pokrywa przypadki typu "niedzielny klient po zamknieciu sobotniej zmiany"
+- feat: Dashboard personal view - sekcja "Do wyplaty z Portfela" (tipBalance)
+  - prowizja liczona od ostatniego zamkniecia, nie od poczatku dnia
+- feat: Dashboard - sekcja "Ostatnie zamkniecia kasy" (2 ostatnie raporty)
+  - data/godzina zamkniecia, kto zamykal, kwota do koperty
+  - kolor roznicy: zielony OK, czerwony manko, niebieski nadwyzka
+  - useRecentReports(limit) + db.dailyReports.getRecent() we wszystkich adapterach
+  - supabase: join na closing_employee_id -> employee.name
+- feat: OwnerSurvey - wszystkie otwarte pytania zamkniete (25 decyzji lacznie)
+  - data 2026-04-13 dodana do podsumowania
+- fix: vite.config.ts timestamp uzywa strefy Europe/Warsaw (spojne lokalnie i w GH Actions)
+
 [0.1.65] - 2026-04-13
 - feat: nowa logika wplat drobnych zintegrowana z Portfelem wirtualnym (decyzja szefa 2026-04-13)
   - zakladka "Wplata" przemianowana na "Wplata do kasy" (jeden typ - bez rozroznienia szef/pracownik)
