@@ -5,25 +5,25 @@ Bez integracji z drukarka fiskalna (Bingo Online) i rezerwacjami (Booksy).
 
 ## Dokumentacja
 
-docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md (ADR), docs/conventions.md (konwencje kodu), CONTRIBUTING.md (zasady pracy), src/db/schema.sql (DB), TODO.md (zadania), changelog.txt
+docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md (ADR), docs/conventions.md (konwencje kodu), CONTRIBUTING.md (zasady pracy), src/db/schema.sql (DB), TODO.md (zadania biezace), IDEAS.md (backlog pomyslow), changelog.txt
 
 ## Stack
 
-| Warstwa    | Technologia                                 |
-| ---------- | ------------------------------------------- |
-| Frontend   | Vite + React 19 + TypeScript (strict)       |
-| UI         | Mantine UI 9 (createTheme, dark/light mode) |
-| Routing    | React Router v7 (SPA)                       |
-| Baza       | PostgreSQL (Supabase DEV / MyDevil PROD)    |
-| Testy      | Vitest + Testing Library + jsdom            |
-| Pre-commit | Husky + lint-staged (Prettier + ESLint)     |
+| Warstwa    | Technologia                                  |
+| ---------- | -------------------------------------------- |
+| Frontend   | Vite + React 19 + TypeScript (strict)        |
+| UI         | Mantine UI 9 (createTheme, dark/light mode)  |
+| Routing    | React Router v7 (SPA)                        |
+| Baza       | PostgreSQL (Supabase DEV / Hetzner VPS PROD) |
+| Testy      | Vitest + Testing Library + jsdom             |
+| Pre-commit | Husky + lint-staged (Prettier + ESLint)      |
 
 ## Srodowiska
 
-| Branch | Baza                  | Hosting      | Adapter    |
-| ------ | --------------------- | ------------ | ---------- |
-| `dev`  | Supabase DEV (free)   | GitHub Pages | `supabase` |
-| `main` | MyDevil PostgreSQL 16 | MyDevil MD1  | `rest`     |
+| Branch | Baza                        | Hosting          | Adapter    |
+| ------ | --------------------------- | ---------------- | ---------- |
+| `dev`  | Supabase DEV (free)         | GitHub Pages     | `supabase` |
+| `main` | PostgreSQL 16 (self-hosted) | Hetzner CX24 VPS | `rest`     |
 
 `VITE_DB_ADAPTER` w .env: `mock` (testy), `supabase` (DEV), `rest` (PROD). Szczegoly: docs/technical.md
 

@@ -34,7 +34,7 @@ Kazda decyzja zawiera kontekst, rozpatrywane opcje, wybor i uzasadnienie.
 **Data:** 2026-03
 **Status:** Zaakceptowana
 
-**Kontekst:** Projekt potrzebuje trzech srodowisk: mock (testy), Supabase (development), REST API (produkcja MyDevil). Kazde z nich ma inny sposob komunikacji z baza.
+**Kontekst:** Projekt potrzebuje trzech srodowisk: mock (testy), Supabase (development), REST API (produkcja Hetzner VPS). Kazde z nich ma inny sposob komunikacji z baza.
 
 **Opcje:**
 
@@ -47,7 +47,7 @@ Kazda decyzja zawiera kontekst, rozpatrywane opcje, wybor i uzasadnienie.
 
 - Zmiana srodowiska przez jedna zmienna env (`VITE_DB_ADAPTER`)
 - Testy nie zaleza od Supabase (adapter mock z danymi in-memory)
-- Migracja na MyDevil REST API nie wymaga zmian w komponentach
+- Migracja na Hetzner VPS REST API nie wymaga zmian w komponentach
 - Dodanie nowego backendu = nowy adapter, bez zmian w UI
 
 ---
@@ -69,7 +69,7 @@ Kazda decyzja zawiera kontekst, rozpatrywane opcje, wybor i uzasadnienie.
 **Uzasadnienie:**
 
 - Brak potrzeby SEO - aplikacja za autoryzacja urzadzen
-- Prostszy deploy (statyczne pliki na GitHub Pages / MyDevil)
+- Prostszy deploy (statyczne pliki na GitHub Pages / Hetzner VPS)
 - Szybszy development (Vite HMR)
 - Mniejsza zlozonosc niz Next.js (brak server components, API routes)
 - Docelowo PWA z offline fallback
@@ -96,7 +96,7 @@ Kazda decyzja zawiera kontekst, rozpatrywane opcje, wybor i uzasadnienie.
 - Prostsze - brak RLS, brak tenant_id w kazdym zapytaniu
 - Kazdy salon moze miec wlasna konfiguracje (cennik, pracownicy)
 - Przy jednym salonie nie ma narzutu multi-tenancy
-- Skalowanie: dodanie salonu = nowy deploy (koszt ~200 zl/rok na MyDevil)
+- Skalowanie: dodanie salonu = nowy deploy (nowa instancja bazy na tym samym Hetzner VPS lub osobny VPS)
 
 ---
 
@@ -124,25 +124,27 @@ Kazda decyzja zawiera kontekst, rozpatrywane opcje, wybor i uzasadnienie.
 
 ---
 
-## ADR-006: PostgreSQL (Supabase DEV + MyDevil PROD)
+## ADR-006: PostgreSQL (Supabase DEV + Hetzner VPS PROD)
 
 **Data:** 2026-04
-**Status:** Zaakceptowana
+**Status:** Zaakceptowana (zaktualizowana 2026-04-15: MyDevil -> Hetzner CX24)
 
-**Kontekst:** Potrzebna baza relacyjna z transakcjami. Development wymaga latwo dostepnej bazy, produkcja - taniej i niezawodnej.
+**Kontekst:** Potrzebna baza relacyjna z transakcjami. Development wymaga latwo dostepnej bazy, produkcja - pelnej kontroli i niezawodnej.
 
 **Opcje:**
 
 1. Supabase (free) na DEV i PROD
-2. Supabase DEV + MyDevil PROD
-3. Firebase (NoSQL)
+2. Supabase DEV + shared hosting z PostgreSQL (np. MyDevil)
+3. Supabase DEV + VPS self-managed (Hetzner)
+4. Firebase (NoSQL)
 
-**Decyzja:** Supabase DEV (free) + MyDevil PostgreSQL 16 (PROD)
+**Decyzja:** Supabase DEV (free) + Hetzner CX24 VPS z PostgreSQL 16 (PROD)
 
 **Uzasadnienie:**
 
 - Supabase free tier wystarczy na development (ograniczenia: pause po 7 dniach, 500 MB)
-- MyDevil MD1 (200 zl/rok) - PostgreSQL 16, brak limitow, pelna kontrola
+- Hetzner CX24 VPS - pelna kontrola, wlasny Node.js + PostgreSQL 16, snapshoty, skalowalnosc
+- Porzucono MyDevil (shared hosting) na rzecz VPS: wieksza elastycznosc, brak limitow shared CPU/RAM
 - Obie bazy to PostgreSQL - ten sam schemat, ten sam SQL
 - Firebase odrzucony: dane finansowe wymagaja relacji i transakcji ACID
 

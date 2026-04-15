@@ -1,7 +1,7 @@
 import type { DbClient } from "../types";
 import type { DbConfig } from "../config";
 
-// Production: REST API adapter for MyDevil (Node.js + PostgreSQL)
+// Production: REST API adapter for Hetzner VPS (Node.js + PostgreSQL)
 // Usage: VITE_DB_ADAPTER=rest in .env.production
 
 async function fetchApi<T>(apiUrl: string, endpoint: string): Promise<T> {
