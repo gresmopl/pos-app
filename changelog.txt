@@ -1,6 +1,14 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.71] - 2026-04-15
+- docs: IDEAS.md - sekcja "Stack idealny - gdybym pisal od nowa"
+  - referencja dla przyszlych projektow (barberCal, barberTime) lub hipotetycznego rewrite
+  - pelen stack 2026: Vite+React+TS, shadcn/Mantine, tRPC+Hono, Drizzle+PG, Zod, TanStack Query
+  - infrastruktura: Hetzner VPS + Docker Compose + Traefik + auto backup
+  - porownanie z trendami 2026 (8/9 pozycji zgodnych)
+  - rekomendacja: nie przepisywac - ten stack jako referencja dla nowych projektow
+
 [0.1.70] - 2026-04-15
 - docs: IDEAS.md - backlog pomyslow na przyszlosc
   - plan deploya PROD: Hetzner CX23 VPS + PostgreSQL + PostgREST (6 etapow, ~2 dni)
