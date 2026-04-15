@@ -104,7 +104,7 @@ export function ConfirmModal({
         </Box>
 
         <Group justify="flex-end">
-          <Button variant="subtle" onClick={onClose}>
+          <Button variant="subtle" size="lg" onClick={onClose}>
             Anuluj
           </Button>
           <Button

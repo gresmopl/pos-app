@@ -5,7 +5,7 @@ Bez integracji z drukarka fiskalna (Bingo Online) i rezerwacjami (Booksy).
 
 ## Dokumentacja
 
-docs/analytical.md (biznes), docs/technical.md (architektura), src/db/schema.sql (DB), TODO.md (zadania), changelog.txt
+docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md (ADR), docs/conventions.md (konwencje kodu), CONTRIBUTING.md (zasady pracy), src/db/schema.sql (DB), TODO.md (zadania), changelog.txt
 
 ## Stack
 
@@ -81,7 +81,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), src/db/schema.sql
 - **Hooki** (auto): ochrona main, ochrona configow, quality check (prettier+tsc), security scan
 - **Rules** (auto, scoped): typescript, database, react-mantine, tests
 - **Komendy**: `/review`, `/deploy-check`, `/phase-status`
-- **Agenty**: ts-reviewer, db-reviewer, test-writer
+- **Agenty**: ts-reviewer, db-reviewer, test-writer, ux-reviewer
 - **MCP**: context7 (aktualne docs Mantine/React/Supabase)
 
 ## Fazy

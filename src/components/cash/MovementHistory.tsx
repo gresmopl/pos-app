@@ -7,7 +7,16 @@ interface MovementHistoryProps {
 }
 
 export function MovementHistory({ movements }: MovementHistoryProps) {
-  if (movements.length === 0) return null;
+  if (movements.length === 0) {
+    return (
+      <>
+        <Divider />
+        <Text fz="xs" c="dimmed" py="md" ta="center">
+          Brak operacji kasowych w tej zmianie
+        </Text>
+      </>
+    );
+  }
 
   return (
     <>

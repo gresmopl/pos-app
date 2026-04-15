@@ -8,7 +8,12 @@
       "Glob(*)",
       "Grep(*)",
       "WebFetch(*)",
-      "WebSearch(*)"
+      "WebSearch(*)",
+      "Skill(review)",
+      "Skill(phase-status)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "context7"
+  ]
 }

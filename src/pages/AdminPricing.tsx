@@ -247,10 +247,10 @@ export default function PricingPage() {
                   <ActionIcon
                     variant="subtle"
                     color="gray"
-                    size="md"
+                    size="lg"
                     onClick={() => openEdit(item)}
                   >
-                    <IconPencil size={18} />
+                    <IconPencil size={20} />
                   </ActionIcon>
                   <Switch
                     checked={item.isActive}
@@ -315,7 +315,7 @@ export default function PricingPage() {
         <Stack gap="md">
           <TextInput
             label="Nazwa"
-            placeholder="np. Strzyżenie Męskie"
+            placeholder={tab === "services" ? "np. Strzyżenie Męskie" : "np. Pomada do włosów"}
             {...editForm.getInputProps("name")}
           />
           <NumberInput
@@ -341,7 +341,11 @@ export default function PricingPage() {
           )}
           <Textarea
             label="Krótki opis"
-            placeholder="np. Strzyżenie + mycie + stylizacja, 30-45 min"
+            placeholder={
+              tab === "services"
+                ? "np. Strzyżenie + mycie + stylizacja, 30-45 min"
+                : "np. Mocne utrwalenie, matowy efekt"
+            }
             autosize
             minRows={2}
             maxRows={3}

@@ -6,8 +6,11 @@ import {
   useSalonSettings,
   useRecentReports,
   useTransactionsSinceLastClose,
+  useMovementsSinceLastClose,
+  useLastFloat,
 } from "@/hooks/useDbData";
 import { sumCommission } from "@/lib/commission";
+import { calcExpectedCash, calcSystemCash } from "@/lib/cash";
 import {
   Text,
   Group,
@@ -78,6 +81,8 @@ export default function Dashboard() {
   const { data: stats } = useDailyStats();
   const { data: salon } = useSalonSettings();
   const { data: txsSinceClose = [] } = useTransactionsSinceLastClose();
+  const { data: movementsSinceClose = [] } = useMovementsSinceLastClose();
+  const { data: lastFloat } = useLastFloat();
   const { data: recentReports = [] } = useRecentReports(2);
   const { isAdmin, isPersonal, lockedEmployeeId } = useDeviceRole();
 
@@ -89,6 +94,11 @@ export default function Dashboard() {
   const revenueSinceClose = txsSinceClose
     .filter((tx) => !lockedEmployeeId || tx.employeeId === lockedEmployeeId)
     .reduce((s, tx) => s + (tx.totalAmount - tx.tipAmount), 0);
+
+  // Oczekiwany stan kasy - fizyczna gotowka + bony papierowe w szufladzie
+  // (wspoldzielony dla calego salonu, nie filtrujemy per pracownik)
+  const { systemCash } = calcSystemCash(txsSinceClose);
+  const expectedCash = calcExpectedCash(lastFloat ?? 0, systemCash, movementsSinceClose);
 
   const personalEmployee =
     isPersonal && lockedEmployeeId ? employees.find((e) => e.id === lockedEmployeeId) : undefined;
@@ -152,7 +162,7 @@ export default function Dashboard() {
 
         <Divider />
 
-        {/* ===== STATS BAR (ikony + liczby, bez tekstu) ===== */}
+        {/* ===== STATS BAR ===== */}
         <SimpleGrid cols={4} py="md">
           <Stack gap={0} align="center">
             <IconSun size={18} color="#fbbf24" />
@@ -170,6 +180,9 @@ export default function Dashboard() {
                 {diff}
               </Text>
             </Group>
+            <Text fz="xs" c="dimmed">
+              Dziś
+            </Text>
           </Stack>
 
           <Stack gap={0} align="center">
@@ -178,6 +191,9 @@ export default function Dashboard() {
               {stats?.monthServices}
             </Text>
             <Progress value={monthProgress} color="green" size={3} w={60} />
+            <Text fz="xs" c="dimmed">
+              Miesiąc
+            </Text>
           </Stack>
 
           <Stack gap={0} align="center">
@@ -191,6 +207,9 @@ export default function Dashboard() {
                 {yearDiff}%
               </Text>
             </Group>
+            <Text fz="xs" c="dimmed">
+              Rok
+            </Text>
           </Stack>
 
           <Stack gap={0} align="center">
@@ -198,9 +217,26 @@ export default function Dashboard() {
             <Text fw={700} fz={22}>
               {stats?.allTimeRecord}
             </Text>
+            <Text fz="xs" c="dimmed">
+              Rekord
+            </Text>
           </Stack>
         </SimpleGrid>
 
+        <Divider />
+
+        {/* ===== OCZEKIWANY STAN KASY (widoczny dla wszystkich) ===== */}
+        <Box py="md">
+          <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+            Oczekiwany stan kasy
+          </Text>
+          <Text fw={700} fz={32} c="green">
+            {expectedCash.toLocaleString("pl-PL")} zł
+          </Text>
+          <Text fz="xs" c="dimmed">
+            Gotówka + bony papierowe w szufladzie (do fizycznego przeliczenia na start zmiany)
+          </Text>
+        </Box>
         <Divider />
 
         {/* ===== REVENUE (admin only) ===== */}
@@ -419,36 +455,36 @@ export default function Dashboard() {
       >
         <Container size="lg">
           <SimpleGrid cols={salon?.knowledgeBaseEnabled ? 4 : 3}>
-            <UnstyledButton onClick={() => navigate("/history")}>
+            <UnstyledButton onClick={() => navigate("/history")} mih={56}>
               <Stack align="center" gap={4}>
-                <IconHistory size={22} color="var(--mantine-color-blue-filled)" />
-                <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
+                <IconHistory size={24} color="var(--mantine-color-blue-filled)" />
+                <Text fz="xs" c="var(--mantine-color-text)" ta="center" lh={1.2}>
                   Historia
                 </Text>
               </Stack>
             </UnstyledButton>
-            <UnstyledButton onClick={() => navigate("/cash")}>
+            <UnstyledButton onClick={() => navigate("/cash")} mih={56}>
               <Stack align="center" gap={4}>
-                <IconWallet size={22} color="var(--mantine-color-green-filled)" />
-                <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
+                <IconWallet size={24} color="var(--mantine-color-green-filled)" />
+                <Text fz="xs" c="var(--mantine-color-text)" ta="center" lh={1.2}>
                   Ruchy kasowe
                 </Text>
               </Stack>
             </UnstyledButton>
             {salon?.knowledgeBaseEnabled && (
-              <UnstyledButton onClick={() => navigate("/help")}>
+              <UnstyledButton onClick={() => navigate("/help")} mih={56}>
                 <Stack align="center" gap={4}>
-                  <IconBook size={22} color="var(--mantine-color-violet-filled)" />
-                  <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
+                  <IconBook size={24} color="var(--mantine-color-violet-filled)" />
+                  <Text fz="xs" c="var(--mantine-color-text)" ta="center" lh={1.2}>
                     Katalog
                   </Text>
                 </Stack>
               </UnstyledButton>
             )}
-            <UnstyledButton onClick={() => navigate("/shift-close")}>
+            <UnstyledButton onClick={() => navigate("/shift-close")} mih={56}>
               <Stack align="center" gap={4}>
-                <IconDoorExit size={22} color="var(--mantine-color-red-filled)" />
-                <Text fz={11} c="var(--mantine-color-text)" ta="center" lh={1.2}>
+                <IconDoorExit size={24} color="var(--mantine-color-red-filled)" />
+                <Text fz="xs" c="var(--mantine-color-text)" ta="center" lh={1.2}>
                   Zamknij zmianę
                 </Text>
               </Stack>

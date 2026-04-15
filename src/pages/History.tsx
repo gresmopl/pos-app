@@ -79,6 +79,7 @@ export default function HistoryPage() {
   const [undoPinError, setUndoPinError] = useState(false);
   const [undoSuccess, setUndoSuccess] = useState(false);
   const [undoTransactionId, setUndoTransactionId] = useState<string | null>(null);
+  const [undoing, setUndoing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [paymentFilter, setPaymentFilter] = useState("all");
 
@@ -145,12 +146,12 @@ export default function HistoryPage() {
             <Group gap="xs" wrap="nowrap" mb="xs">
               <UnstyledButton onClick={() => setFilter("all")} style={{ flexShrink: 0 }}>
                 <Avatar
-                  size={36}
+                  size={44}
                   radius="xl"
                   color={filter === "all" ? "green" : "gray"}
                   variant={filter === "all" ? "filled" : "light"}
                 >
-                  <IconUsers size={18} />
+                  <IconUsers size={20} />
                 </Avatar>
               </UnstyledButton>
               {uniqueEmployees.map((name) => {
@@ -163,7 +164,7 @@ export default function HistoryPage() {
                     style={{ flexShrink: 0 }}
                   >
                     <Avatar
-                      size={36}
+                      size={44}
                       radius="xl"
                       color={filter === name ? "green" : "gray"}
                       variant={filter === name ? "filled" : "light"}
@@ -179,37 +180,47 @@ export default function HistoryPage() {
 
         {/* ===== FILTER: PAYMENT METHOD ===== */}
         <ScrollArea type="auto" offsetScrollbars scrollbarSize={4}>
-          <Group gap="xs" wrap="nowrap" mb="sm">
+          <Group gap="sm" wrap="nowrap" mb="sm">
             <UnstyledButton onClick={() => setPaymentFilter("all")} style={{ flexShrink: 0 }}>
-              <Avatar
-                size={36}
-                radius="xl"
-                color={paymentFilter === "all" ? "blue" : "gray"}
-                variant={paymentFilter === "all" ? "filled" : "light"}
-              >
-                <IconStack2 size={18} />
-              </Avatar>
+              <Stack align="center" gap={2}>
+                <Avatar
+                  size={44}
+                  radius="xl"
+                  color={paymentFilter === "all" ? "blue" : "gray"}
+                  variant={paymentFilter === "all" ? "filled" : "light"}
+                >
+                  <IconStack2 size={20} />
+                </Avatar>
+                <Text fz="xs" c="dimmed">
+                  Wszystko
+                </Text>
+              </Stack>
             </UnstyledButton>
             {[
-              { value: "cash", icon: IconCash },
-              { value: "card", icon: IconCreditCard },
-              { value: "blik", icon: IconDeviceMobile },
-              { value: "voucher", icon: IconGift },
-              { value: "split", icon: IconArrowsSplit },
+              { value: "cash", icon: IconCash, label: "Gotówka" },
+              { value: "card", icon: IconCreditCard, label: "Karta" },
+              { value: "blik", icon: IconDeviceMobile, label: "BLIK" },
+              { value: "voucher", icon: IconGift, label: "Bon" },
+              { value: "split", icon: IconArrowsSplit, label: "Split" },
             ].map((opt) => (
               <UnstyledButton
                 key={opt.value}
                 onClick={() => setPaymentFilter(opt.value)}
                 style={{ flexShrink: 0 }}
               >
-                <Avatar
-                  size={36}
-                  radius="xl"
-                  color={paymentFilter === opt.value ? "blue" : "gray"}
-                  variant={paymentFilter === opt.value ? "filled" : "light"}
-                >
-                  <opt.icon size={18} />
-                </Avatar>
+                <Stack align="center" gap={2}>
+                  <Avatar
+                    size={44}
+                    radius="xl"
+                    color={paymentFilter === opt.value ? "blue" : "gray"}
+                    variant={paymentFilter === opt.value ? "filled" : "light"}
+                  >
+                    <opt.icon size={20} />
+                  </Avatar>
+                  <Text fz="xs" c="dimmed">
+                    {opt.label}
+                  </Text>
+                </Stack>
               </UnstyledButton>
             ))}
           </Group>
@@ -331,7 +342,7 @@ export default function HistoryPage() {
                           <Badge size="sm" variant="light">
                             {getPaymentLabel(transaction)}
                           </Badge>
-                          {index === 0 && filter === "all" && (
+                          {transaction.id === transactions[0]?.id && (
                             <Button
                               variant="subtle"
                               color="red"
@@ -464,14 +475,18 @@ export default function HistoryPage() {
               <Button
                 color="red"
                 disabled={undoPin.length < 4}
+                loading={undoing}
                 onClick={async () => {
                   if (undoPin === MOCK_OPERATIONS_PIN) {
+                    setUndoing(true);
                     try {
                       await db.transactions.cancel(undoTransactionId!);
                       setTransactions((prev) => prev.filter((t) => t.id !== undoTransactionId));
                       setUndoSuccess(true);
                     } catch (err) {
                       console.error("[History] Cancel failed:", err);
+                    } finally {
+                      setUndoing(false);
                     }
                   } else {
                     setUndoPinError(true);

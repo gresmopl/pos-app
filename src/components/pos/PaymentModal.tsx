@@ -212,6 +212,7 @@ export function PaymentModal({
         {!voucher && (
           <Button
             variant="light"
+            size="lg"
             onClick={handleCheckVoucher}
             loading={voucherLoading}
             disabled={!voucherCode.trim()}
