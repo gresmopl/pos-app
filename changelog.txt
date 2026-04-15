@@ -1,6 +1,13 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.70] - 2026-04-15
+- docs: IDEAS.md - backlog pomyslow na przyszlosc
+  - plan deploya PROD: Hetzner CX23 VPS + PostgreSQL + PostgREST (6 etapow, ~2 dni)
+  - zabezpieczenia: role DB (web_anon/web_device/authenticator), JWT, CORS, rate-limit
+  - inne pomysly: label printer, moduly barberCal/barberTime, PWA offline
+- CLAUDE.md - dodanie wzmianki o IDEAS.md w liscie dokumentacji
+
 [0.1.69] - 2026-04-15
 - docs: zmiana hostingu produkcyjnego MyDevil MD1 -> Hetzner CX24 VPS
   - CLAUDE.md, CONTRIBUTING.md, docs/technical.md, docs/decisions.md (ADR-006)

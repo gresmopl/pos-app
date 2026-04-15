@@ -5,7 +5,7 @@ Bez integracji z drukarka fiskalna (Bingo Online) i rezerwacjami (Booksy).
 
 ## Dokumentacja
 
-docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md (ADR), docs/conventions.md (konwencje kodu), CONTRIBUTING.md (zasady pracy), src/db/schema.sql (DB), TODO.md (zadania), changelog.txt
+docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md (ADR), docs/conventions.md (konwencje kodu), CONTRIBUTING.md (zasady pracy), src/db/schema.sql (DB), TODO.md (zadania biezace), IDEAS.md (backlog pomyslow), changelog.txt
 
 ## Stack
 
