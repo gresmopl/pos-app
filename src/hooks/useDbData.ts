@@ -51,3 +51,14 @@ export function useTransactionsSinceLastClose() {
     return db.transactions.getSince(since);
   });
 }
+
+export function useMovementsSinceLastClose() {
+  return useDbQuery(async () => {
+    const since = await db.dailyReports.getLastClosedAt();
+    return db.cashMovements.getSince(since);
+  });
+}
+
+export function useLastFloat() {
+  return useDbQuery(() => db.dailyReports.getLastFloat());
+}

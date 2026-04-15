@@ -1,6 +1,36 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.68] - 2026-04-15
+- feat: Dashboard - nowa sekcja "Oczekiwany stan kasy" (widoczna dla wszystkich)
+  - fizyczna gotowka + bony papierowe w szufladzie (do porannego przeliczenia)
+  - wzor: drobne z ostatniego zamkniecia + wplaty gotowkowe - wyplaty gotowkowe
+  - nie uwzglednia platnosci karta/BLIK
+  - dodana powyzej istniejacej sekcji "Utarg od ostatniego zamkniecia" (admin)
+- refactor: wyciagniete calcExpectedCash + calcSystemCash do src/lib/cash.ts
+  - DRY: ta sama logika teraz uzywana w ShiftClose i Dashboard
+- feat: nowe hooki useMovementsSinceLastClose + useLastFloat (useDbData.ts)
+
+[0.1.67] - 2026-04-14
+- fix(ux): kompleksowy audit ergonomii UI (23 problemow, agent ux-reviewer)
+  - CRITICAL: touch targets - przyciski Dodaj/Rabat (POS), bottom nav (Dashboard),
+    filtry pracownikow/platnosci (History), ActionIcon edycji (Admin) - min 44px
+  - CRITICAL: Admin PIN - przyciski compact-xs/fz=10 -> compact-sm/fz=xs
+  - HIGH: etykiety tekstowe pod statystykami Dashboard (Dzis/Miesiac/Rok/Rekord)
+  - HIGH: etykiety pod ikonami filtra platnosci (Gotowka/Karta/BLIK/Bon/Split)
+  - HIGH: przycisk Cofnij widoczny niezaleznie od aktywnych filtrow
+  - HIGH: loading state przed guardem pracownika w POS
+  - HIGH: size="lg" na przyciskach Sprawdz bon, Anuluj (ConfirmModal, ShiftClose)
+  - HIGH: polskie znaki diakrytyczne w AdminEmployees (Uslugi, Imie, Prowizja)
+  - HIGH: SegmentedControl Cash xs -> sm
+  - HIGH: "Wybierz klienta" (nieklikalne) -> "Klient anonimowy" (tekst)
+  - MEDIUM: ochrona przed podwojnym kliknieciem (cofanie tx)
+  - MEDIUM: live difference widoczna nawet przy wartosci 0 (ShiftClose)
+  - MEDIUM: przycisk kopiowania kodu bonu (CopyButton)
+  - MEDIUM: device ID fz=10 -> fz=xs (AdminDevices)
+  - MEDIUM: pusty stan historii ruchow kasy
+- feat: dodano agenta ux-reviewer (.claude/agents/)
+
 [0.1.66] - 2026-04-13
 - feat: Dashboard - utarg od ostatniego zamkniecia kasy (zamiast dzisiejszego)
   - useTransactionsSinceLastClose - transakcje od ostatniego shift_close

@@ -1,6 +1,6 @@
 import { useState, useId } from "react";
-import { Text, Stack, Box, NumberInput, SegmentedControl, Button } from "@mantine/core";
-import { IconGift, IconCheck } from "@tabler/icons-react";
+import { Text, Stack, Box, NumberInput, SegmentedControl, Button, CopyButton } from "@mantine/core";
+import { IconGift, IconCheck, IconCopy } from "@tabler/icons-react";
 
 interface VoucherTabProps {
   onSale: (amount: number, payment: string, code: string) => void;
@@ -70,6 +70,20 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
             {payment === "cash" ? "Gotówka" : "Karta"}
           </Text>
         </Box>
+        <CopyButton value={code}>
+          {({ copied, copy }) => (
+            <Button
+              size="md"
+              fullWidth
+              variant="light"
+              color={copied ? "green" : "gray"}
+              leftSection={copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
+              onClick={copy}
+            >
+              {copied ? "Skopiowano!" : "Kopiuj kod"}
+            </Button>
+          )}
+        </CopyButton>
         <Button size="lg" fullWidth variant="light" onClick={reset}>
           Sprzedaj kolejny bon
         </Button>

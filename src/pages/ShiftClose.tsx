@@ -4,6 +4,7 @@ import { useForm } from "@mantine/form";
 import { db } from "@/db";
 import { useEmployees } from "@/hooks/useDbData";
 import type { Transaction, CashMovement } from "@/lib/types";
+import { calcExpectedCash, calcSystemCash } from "@/lib/cash";
 import {
   Text,
   Group,
@@ -19,30 +20,6 @@ import {
 import { IconPrinter, IconCheck } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDeviceRole } from "@/contexts/DeviceContext";
-
-function calcExpectedCash(
-  openingBalance: number,
-  systemCash: number,
-  movements: CashMovement[]
-): number {
-  const cashIn = movements
-    .filter(
-      (m) =>
-        m.type === "top_up" ||
-        m.type === "expense_settle" ||
-        m.type === "own_cash_deposit" ||
-        (m.type === "voucher_sale" && m.paymentMethod === "cash")
-    )
-    .reduce((sum, m) => sum + m.amount, 0);
-
-  const cashOut = movements
-    .filter(
-      (m) => m.type === "tip_withdrawal" || m.type === "expense_take" || m.type === "barber_payback"
-    )
-    .reduce((sum, m) => sum + m.amount, 0);
-
-  return openingBalance + systemCash + cashIn - cashOut;
-}
 
 export default function ShiftClosePage(): React.JSX.Element {
   const navigate = useNavigate();
@@ -94,25 +71,7 @@ export default function ShiftClosePage(): React.JSX.Element {
   }));
 
   // === SYSTEM VALUES ===
-  let systemCash = 0;
-  let systemNonCash = 0;
-
-  for (const tx of transactions) {
-    if (tx.paymentBreakdown && tx.paymentBreakdown.length > 0) {
-      for (const pd of tx.paymentBreakdown) {
-        if (pd.method === "cash" || pd.method === "voucher") {
-          systemCash += pd.amount;
-        } else {
-          systemNonCash += pd.amount;
-        }
-      }
-    } else if (tx.paymentMethod === "cash" || tx.paymentMethod === "voucher") {
-      systemCash += tx.totalAmount;
-    } else {
-      systemNonCash += tx.totalAmount;
-    }
-  }
-
+  const { systemCash, systemNonCash } = calcSystemCash(transactions);
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
 
   // === FORM VALUES ===
@@ -322,7 +281,7 @@ export default function ShiftClosePage(): React.JSX.Element {
             </Stack>
 
             {/* KROK 4: Weryfikacja na zywo */}
-            {(floatVal > 0 || envelopeVal > 0) && (
+            {(form.values.floatAmount !== "" || form.values.envelopeAmount !== "") && (
               <>
                 <Divider />
                 <Box py="sm">
@@ -409,10 +368,10 @@ export default function ShiftClosePage(): React.JSX.Element {
             </Text>
           )}
           <Group justify="flex-end">
-            <Button variant="subtle" onClick={() => setConfirmModal(false)}>
+            <Button variant="subtle" size="lg" onClick={() => setConfirmModal(false)}>
               Anuluj
             </Button>
-            <Button color="green" onClick={handleConfirm} loading={isSubmitting}>
+            <Button color="green" size="lg" onClick={handleConfirm} loading={isSubmitting}>
               Potwierdzam
             </Button>
           </Group>

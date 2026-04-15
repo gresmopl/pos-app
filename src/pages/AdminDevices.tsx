@@ -127,7 +127,7 @@ function DeviceCard({
         <Text fz="xs" c="dimmed">
           Ostatnio widziano: {formatDate(device.lastSeenAt)}
         </Text>
-        <Text fz={10} c="dimmed">
+        <Text fz="xs" c="dimmed">
           ID: {device.deviceId.slice(0, 8)}...
         </Text>
       </Stack>

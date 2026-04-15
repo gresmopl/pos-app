@@ -45,7 +45,7 @@ export default function AdminEmployeesPage() {
       commissionProduct: 0 as number | string,
     },
     validate: {
-      name: (v) => (v.trim() ? null : "Imie jest wymagane"),
+      name: (v) => (v.trim() ? null : "Imię jest wymagane"),
       commissionService: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
       commissionProduct: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
     },
@@ -160,14 +160,14 @@ export default function AdminEmployeesPage() {
             )}
           </Group>
           <Text fz="xs" c="dimmed">
-            Uslugi {emp.commissionServicePercent}% / Produkty {emp.commissionProductPercent}%
+            Usługi {emp.commissionServicePercent}% / Produkty {emp.commissionProductPercent}%
           </Text>
         </div>
       </Group>
       <Group gap="sm" wrap="nowrap">
         {!inactive && (
-          <ActionIcon variant="subtle" color="gray" size="md" onClick={() => openEdit(emp)}>
-            <IconPencil size={18} />
+          <ActionIcon variant="subtle" color="gray" size="lg" onClick={() => openEdit(emp)}>
+            <IconPencil size={20} />
           </ActionIcon>
         )}
         <Switch checked={emp.isActive} onChange={() => toggleActive(emp.id)} size="sm" />
@@ -240,7 +240,7 @@ export default function AdminEmployeesPage() {
       >
         <Stack gap="md">
           <TextInput
-            label="Imie / pseudonim"
+            label="Imię / pseudonim"
             placeholder="np. Oliwia"
             {...editForm.getInputProps("name")}
           />
@@ -249,7 +249,7 @@ export default function AdminEmployeesPage() {
             placeholder="np. OL"
             maxLength={3}
             {...editForm.getInputProps("avatar")}
-            description="Wyswietlany gdy brak zdjecia"
+            description="Wyświetlany gdy brak zdjęcia"
           />
           <Box>
             <Text fz="sm" fw={500} mb={4}>
@@ -266,7 +266,7 @@ export default function AdminEmployeesPage() {
             />
           </Box>
           <NumberInput
-            label="Prowizja od uslug (%)"
+            label="Prowizja od usług (%)"
             placeholder="0"
             min={0}
             max={100}
@@ -274,7 +274,7 @@ export default function AdminEmployeesPage() {
             {...editForm.getInputProps("commissionService")}
           />
           <NumberInput
-            label="Prowizja od produktow (%)"
+            label="Prowizja od produktów (%)"
             placeholder="0"
             min={0}
             max={100}

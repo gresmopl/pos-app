@@ -98,10 +98,10 @@ export default function AdminPage() {
             <Button
               variant="subtle"
               color="gray"
-              size="compact-xs"
-              leftSection={<IconRefresh size={12} />}
+              size="compact-sm"
+              leftSection={<IconRefresh size={14} />}
               onClick={forceUpdate}
-              fz={10}
+              fz="xs"
             >
               v{APP_VERSION} · Wymuś aktualizację
             </Button>
@@ -109,10 +109,10 @@ export default function AdminPage() {
               <Button
                 variant="subtle"
                 color="gray"
-                size="compact-xs"
-                leftSection={<IconDownload size={12} />}
+                size="compact-sm"
+                leftSection={<IconDownload size={14} />}
                 onClick={handleInstall}
-                fz={10}
+                fz="xs"
               >
                 Zainstaluj na ekranie głównym
               </Button>

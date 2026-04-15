@@ -53,7 +53,7 @@ export default function CashPage() {
             fullWidth
             value={tab}
             onChange={setTab}
-            size="xs"
+            size="sm"
             data={[
               { label: "Portfel", value: "wallet" },
               { label: "Zakupy", value: "expenses" },

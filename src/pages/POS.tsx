@@ -2,20 +2,11 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import { useEmployees, useServices, useProducts } from "@/hooks/useDbData";
 import { db } from "@/db";
-import {
-  Text,
-  Group,
-  Box,
-  Avatar,
-  UnstyledButton,
-  Divider,
-  Container,
-  Badge,
-  Button,
-} from "@mantine/core";
+import { Text, Group, Box, Avatar, Divider, Container, Badge, Button } from "@mantine/core";
 import { IconPlus, IconDiscount2 } from "@tabler/icons-react";
 import { useCart } from "@/hooks/useCart";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PageSkeleton } from "@/components/PageSkeleton";
 import { CartItemList } from "@/components/pos/CartItemList";
 import { TipSelector } from "@/components/pos/TipSelector";
 import { AddItemModal } from "@/components/pos/AddItemModal";
@@ -27,7 +18,7 @@ import { ConfirmModal } from "@/components/pos/ConfirmModal";
 export default function POSPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { data: employees = [] } = useEmployees();
+  const { data: employees = [], loading: empLoading } = useEmployees();
   const { data: services = [] } = useServices();
   const { data: products = [] } = useProducts();
 
@@ -103,6 +94,10 @@ export default function POSPage() {
     }
   };
 
+  if (empLoading) {
+    return <PageSkeleton />;
+  }
+
   if (!employee) {
     return (
       <Container size="lg" py="xl">
@@ -134,11 +129,9 @@ export default function POSPage() {
         <Divider />
 
         {/* Client (optional) */}
-        <UnstyledButton w="100%" py="md">
-          <Group gap="sm" c="dimmed">
-            <Text fz="sm">Wybierz klienta albo pozostaw puste</Text>
-          </Group>
-        </UnstyledButton>
+        <Text fz="sm" c="dimmed" py="md">
+          Klient anonimowy
+        </Text>
 
         <Divider />
 
@@ -182,22 +175,22 @@ export default function POSPage() {
         {/* Action buttons */}
         <Divider />
         <Group py="md" gap="md">
-          <UnstyledButton onClick={() => setAddModalOpen(true)}>
-            <Group gap={6}>
-              <IconPlus size={18} />
-              <Text fz="md" fw={500}>
-                Dodaj
-              </Text>
-            </Group>
-          </UnstyledButton>
-          <UnstyledButton onClick={() => setDiscountModalOpen(true)}>
-            <Group gap={6}>
-              <IconDiscount2 size={18} />
-              <Text fz="md" fw={500}>
-                Rabat
-              </Text>
-            </Group>
-          </UnstyledButton>
+          <Button
+            variant="light"
+            size="md"
+            leftSection={<IconPlus size={18} />}
+            onClick={() => setAddModalOpen(true)}
+          >
+            Dodaj
+          </Button>
+          <Button
+            variant="light"
+            size="md"
+            leftSection={<IconDiscount2 size={18} />}
+            onClick={() => setDiscountModalOpen(true)}
+          >
+            Rabat
+          </Button>
         </Group>
       </Container>
 
