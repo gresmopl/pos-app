@@ -9,26 +9,26 @@ Docelowo: Progressive Web App (PWA) z offline fallback.
 
 ### Stack
 
-| Warstwa    | Technologia                           | Wersja |
-| ---------- | ------------------------------------- | ------ |
-| Bundler    | Vite                                  | 6.x    |
-| Framework  | React                                 | 19.x   |
-| Jezyk      | TypeScript (strict)                   | 5.x    |
-| Routing    | React Router                          | 7.x    |
-| UI         | Mantine                               | 9.x    |
-| Baza       | PostgreSQL (Supabase DEV / MyDevil)   | 16     |
-| DB SDK     | @supabase/supabase-js                 | 2.x    |
-| Testy      | Vitest + Testing Library              | 4.x    |
-| Linting    | ESLint (typescript-eslint) + Prettier | -      |
-| Pre-commit | Husky + lint-staged                   | -      |
+| Warstwa    | Technologia                             | Wersja |
+| ---------- | --------------------------------------- | ------ |
+| Bundler    | Vite                                    | 6.x    |
+| Framework  | React                                   | 19.x   |
+| Jezyk      | TypeScript (strict)                     | 5.x    |
+| Routing    | React Router                            | 7.x    |
+| UI         | Mantine                                 | 9.x    |
+| Baza       | PostgreSQL (Supabase DEV / Hetzner VPS) | 16     |
+| DB SDK     | @supabase/supabase-js                   | 2.x    |
+| Testy      | Vitest + Testing Library                | 4.x    |
+| Linting    | ESLint (typescript-eslint) + Prettier   | -      |
+| Pre-commit | Husky + lint-staged                     | -      |
 
 ### Hosting i deploy
 
-| Srodowisko  | Hosting      | Baza                  | Branch | Deploy                        |
-| ----------- | ------------ | --------------------- | ------ | ----------------------------- |
-| Produkcja   | MyDevil MD1  | MyDevil PostgreSQL 16 | main   | FTP/SFTP (po npm run build)   |
-| Dev/Preview | GitHub Pages | Supabase DEV (free)   | dev    | GitHub Actions (automatyczny) |
-| Lokalne     | Vite dev     | Supabase DEV / mock   | dev    | `npm run dev`                 |
+| Srodowisko  | Hosting          | Baza                        | Branch | Deploy                        |
+| ----------- | ---------------- | --------------------------- | ------ | ----------------------------- |
+| Produkcja   | Hetzner CX24 VPS | PostgreSQL 16 (self-hosted) | main   | SSH/rsync (po npm run build)  |
+| Dev/Preview | GitHub Pages     | Supabase DEV (free)         | dev    | GitHub Actions (automatyczny) |
+| Lokalne     | Vite dev         | Supabase DEV / mock         | dev    | `npm run dev`                 |
 
 GitHub Pages wymaga basename `/pos-app` w BrowserRouter - wykrywane automatycznie w `main.tsx`.
 
@@ -53,15 +53,15 @@ Aplikacja uzywa zmiennych `VITE_*` ladowanych przez Vite z plikow `.env`:
 | `VITE_API_URL`           | URL REST API (produkcja)           | `https://formen.example.com`       |
 
 **Dlaczego `.env.development` jest w repo:**
-Klucz `anon` Supabase jest publiczny - trafia do bundla JS w przegladarce. Bezpieczenstwo zapewnia Row Level Security (RLS), nie ukrywanie klucza. `.env.production` zawiera konfiguracje MyDevil i jest w `.gitignore`.
+Klucz `anon` Supabase jest publiczny - trafia do bundla JS w przegladarce. Bezpieczenstwo zapewnia Row Level Security (RLS), nie ukrywanie klucza. `.env.production` zawiera konfiguracje Hetzner VPS i jest w `.gitignore`.
 
 **GitHub Actions / Vercel:** build z `--mode development` laduje `.env.development` z repo. Bez tego fallback na adapter `mock`.
 
-**Jak zmienic baze na produkcyjna (MyDevil):**
+**Jak zmienic baze na produkcyjna (Hetzner VPS):**
 
 1. Utworz `.env.production` lokalnie z `VITE_DB_ADAPTER=rest` i `VITE_API_URL`
 2. Zbuduj: `npm run build` (Vite domyslnie uzywa mode production)
-3. Wgraj `dist/` na MyDevil przez SFTP
+3. Wgraj `dist/` na Hetzner VPS przez SSH/rsync (np. `rsync -avz dist/ user@host:/var/www/formen/`)
 4. GitHub Pages i Vercel dalej uzywaja Supabase DEV (niezalezne)
 
 ### Strategia hostingu
@@ -74,18 +74,17 @@ Klucz `anon` Supabase jest publiczny - trafia do bundla JS w przegladarce. Bezpi
 
 **Produkcja (docelowo):**
 
-- MyDevil MD1 (200 zl/rok) - frontend SPA + PostgreSQL 16 + Node.js
+- Hetzner CX24 VPS - frontend SPA + PostgreSQL 16 + Node.js (self-managed)
 - Supabase DEV zostaje jako srodowisko testowe (free, bez kosztow)
 
-**MyDevil MD1 - parametry:**
+**Hetzner CX24 - parametry:**
 
-- 25 GB SSD/NVMe, 1 GB RAM
-- Node.js, PostgreSQL 16, MySQL 8, MongoDB 5
-- SSH, Git, SFTP, CRON
-- SSL Let's Encrypt, WAF, backup codzienny
-- Serwery w Warszawie (ATMAN)
-
-**Koszty docelowe:** 200 zl/rok (MyDevil) vs poprzedni plan ~1460 zl/rok (lh.pl + Supabase Pro).
+- VPS cloud (Hetzner Cloud)
+- Node.js + PostgreSQL 16 + nginx/Caddy (self-hosted)
+- Pelny dostep SSH, rsync/scp deploy
+- SSL Let's Encrypt (Caddy/Certbot)
+- Backupy: snapshoty Hetzner + pg_dump cron
+- Lokalizacja: Falkenstein / Helsinki / Nurnberg (do wyboru)
 
 ---
 
@@ -156,7 +155,7 @@ src/
     adapters/
       mock.ts           Adapter mock (testy, offline)
       supabase.ts       Adapter Supabase DEV (JS SDK)
-      rest.ts           Adapter REST (produkcja MyDevil)
+      rest.ts           Adapter REST (produkcja Hetzner VPS)
 
   lib/
     types.ts            Centralne typy domenowe (Employee, Transaction, CashMovement, ...)
@@ -213,7 +212,7 @@ Trzy adaptery w `src/db/adapters/`, wybierane przez `VITE_DB_ADAPTER`:
 | ---------- | ---------- | --------------------------------------- |
 | `mock`     | Testy      | Dane w pamieci, brak zapytan sieciowych |
 | `supabase` | DEV        | Supabase JS SDK, bezposrednie zapytania |
-| `rest`     | Produkcja  | REST API do Node.js na MyDevil          |
+| `rest`     | Produkcja  | REST API do Node.js na Hetzner VPS      |
 
 ### Interfejs DbClient
 

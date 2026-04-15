@@ -17,10 +17,10 @@ npm run dev        # http://localhost:5173
 
 ## Srodowiska i branche
 
-| Branch | Srodowisko  | Baza danych   | Deploy           |
-| ------ | ----------- | ------------- | ---------------- |
-| `dev`  | Development | Supabase DEV  | GitHub Pages     |
-| `main` | Produkcja   | MyDevil PG 16 | MyDevil (reczny) |
+| Branch | Srodowisko  | Baza danych                 | Deploy                    |
+| ------ | ----------- | --------------------------- | ------------------------- |
+| `dev`  | Development | Supabase DEV                | GitHub Pages              |
+| `main` | Produkcja   | PostgreSQL 16 (self-hosted) | Hetzner CX24 VPS (reczny) |
 
 - Pracuj na branchu `dev`
 - PR do `main` tylko po testach i review
