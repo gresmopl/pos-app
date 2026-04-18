@@ -18,30 +18,52 @@ import {
   TextInput,
   Avatar,
 } from "@mantine/core";
+import { DatePickerInput } from "@mantine/dates";
 import {
   IconChevronDown,
   IconChevronUp,
   IconArrowBackUp,
   IconSearch,
   IconUsers,
+  IconCalendar,
 } from "@tabler/icons-react";
 import { MOCK_OPERATIONS_PIN } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDeviceRole } from "@/contexts/DeviceContext";
+
+function startOfDay(date: Date): string {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}
+
+function endOfDay(date: Date): string {
+  const d = new Date(date);
+  d.setHours(23, 59, 59, 999);
+  return d.toISOString();
+}
 
 export default function HistoryPage() {
   const { data: employees = [] } = useEmployees();
   const { isPersonal, lockedEmployeeId } = useDeviceRole();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
 
+  const [dateFrom, setDateFrom] = useState<Date | null>(new Date());
+  const [dateTo, setDateTo] = useState<Date | null>(new Date());
+
   useEffect(() => {
     async function load() {
-      const since = await db.dailyReports.getLastClosedAt();
+      const since = dateFrom ? startOfDay(dateFrom) : null;
       const txs = await db.transactions.getSince(since);
-      setTransactions(txs);
+      if (dateTo) {
+        const end = endOfDay(dateTo);
+        setTransactions(txs.filter((t) => t.timestamp <= end));
+      } else {
+        setTransactions(txs);
+      }
     }
     load().catch(console.error);
-  }, []);
+  }, [dateFrom, dateTo]);
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [undoModal, setUndoModal] = useState(false);
@@ -97,8 +119,35 @@ export default function HistoryPage() {
 
         <Divider />
 
+        {/* ===== DATE FILTER ===== */}
+        <Group grow gap="sm" py="sm">
+          <DatePickerInput
+            label="Od"
+            placeholder="Wybierz datę"
+            valueFormat="D MMM YYYY"
+            value={dateFrom}
+            onChange={(val) => setDateFrom(val ? new Date(val) : null)}
+            maxDate={dateTo ?? undefined}
+            leftSection={<IconCalendar size={16} />}
+            size="sm"
+            clearable
+          />
+          <DatePickerInput
+            label="Do"
+            placeholder="Wybierz datę"
+            valueFormat="D MMM YYYY"
+            value={dateTo}
+            onChange={(val) => setDateTo(val ? new Date(val) : null)}
+            minDate={dateFrom ?? undefined}
+            maxDate={new Date()}
+            leftSection={<IconCalendar size={16} />}
+            size="sm"
+            clearable
+          />
+        </Group>
+
         {/* ===== SEARCH ===== */}
-        <Box py="sm">
+        <Box pb="sm">
           <TextInput
             placeholder="Szukaj (usługa, klient, fryzjer)..."
             leftSection={<IconSearch size={16} />}
@@ -153,7 +202,7 @@ export default function HistoryPage() {
           {filtered.length === 0 ? (
             <Stack align="center" gap="xs" py="xl">
               <Text fz="sm" c="dimmed" ta="center">
-                Brak transakcji od ostatniego zamknięcia
+                Brak transakcji w wybranym okresie
               </Text>
               {(filter !== "all" || searchQuery) && (
                 <Button
@@ -255,25 +304,26 @@ export default function HistoryPage() {
                             {transaction.totalAmount.toLocaleString("pl-PL")} zł
                           </Text>
                         </Group>
-                        {transaction.id === transactions[0]?.id && (
-                          <Group justify="flex-end">
-                            <Button
-                              variant="subtle"
-                              color="red"
-                              size="sm"
-                              leftSection={<IconArrowBackUp size={16} />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setUndoTransactionId(transaction.id);
-                                setUndoPin("");
-                                setUndoPinError(false);
-                                setUndoModal(true);
-                              }}
-                            >
-                              Cofnij transakcję
-                            </Button>
-                          </Group>
-                        )}
+                        {transaction.id === transactions[0]?.id &&
+                          new Date(transaction.timestamp).toDateString() === today && (
+                            <Group justify="flex-end">
+                              <Button
+                                variant="subtle"
+                                color="red"
+                                size="sm"
+                                leftSection={<IconArrowBackUp size={16} />}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setUndoTransactionId(transaction.id);
+                                  setUndoPin("");
+                                  setUndoPinError(false);
+                                  setUndoModal(true);
+                                }}
+                              >
+                                Cofnij transakcję
+                              </Button>
+                            </Group>
+                          )}
                       </Stack>
                     </Box>
                   </Collapse>

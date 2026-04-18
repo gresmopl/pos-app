@@ -2,10 +2,13 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { MantineProvider } from "@mantine/core";
+import { DatesProvider } from "@mantine/dates";
 import { Notifications } from "@mantine/notifications";
 import { ModalsProvider } from "@mantine/modals";
 import "@mantine/core/styles.css";
+import "@mantine/dates/styles.css";
 import "@mantine/notifications/styles.css";
+import "dayjs/locale/pl";
 import "./globals.css";
 import { themes, defaultThemeKey } from "@/themes";
 import { DeviceProvider } from "@/contexts/DeviceContext";
@@ -26,12 +29,14 @@ createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <BrowserRouter basename={basename}>
       <MantineProvider theme={themes[defaultThemeKey]} defaultColorScheme="auto">
-        <Notifications position="top-center" autoClose={3000} />
-        <ModalsProvider>
-          <DeviceProvider>
-            <App />
-          </DeviceProvider>
-        </ModalsProvider>
+        <DatesProvider settings={{ locale: "pl" }}>
+          <Notifications position="top-center" autoClose={3000} />
+          <ModalsProvider>
+            <DeviceProvider>
+              <App />
+            </DeviceProvider>
+          </ModalsProvider>
+        </DatesProvider>
       </MantineProvider>
     </BrowserRouter>
   </StrictMode>

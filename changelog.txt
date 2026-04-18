@@ -1,6 +1,16 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.82] - 2026-04-19
+- feat: Historia transakcji - filtr dat od/do z kalendarzem
+  - dwa DatePickerInput (Od/Do) z polskim kalendarzem (DatesProvider locale=pl)
+  - domyslnie dzisiaj, daty wzajemnie sie ograniczaja (min/maxDate)
+  - format kompaktowy "D MMM YYYY" (np. 19 kwi 2026)
+  - dane ladowane dynamicznie po zmianie zakresu dat (getSince + filtr client-side)
+  - cofniecie transakcji ograniczone tylko do dzisiejszych
+  - tekst pustego stanu: "Brak transakcji w wybranym okresie"
+  - @mantine/dates/styles.css + dayjs/locale/pl w main.tsx
+
 [0.1.81] - 2026-04-19
 - refactor: uproszczenie bonu w Kasie - tylko kwota, bez generowania kodu
   - VoucherModal: usuniety ekran sukcesu z kodem i CopyButton
