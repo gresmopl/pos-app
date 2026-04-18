@@ -1,6 +1,13 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.75] - 2026-04-18
+- feat: ekran Wiecej (/more) - hub nawigacyjny z prototypu szefa
+  - sekcja Codzienne: Historia sprzedazy, Cennik, Zamkniecie zmiany
+  - sekcja Dla szefa (tylko admin): Statystyki, Pracownicy, Panel admina
+  - sekcja Urzadzenie: nazwa + badge typu (personal/station/admin)
+  - przycisk Wyloguj urzadzenie (czerwony)
+
 [0.1.74] - 2026-04-18
 - feat: BottomNavBar - staly dolny pasek nawigacyjny na kazdej stronie
   - 4 przyciski: Sprzedaz (/), Kasa (/cash), Napiwki (/wallet), Wiecej (/more)
