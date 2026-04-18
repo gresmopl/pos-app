@@ -1,6 +1,18 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.78] - 2026-04-19
+- refactor: redesign ekranu Kasy wg prototypu szefa
+  - hero sekcja: oczekiwany stan kasy + utarg dzis (calcExpectedCash/calcSystemCash)
+  - usunieto SegmentedControl (taby Portfel/Zakupy/Wplata/Bon)
+  - akcje jako przyciski z ikonami: Sprawdz z terminalem, Zakupy, Wplata, Bon
+  - kazda akcja otwiera modal z formularzem (zamiast tabow)
+  - terminal check modal: porownanie kwoty z raportu terminala z systemem
+  - sekcja "Do rozliczenia" dla pending expenses na glownej stronie
+  - historia ruchow kasowych (od ostatniego zamkniecia) pod akcjami
+  - dane ladowane "since last close" (spojne z ShiftClose)
+  - usunieto Portfel/TipTab z Kasy (przeniesiony do /wallet)
+
 [0.1.77] - 2026-04-18
 - refactor: redesign ekranu glownego (Sprzedaz) wg prototypu szefa
   - uproszczony do: header (FORMEN + data + dark/light) + lista pracownikow
