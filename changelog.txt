@@ -1,6 +1,15 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.80] - 2026-04-19
+- feat: ekran Napiwki/Portfel (/wallet) wg prototypu szefa
+  - lista pracownikow z saldami portfeli (admin/station mode)
+  - widok szczegolowy: saldo + quick amounts (10/20/calosc) + pole kwoty + wyplata
+  - personal mode: od razu widok portfela zalogowanego pracownika
+  - historia ruchow per pracownik (wyplaty + wplaty wlasne)
+  - czerwony przycisk "Wyplac z kasy" (zasada UX: wyplata = czerwony)
+- refactor: PageHeader - dodano opcjonalny prop onBack (callback zamiast backTo)
+
 [0.1.79] - 2026-04-19
 - feat: plywajacy cart bar w POS (zielony pasek: ilosc pozycji + kwota + "Podsumowanie")
   - widoczny tylko gdy koszyk niepusty, nad BottomNavBar
