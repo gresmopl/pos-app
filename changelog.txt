@@ -1,6 +1,11 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.76] - 2026-04-18
+- fix: usuniete stare przyciski nawigacji z Dashboard (zduplikowane z BottomNavBar)
+- fix: bottom CTA na 4 stronach przesuniety nad BottomNavBar (bottom: 60px)
+  - AdminSettings, ShiftClose, POS, History
+
 [0.1.75] - 2026-04-18
 - feat: ekran Wiecej (/more) - hub nawigacyjny z prototypu szefa
   - sekcja Codzienne: Historia sprzedazy, Cennik, Zamkniecie zmiany

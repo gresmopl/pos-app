@@ -301,7 +301,7 @@ export default function ShiftClosePage(): React.JSX.Element {
       <Box
         style={{
           position: "fixed",
-          bottom: 0,
+          bottom: 60,
           left: 0,
           right: 0,
           zIndex: 100,

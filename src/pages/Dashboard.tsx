@@ -438,49 +438,6 @@ export default function Dashboard() {
           </>
         )}
       </Container>
-
-      {/* ===== BOTTOM BAR ===== */}
-      <Box
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          borderTop: "1px solid var(--mantine-color-default-border)",
-          backgroundColor: "var(--mantine-color-body)",
-        }}
-        p="md"
-      >
-        <Container size="lg">
-          <SimpleGrid cols={3}>
-            <UnstyledButton onClick={() => navigate("/history")} mih={56}>
-              <Stack align="center" gap={4}>
-                <IconHistory size={24} color="var(--mantine-color-blue-filled)" />
-                <Text fz="xs" c="var(--mantine-color-text)" ta="center" lh={1.2}>
-                  Historia
-                </Text>
-              </Stack>
-            </UnstyledButton>
-            <UnstyledButton onClick={() => navigate("/cash")} mih={56}>
-              <Stack align="center" gap={4}>
-                <IconWallet size={24} color="var(--mantine-color-green-filled)" />
-                <Text fz="xs" c="var(--mantine-color-text)" ta="center" lh={1.2}>
-                  Ruchy kasowe
-                </Text>
-              </Stack>
-            </UnstyledButton>
-            <UnstyledButton onClick={() => navigate("/shift-close")} mih={56}>
-              <Stack align="center" gap={4}>
-                <IconDoorExit size={24} color="var(--mantine-color-red-filled)" />
-                <Text fz="xs" c="var(--mantine-color-text)" ta="center" lh={1.2}>
-                  Zamknij zmianę
-                </Text>
-              </Stack>
-            </UnstyledButton>
-          </SimpleGrid>
-        </Container>
-      </Box>
     </Box>
   );
 }
