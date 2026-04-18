@@ -16,22 +16,10 @@ import {
   Button,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { IconSun, IconMoon, IconScissors } from "@tabler/icons-react";
-import { pluralize } from "@/lib/constants";
+import { IconSun, IconMoon, IconScissors, IconChevronRight } from "@tabler/icons-react";
+import { pluralize, getRetentionRank } from "@/lib/constants";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
-
-const statusColor: Record<string, string> = {
-  available: "green",
-  busy: "yellow",
-  break: "gray",
-};
-
-const statusLabel: Record<string, string> = {
-  available: "Dostępny",
-  busy: "Zajęty",
-  break: "Przerwa",
-};
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -53,7 +41,7 @@ export default function Dashboard() {
   }, [isMobile]);
 
   const { data: employees = [], loading: empLoading } = useEmployees();
-  const { isAdmin, isPersonal, lockedEmployeeId } = useDeviceRole();
+  const { lockedEmployeeId } = useDeviceRole();
 
   const visibleEmployees = lockedEmployeeId
     ? employees.filter((e) => e.id === lockedEmployeeId)
@@ -107,61 +95,45 @@ export default function Dashboard() {
               </Button>
             </Stack>
           )}
-          {!empLoading && visibleEmployees.length > 0 && (
-            <Text fz="xs" c="dimmed" ta="center" pb="sm">
-              {isPersonal
-                ? "Kliknij aby rozpocząć rachunek"
-                : "Wybierz fryzjera aby rozpocząć rachunek"}
-            </Text>
-          )}
-          {visibleEmployees.map((employee, index) => (
-            <div key={employee.id}>
+          {visibleEmployees.map((employee) => {
+            const rank = getRetentionRank(employee.retentionPercent);
+            return (
               <UnstyledButton
+                key={employee.id}
                 w="100%"
                 py="sm"
-                px="xs"
+                px="md"
+                mb="sm"
                 onClick={() => navigate(`/pos?employee=${employee.id}`)}
+                style={{
+                  border: "1px solid var(--mantine-color-default-border)",
+                  borderRadius: "var(--mantine-radius-md)",
+                }}
               >
                 <Group justify="space-between" wrap="nowrap">
                   <Group gap="md" wrap="nowrap">
-                    <Avatar
-                      size={44}
-                      radius="xl"
-                      color={employee.status ? statusColor[employee.status] : "gray"}
-                      variant="light"
-                    >
+                    <Avatar size={48} radius="xl" color="green" variant="light">
                       {employee.avatar}
                     </Avatar>
                     <div>
-                      <Text fw={600} fz="md">
-                        {employee.name}
-                      </Text>
                       <Group gap={6}>
-                        {employee.status && statusLabel[employee.status] && (
-                          <Badge
-                            size="sm"
-                            variant="dot"
-                            color={employee.status ? statusColor[employee.status] : "gray"}
-                          >
-                            {statusLabel[employee.status]}
-                          </Badge>
-                        )}
+                        <Text fw={600} fz="md">
+                          {employee.name}
+                        </Text>
                         <Text fz="sm" c="dimmed">
                           {pluralize(employee.todayServices, "usługa", "usługi", "usług")}
                         </Text>
                       </Group>
+                      <Badge size="sm" variant="light" color={rank.color}>
+                        {rank.icon} {rank.label}
+                      </Badge>
                     </div>
                   </Group>
-                  {isAdmin && (
-                    <Text fw={600} fz="lg" style={{ whiteSpace: "nowrap" }}>
-                      {employee.todayRevenue.toLocaleString("pl-PL")} zł
-                    </Text>
-                  )}
+                  <IconChevronRight size={20} color="var(--mantine-color-dimmed)" />
                 </Group>
               </UnstyledButton>
-              {index < visibleEmployees.length - 1 && <Divider />}
-            </div>
-          ))}
+            );
+          })}
         </Stack>
       </Container>
     </Box>

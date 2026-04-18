@@ -43,7 +43,7 @@ export default function AdminEmployeesPage() {
       role: "barber" as "admin" | "barber",
       commissionService: 0 as number | string,
       commissionProduct: 0 as number | string,
-      retentionPercent: "" as number | string,
+      retentionPercent: 0 as number | string,
     },
     validate: {
       name: (v) => (v.trim() ? null : "Imię jest wymagane"),
@@ -71,7 +71,7 @@ export default function AdminEmployeesPage() {
       role: emp.role,
       commissionService: emp.commissionServicePercent,
       commissionProduct: emp.commissionProductPercent,
-      retentionPercent: emp.retentionPercent ?? "",
+      retentionPercent: emp.retentionPercent ?? 0,
     });
     editForm.clearErrors();
     setEditModal(true);

@@ -1,6 +1,14 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.83] - 2026-04-19
+- feat: badge retencji na ekranie Sprzedazy (ARCYMISTRZ/MISTRZ/SOLIDNY/ROZWOJ)
+  - getRetentionRank() w constants.ts: 4 progi (95/85/75/0) z emoji i kolorem
+  - null retentionPercent fallbackuje do ROZWOJ (nowy pracownik)
+  - karty przyciskowe z chevronem > zamiast plaskiej listy
+  - usunieto tekst "Wybierz fryzjera..." i kwoty z ekranu Sprzedazy
+  - domyslna wartosc retencji 0 w formularzu pracownika (AdminEmployees)
+
 [0.1.82] - 2026-04-19
 - feat: Historia transakcji - filtr dat od/do z kalendarzem
   - dwa DatePickerInput (Od/Do) z polskim kalendarzem (DatesProvider locale=pl)

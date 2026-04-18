@@ -5,6 +5,27 @@ export const MOCK_OPERATIONS_PIN = "1234";
 // Voucher expiry (months from sale date)
 export const VOUCHER_EXPIRY_MONTHS = 12;
 
+export interface RetentionRank {
+  icon: string;
+  label: string;
+  color: string;
+}
+
+const RETENTION_RANKS: { min: number; rank: RetentionRank }[] = [
+  { min: 95, rank: { icon: "👑", label: "ARCYMISTRZ", color: "yellow" } },
+  { min: 85, rank: { icon: "💎", label: "MISTRZ", color: "blue" } },
+  { min: 75, rank: { icon: "⭐", label: "SOLIDNY", color: "green" } },
+  { min: 0, rank: { icon: "📈", label: "ROZWÓJ", color: "gray" } },
+];
+
+export function getRetentionRank(percent: number | null): RetentionRank {
+  if (percent === null) return RETENTION_RANKS[RETENTION_RANKS.length - 1].rank;
+  for (const { min, rank } of RETENTION_RANKS) {
+    if (percent >= min) return rank;
+  }
+  return RETENTION_RANKS[RETENTION_RANKS.length - 1].rank;
+}
+
 /**
  * Polish noun declension for counts: 1 usługa, 2 usługi, 5 usług.
  * @param count - number
