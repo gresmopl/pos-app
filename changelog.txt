@@ -1,6 +1,14 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.79] - 2026-04-19
+- feat: plywajacy cart bar w POS (zielony pasek: ilosc pozycji + kwota + "Podsumowanie")
+  - widoczny tylko gdy koszyk niepusty, nad BottomNavBar
+  - zastepuje stary bottom CTA "X zl · Zatwierdz"
+- feat: success screen po zapisaniu sprzedazy
+  - pelnoekranowy widok: checkmark + "Sprzedaz zapisana" + kwota + pracownik + "Wroc"
+  - zamiast natychmiastowej nawigacji do Dashboard
+
 [0.1.78] - 2026-04-19
 - refactor: redesign ekranu Kasy wg prototypu szefa
   - hero sekcja: oczekiwany stan kasy + utarg dzis (calcExpectedCash/calcSystemCash)
