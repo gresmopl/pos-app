@@ -1,6 +1,14 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.74] - 2026-04-18
+- feat: BottomNavBar - staly dolny pasek nawigacyjny na kazdej stronie
+  - 4 przyciski: Sprzedaz (/), Kasa (/cash), Napiwki (/wallet), Wiecej (/more)
+  - aktywny stan (niebieski) na podstawie biezacej sciezki
+  - fixed position z z-index 200, paddingBottom 60px na content
+  - placeholder strony: Wallet.tsx, More.tsx (do wypelnienia w kolejnych taskach)
+  - nowe route'y /wallet i /more w App.tsx
+
 [0.1.73] - 2026-04-18
 - refactor: likwidacja form platnosci - wszystko = gotowka
   - usuniete typy: PaymentBreakdownItem, paymentMethod z Transaction/CashMovement
