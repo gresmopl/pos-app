@@ -1,6 +1,12 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.77] - 2026-04-18
+- refactor: redesign ekranu glownego (Sprzedaz) wg prototypu szefa
+  - uproszczony do: header (FORMEN + data + dark/light) + lista pracownikow
+  - usuniete: stats bar, oczekiwany stan kasy, utarg, prowizja personal, ostatnie zamkniecia
+  - usuniety przycisk Ustawienia z headera (dostepny z Wiecej > Panel admina)
+
 [0.1.76] - 2026-04-18
 - fix: usuniete stare przyciski nawigacji z Dashboard (zduplikowane z BottomNavBar)
 - fix: bottom CTA na 4 stronach przesuniety nad BottomNavBar (bottom: 60px)
