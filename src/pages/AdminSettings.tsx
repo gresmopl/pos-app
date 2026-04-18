@@ -12,20 +12,12 @@ import {
   TextInput,
   NumberInput,
   Textarea,
-  Checkbox,
-  Switch,
   Button,
   Skeleton,
 } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { PageHeader } from "@/components/layout/PageHeader";
-
-const ALL_PAYMENT_METHODS = [
-  { value: "cash", label: "Gotówka" },
-  { value: "card", label: "Karta" },
-  { value: "blik", label: "BLIK" },
-];
 
 function SectionLabel({ children }: { children: string }): React.JSX.Element {
   return (
@@ -52,9 +44,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
       voucherCodePrefix: "BON-",
       defaultCommissionService: 40 as number | string,
       defaultCommissionProduct: 20 as number | string,
-      enabledPaymentMethods: ["cash", "card", "blik"] as string[],
       receiptFooter: "",
-      knowledgeBaseEnabled: false,
     },
     validate: {
       name: (v) => (v.trim() ? null : "Nazwa jest wymagana"),
@@ -65,7 +55,6 @@ export default function AdminSettingsPage(): React.JSX.Element {
       voucherCodePrefix: (v) => (v.trim() ? null : "Prefiks wymagany"),
       defaultCommissionService: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
       defaultCommissionProduct: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
-      enabledPaymentMethods: (v) => (v.length > 0 ? null : "Wybierz min. 1 metodę"),
     },
   });
 
@@ -83,9 +72,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
       voucherCodePrefix: salon.voucherCodePrefix,
       defaultCommissionService: salon.defaultCommissionService,
       defaultCommissionProduct: salon.defaultCommissionProduct,
-      enabledPaymentMethods: salon.enabledPaymentMethods,
       receiptFooter: salon.receiptFooter,
-      knowledgeBaseEnabled: salon.knowledgeBaseEnabled,
     });
     form.resetDirty();
   }, [salon]);
@@ -107,9 +94,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
         voucherCodePrefix: v.voucherCodePrefix,
         defaultCommissionService: Number(v.defaultCommissionService),
         defaultCommissionProduct: Number(v.defaultCommissionProduct),
-        enabledPaymentMethods: v.enabledPaymentMethods,
         receiptFooter: v.receiptFooter,
-        knowledgeBaseEnabled: v.knowledgeBaseEnabled,
       });
       form.resetDirty();
       notifications.show({
@@ -242,52 +227,6 @@ export default function AdminSettingsPage(): React.JSX.Element {
               {...form.getInputProps("defaultCommissionProduct")}
             />
           </Group>
-        </Stack>
-
-        <Divider />
-
-        {/* === PŁATNOŚCI === */}
-        <Stack gap="sm" py="sm">
-          <SectionLabel>Metody płatności</SectionLabel>
-          <Text fz="xs" c="dimmed">
-            Dostępne metody w POS
-          </Text>
-          {ALL_PAYMENT_METHODS.map((pm) => (
-            <Checkbox
-              key={pm.value}
-              label={pm.label}
-              checked={form.values.enabledPaymentMethods.includes(pm.value)}
-              onChange={(e) => {
-                const current = form.values.enabledPaymentMethods;
-                if (e.currentTarget.checked) {
-                  form.setFieldValue("enabledPaymentMethods", [...current, pm.value]);
-                } else {
-                  form.setFieldValue(
-                    "enabledPaymentMethods",
-                    current.filter((m) => m !== pm.value)
-                  );
-                }
-              }}
-            />
-          ))}
-          {form.errors.enabledPaymentMethods && (
-            <Text fz="xs" c="red">
-              {form.errors.enabledPaymentMethods}
-            </Text>
-          )}
-        </Stack>
-
-        <Divider />
-
-        {/* === FUNKCJE === */}
-        <Stack gap="sm" py="sm">
-          <SectionLabel>Funkcje</SectionLabel>
-          <Switch
-            label="Katalog Wiedzy"
-            description="Opisy usług i produktów widoczne dla pracowników"
-            checked={form.values.knowledgeBaseEnabled}
-            onChange={(e) => form.setFieldValue("knowledgeBaseEnabled", e.currentTarget.checked)}
-          />
         </Stack>
 
         <Divider />

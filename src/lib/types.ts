@@ -12,6 +12,7 @@ export interface Employee {
   tipBalance: number;
   commissionServicePercent: number;
   commissionProductPercent: number;
+  retentionPercent: number | null;
   isActive: boolean;
 }
 
@@ -41,10 +42,8 @@ export interface Service {
   name: string;
   price: number;
   priceFrom?: boolean;
-  durationMinutes?: string;
-  category: string;
   description?: string;
-  descriptionLong?: string;
+  displayOrder: number;
   isActive: boolean;
 }
 
@@ -62,11 +61,6 @@ export interface TransactionItem {
   type: "service" | "product" | "voucher_sale";
 }
 
-export interface PaymentBreakdownItem {
-  method: "cash" | "card" | "blik" | "voucher";
-  amount: number;
-}
-
 export interface Transaction {
   id: string;
   employeeId: string;
@@ -76,8 +70,6 @@ export interface Transaction {
   totalAmount: number;
   tipAmount: number;
   discountAmount: number;
-  paymentMethod: "cash" | "card" | "blik" | "voucher" | "split";
-  paymentBreakdown?: PaymentBreakdownItem[];
   timestamp: string;
 }
 
@@ -100,7 +92,6 @@ export interface CashMovement {
   timestamp: string;
   status?: "pending" | "settled";
   finalCost?: number;
-  paymentMethod?: string;
 }
 
 export interface Voucher {
@@ -128,9 +119,7 @@ export interface SalonSettings {
   voucherCodePrefix: string;
   defaultCommissionService: number;
   defaultCommissionProduct: number;
-  enabledPaymentMethods: string[];
   receiptFooter: string;
-  knowledgeBaseEnabled: boolean;
 }
 
 export interface DeviceRegistration {

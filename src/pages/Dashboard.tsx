@@ -41,7 +41,6 @@ import {
   IconWallet,
   IconDoorExit,
   IconScissors,
-  IconBook,
 } from "@tabler/icons-react";
 import { pluralize } from "@/lib/constants";
 import { useDeviceRole } from "@/contexts/DeviceContext";
@@ -97,7 +96,7 @@ export default function Dashboard() {
 
   // Oczekiwany stan kasy - fizyczna gotowka + bony papierowe w szufladzie
   // (wspoldzielony dla calego salonu, nie filtrujemy per pracownik)
-  const { systemCash } = calcSystemCash(txsSinceClose);
+  const systemCash = calcSystemCash(txsSinceClose);
   const expectedCash = calcExpectedCash(lastFloat ?? 0, systemCash, movementsSinceClose);
 
   const personalEmployee =
@@ -454,7 +453,7 @@ export default function Dashboard() {
         p="md"
       >
         <Container size="lg">
-          <SimpleGrid cols={salon?.knowledgeBaseEnabled ? 4 : 3}>
+          <SimpleGrid cols={3}>
             <UnstyledButton onClick={() => navigate("/history")} mih={56}>
               <Stack align="center" gap={4}>
                 <IconHistory size={24} color="var(--mantine-color-blue-filled)" />
@@ -471,16 +470,6 @@ export default function Dashboard() {
                 </Text>
               </Stack>
             </UnstyledButton>
-            {salon?.knowledgeBaseEnabled && (
-              <UnstyledButton onClick={() => navigate("/help")} mih={56}>
-                <Stack align="center" gap={4}>
-                  <IconBook size={24} color="var(--mantine-color-violet-filled)" />
-                  <Text fz="xs" c="var(--mantine-color-text)" ta="center" lh={1.2}>
-                    Katalog
-                  </Text>
-                </Stack>
-              </UnstyledButton>
-            )}
             <UnstyledButton onClick={() => navigate("/shift-close")} mih={56}>
               <Stack align="center" gap={4}>
                 <IconDoorExit size={24} color="var(--mantine-color-red-filled)" />

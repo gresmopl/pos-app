@@ -80,6 +80,7 @@ export default function AdminPage() {
             </Text>
             <PinInput
               length={4}
+              inputMode="numeric"
               mask
               size="xl"
               value={pin}

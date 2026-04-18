@@ -11,8 +11,6 @@ import { CartItemList } from "@/components/pos/CartItemList";
 import { TipSelector } from "@/components/pos/TipSelector";
 import { AddItemModal } from "@/components/pos/AddItemModal";
 import { DiscountModal } from "@/components/pos/DiscountModal";
-import { PaymentModal } from "@/components/pos/PaymentModal";
-import { SplitPaymentModal } from "@/components/pos/SplitPaymentModal";
 import { ConfirmModal } from "@/components/pos/ConfirmModal";
 
 export default function POSPage() {
@@ -43,29 +41,8 @@ export default function POSPage() {
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [splitModalOpen, setSplitModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [pendingPaymentMethod, setPendingPaymentMethod] = useState("");
-  const [pendingPaymentDetails, setPendingPaymentDetails] = useState("");
-  const [pendingVoucherCode, setPendingVoucherCode] = useState<string | undefined>();
-  const [pendingVoucherAmount, setPendingVoucherAmount] = useState<number | undefined>();
   const [finalizing, setFinalizing] = useState(false);
-
-  const requestFinalize = (
-    method: string,
-    details?: string,
-    voucherCode?: string,
-    voucherAmount?: number
-  ) => {
-    setPendingPaymentMethod(method);
-    setPendingPaymentDetails(details || "");
-    setPendingVoucherCode(voucherCode);
-    setPendingVoucherAmount(voucherAmount);
-    setPaymentModalOpen(false);
-    setSplitModalOpen(false);
-    setConfirmModalOpen(true);
-  };
 
   const finalize = async () => {
     if (finalizing) return;
@@ -78,10 +55,6 @@ export default function POSPage() {
         discount,
         discountAmount,
         totalAmount: total,
-        paymentMethod: pendingPaymentMethod,
-        paymentDetails: pendingPaymentDetails,
-        voucherCode: pendingVoucherCode,
-        voucherAmount: pendingVoucherAmount,
       });
       setConfirmModalOpen(false);
       resetCart();
@@ -213,11 +186,11 @@ export default function POSPage() {
             size="lg"
             color="dark"
             disabled={cart.length === 0}
-            onClick={() => setPaymentModalOpen(true)}
+            onClick={() => setConfirmModalOpen(true)}
             fz="md"
             fw={600}
           >
-            {total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł · Dalej
+            {total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł · Zatwierdź
           </Button>
         </Container>
       </Box>
@@ -240,30 +213,12 @@ export default function POSPage() {
         subtotal={subtotal}
         onApply={setDiscount}
       />
-      <PaymentModal
-        opened={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
-        total={total}
-        onSelectMethod={requestFinalize}
-        onOpenSplit={() => {
-          setPaymentModalOpen(false);
-          setSplitModalOpen(true);
-        }}
-      />
-      <SplitPaymentModal
-        opened={splitModalOpen}
-        onClose={() => setSplitModalOpen(false)}
-        total={total}
-        onConfirm={requestFinalize}
-      />
       <ConfirmModal
         opened={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
         total={total}
         employeeName={employee.name}
         itemCount={itemCount}
-        paymentMethod={pendingPaymentMethod}
-        paymentDetails={pendingPaymentDetails}
         tipAmount={tipAmount}
         discount={discount}
         discountAmount={discountAmount}

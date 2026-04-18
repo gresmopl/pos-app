@@ -113,13 +113,12 @@ export function useMovements() {
     [showSuccess]
   );
 
-  const handleVoucherSale = useCallback(async (amount: number, payment: string, code: string) => {
+  const handleVoucherSale = useCallback(async (amount: number, code: string) => {
     const movement = await db.cashMovements.create({
       type: "voucher_sale",
       amount,
-      description: `Sprzedaż bonu ${code} (${payment === "cash" ? "gotówka" : "karta"})`,
+      description: `Sprzedaż bonu ${code}`,
       voucherCode: code,
-      paymentMethod: payment,
     });
     setMovements((prev) => [movement, ...prev]);
   }, []);

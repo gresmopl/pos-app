@@ -1,15 +1,13 @@
-import { useState, useId } from "react";
-import { Text, Stack, Box, NumberInput, SegmentedControl, Button, CopyButton } from "@mantine/core";
+import { useState } from "react";
+import { Text, Stack, Box, NumberInput, Button, CopyButton } from "@mantine/core";
 import { IconGift, IconCheck, IconCopy } from "@tabler/icons-react";
 
 interface VoucherTabProps {
-  onSale: (amount: number, payment: string, code: string) => void;
+  onSale: (amount: number, code: string) => void;
 }
 
 export function VoucherTab({ onSale }: VoucherTabProps) {
-  const paymentId = useId();
   const [value, setValue] = useState<number | string>("");
-  const [payment, setPayment] = useState("cash");
   const [success, setSuccess] = useState(false);
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -25,12 +23,11 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
     const generatedCode = `BON-${Date.now().toString(36).toUpperCase()}`;
     setCode(generatedCode);
     setSuccess(true);
-    onSale(amount, payment, generatedCode);
+    onSale(amount, generatedCode);
   };
 
   const reset = () => {
     setValue("");
-    setPayment("cash");
     setSuccess(false);
     setCode("");
   };
@@ -66,8 +63,7 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
             {code}
           </Text>
           <Text fz="sm" c="dimmed" mt="xs">
-            Wartość: {Number(value).toLocaleString("pl-PL")} zł ·{" "}
-            {payment === "cash" ? "Gotówka" : "Karta"}
+            Wartość: {Number(value).toLocaleString("pl-PL")} zł
           </Text>
         </Box>
         <CopyButton value={code}>
@@ -109,17 +105,6 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
         min={1}
         suffix=" zł"
         error={error}
-      />
-
-      <SegmentedControl
-        id={paymentId}
-        fullWidth
-        value={payment}
-        onChange={setPayment}
-        data={[
-          { label: "Gotówka", value: "cash" },
-          { label: "Karta", value: "card" },
-        ]}
       />
 
       <Button

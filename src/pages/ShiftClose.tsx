@@ -35,7 +35,11 @@ export default function ShiftClosePage(): React.JSX.Element {
       closingEmployee: (v) => (v ? null : "Wybierz pracownika"),
       floatAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
       envelopeAmount: (v) =>
-        Number(v) < 0 ? "Kwota nie może być ujemna" : !Number(v) ? "Podaj kwotę do koperty" : null,
+        v === "" || v === undefined
+          ? "Podaj kwotę do koperty"
+          : Number(v) < 0
+            ? "Kwota nie może być ujemna"
+            : null,
     },
   });
 
@@ -71,7 +75,7 @@ export default function ShiftClosePage(): React.JSX.Element {
   }));
 
   // === SYSTEM VALUES ===
-  const { systemCash, systemNonCash } = calcSystemCash(transactions);
+  const systemCash = calcSystemCash(transactions);
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
 
   // === FORM VALUES ===
@@ -92,7 +96,7 @@ export default function ShiftClosePage(): React.JSX.Element {
         closingEmployeeId: form.values.closingEmployee,
         expectedCash,
         actualCash,
-        expectedVouchers: systemNonCash,
+        expectedVouchers: 0,
         actualVouchersValue: 0,
         floatAmount: floatVal,
         depositAmount: envelopeVal,
@@ -151,12 +155,6 @@ export default function ShiftClosePage(): React.JSX.Element {
               </Text>
               <Divider mb="sm" variant="dashed" />
 
-              <Group justify="space-between" mb={4}>
-                <Text fz="xs">Sprzedaż Karta / BLIK:</Text>
-                <Text fz="xs" fw={600}>
-                  {systemNonCash.toLocaleString("pl-PL")} zł
-                </Text>
-              </Group>
               <Group justify="space-between" mb={4}>
                 <Text fz="xs">Oczekiwana gotówka:</Text>
                 <Text fz="xs" fw={600}>
@@ -237,12 +235,6 @@ export default function ShiftClosePage(): React.JSX.Element {
               <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
                 Podgląd systemowy
               </Text>
-              <Group justify="space-between">
-                <Text fz="sm">Sprzedaż Karta / BLIK:</Text>
-                <Text fz="sm" fw={600}>
-                  {systemNonCash.toLocaleString("pl-PL")} zł
-                </Text>
-              </Group>
               <Divider />
               <div>
                 <Text fz="sm" fw={700}>

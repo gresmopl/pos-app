@@ -38,6 +38,7 @@ export function PinModal({
           <PinInput
             length={4}
             type="number"
+            inputMode="numeric"
             mask
             value={pin}
             onChange={(val) => onPinChange(val)}

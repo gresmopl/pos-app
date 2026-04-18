@@ -43,11 +43,14 @@ export default function AdminEmployeesPage() {
       role: "barber" as "admin" | "barber",
       commissionService: 0 as number | string,
       commissionProduct: 0 as number | string,
+      retentionPercent: "" as number | string,
     },
     validate: {
       name: (v) => (v.trim() ? null : "Imię jest wymagane"),
       commissionService: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
       commissionProduct: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
+      retentionPercent: (v) =>
+        v === "" || v === undefined ? null : Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%",
     },
   });
 
@@ -68,6 +71,7 @@ export default function AdminEmployeesPage() {
       role: emp.role,
       commissionService: emp.commissionServicePercent,
       commissionProduct: emp.commissionProductPercent,
+      retentionPercent: emp.retentionPercent ?? "",
     });
     editForm.clearErrors();
     setEditModal(true);
@@ -77,13 +81,16 @@ export default function AdminEmployeesPage() {
 
   const saveEmployee = async () => {
     if (editForm.validate().hasErrors) return;
-    const { name, avatar, role, commissionService, commissionProduct } = editForm.values;
+    const { name, avatar, role, commissionService, commissionProduct, retentionPercent } =
+      editForm.values;
     const input = {
       name,
       avatarUrl: avatar.trim() || undefined,
       role,
       commissionServicePercent: Number(commissionService),
       commissionProductPercent: Number(commissionProduct),
+      retentionPercent:
+        retentionPercent === "" || retentionPercent === undefined ? null : Number(retentionPercent),
     };
 
     setSaving(true);
@@ -280,6 +287,15 @@ export default function AdminEmployeesPage() {
             max={100}
             suffix="%"
             {...editForm.getInputProps("commissionProduct")}
+          />
+          <NumberInput
+            label="Retencja (%)"
+            description="Procent klientów wracających do pracownika"
+            placeholder="Brak danych"
+            min={0}
+            max={100}
+            suffix="%"
+            {...editForm.getInputProps("retentionPercent")}
           />
           <Group justify="flex-end">
             <Button variant="subtle" onClick={() => setEditModal(false)}>

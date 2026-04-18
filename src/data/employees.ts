@@ -13,6 +13,7 @@ export const mockEmployees: Employee[] = [
     tipBalance: 150,
     commissionServicePercent: 50,
     commissionProductPercent: 30,
+    retentionPercent: 96,
     isActive: true,
   },
   {
@@ -26,6 +27,7 @@ export const mockEmployees: Employee[] = [
     tipBalance: 85,
     commissionServicePercent: 40,
     commissionProductPercent: 20,
+    retentionPercent: 85,
     isActive: true,
   },
   {
@@ -38,6 +40,7 @@ export const mockEmployees: Employee[] = [
     tipBalance: 40,
     commissionServicePercent: 40,
     commissionProductPercent: 20,
+    retentionPercent: 72,
     isActive: true,
   },
   {
@@ -51,6 +54,7 @@ export const mockEmployees: Employee[] = [
     tipBalance: 25,
     commissionServicePercent: 40,
     commissionProductPercent: 20,
+    retentionPercent: 91,
     isActive: true,
   },
   {
@@ -64,6 +68,7 @@ export const mockEmployees: Employee[] = [
     tipBalance: 110,
     commissionServicePercent: 40,
     commissionProductPercent: 20,
+    retentionPercent: 65,
     isActive: true,
   },
 ];

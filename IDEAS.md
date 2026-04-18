@@ -380,6 +380,324 @@ Hipotetyczna migracja istniejacego kodu na ten stack: **~3 tygodnie** (1 osoba p
 
 ---
 
+## Alternatywa: SQLite + Hono zamiast PostgreSQL + PostgREST
+
+**Kontekst:** Szef rozważa uproszczenie infrastruktury. Dotychczas salon dzialal na jednym pliku XML i to wystarczalo. SQLite to naturalny nastepca - jeden plik .db, zero serwisu bazodanowego.
+
+**Pomysl:** Zamiast PostgreSQL + PostgREST na VPS -> Hono (Node.js) + better-sqlite3. Backend ~330 linii kodu dzieki generycznemu CRUD handlerowi (zamiast 76 indywidualnych endpointow).
+
+### Architektura
+
+```
+Przegladarka -> HTTPS (Nginx) -> Hono (localhost:3000) -> SQLite (data.db)
+```
+
+| Komponent | RAM    | Opis                                |
+| --------- | ------ | ----------------------------------- |
+| Nginx     | ~20 MB | Reverse proxy + SSL                 |
+| Hono/Node | ~50 MB | Backend API + better-sqlite3        |
+| SQLite    | ~0 MB  | Plik .db, brak osobnego procesu     |
+| **Razem** | ~70 MB | vs ~250 MB dla PostgreSQL+PostgREST |
+
+### Struktura backendu (~330 linii)
+
+```
+backend/
+├── server.ts          # ~40 linii - Hono setup, CORS, static
+├── db.ts              # ~30 linii - better-sqlite3 init + schema
+├── crud.ts            # ~60 linii - generyczny GET/POST/PUT/DELETE
+└── routes/
+    ├── transactions.ts  # ~80 linii - create + cancel (BEGIN/COMMIT)
+    ├── reports.ts       # ~40 linii - zamkniecie zmiany + statystyki
+    ├── cash.ts          # ~50 linii - ruchy kasowe z side-effectami
+    └── devices.ts       # ~30 linii - rejestracja urzadzen
+```
+
+### Zalety vs PostgreSQL
+
+- **Backup** = `scp data.db` (jeden plik) vs `pg_dump`
+- **Setup VPS** = zero konfiguracji DB (brak postgresql.conf, brak userow DB, brak tune'owania)
+- **RAM** = ~70 MB vs ~250 MB
+- **Restart VPS** = PM2 wstaje sam, SQLite to plik - zero recovery
+- **Disaster recovery** = skopiuj plik .db, gotowe
+
+### Wady
+
+- Brak PostgREST (trzeba napisac backend, ale to ~330 linii)
+- Brak Supabase Studio (trzeba CLI albo Adminer-like tool)
+- Concurrent writes: SQLite WAL mode wystarczy dla jednego salonu, ale nie skaluje sie do wielu
+
+### Wplyw na frontend
+
+**Zero.** REST adapter juz istnieje (291 linii, 43 metody). Dopasowanie formatu odpowiedzi Hono do tego co adapter oczekuje = ~3-4h pracy.
+
+### Pracochlannosc
+
+~1 sesja robocza (Claude Code). Schema PostgreSQL -> SQLite prawie 1:1 (enums -> CHECK constraints). Logika custom routes przepisana z adaptera supabase.
+
+### Decyzja
+
+Do podjecia po Fazie 2. Mozna zrealizowac razem z deploy PROD na Hetzner - wtedy zamiast instalowac PostgreSQL, stawia sie Hono + SQLite.
+
+### Powiazanie z uproszczeniem platnosci
+
+Szef rozważa rownoczesnie usuniecie wyboru formy zaplaty przy sprzedazy (patrz nizej). Jesli obie zmiany wejda, to dobry moment na zrobienie ich razem - mniej kodu do przepisywania.
+
+---
+
+## Wymagania szefa (spotkanie 2026-04-17) + prototyp HTML
+
+**Kontekst:** Spotkanie z szefem 2026-04-17 - zebrane wymagania biznesowe. Dodatkowo szef dostarczyl prototyp HTML (`temp/example.html`) pokazujacy idealny wyglad aplikacji gdyby projektowac od nowa.
+
+### Wymagania biznesowe do implementacji
+
+| #   | Zmiana                    | Opis                                                                                                                                                                                             | Zlozonosc         |
+| --- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------- |
+| 1   | Likwidacja form platnosci | Wszystko = gotowka (karta, blik, bon - bez rozroznienia). Usunac SplitPaymentModal, ENUM payment_method, enabledPaymentMethods z AdminSettings                                                   | duza (~19 plikow) |
+| 2   | PIN klawiatura numeryczna | Na telefonie szefa pokazuje sie alfanumeryczna. Dodac `inputMode="numeric"` do PinInput/TextInput w 4 plikach: PinModal.tsx, Admin.tsx, History.tsx, DeviceGate.tsx                              | mala              |
+| 3   | Staly BottomNavBar        | 5 przyciskow na stale na dole kazdej strony: Panel glowny (/), Historia (/history), Portfel (/cash), Zakupy (/pos), Zamkniecie zmiany (/shift-close). Nowy komponent layout, modyfikacja App.tsx | srednia           |
+| 4   | Portfel pracownika        | Nowy widok: suma napiwkow kartowych + wplat wlasnych (own_cash_deposit) = kwota do odbioru. Dane czesciowo istnieja (tipBalance, own_cash_deposit)                                               | srednia           |
+| 5   | Koperta 0 zl dozwolone    | Przy zamknieciu zmiany mozna wpisac 0 do koperty (dzien bez utargu). Blad w ShiftClose.tsx:37-38 - `!Number(0)` jest true                                                                        | mala (1 linia)    |
+| 6   | Historia filtr od/do      | DatePickerInput z kalendarzem zamiast "od ostatniego zamkniecia". Domyslnie od=dzisiaj, do=dzisiaj                                                                                               | mala/srednia      |
+| 7   | Bon w POS                 | 3. zakladka w POS (Uslugi, Produkty, Bony). Przeniesienie z Kasy. Bon bez prowizji (juz dziala w commission.ts:15)                                                                               | srednia           |
+| 8   | Kolejnosc uslug           | Konfigurowalny display_order w POS. Nowa kolumna w DB + UI do zarzadzania w AdminPricing                                                                                                         | srednia           |
+| 9   | Raport terminala          | Dwa mechanizmy: (a) biezacy wpis w ciagu dnia - sprawdzenie ile gotowki w kasie, (b) krok posredni w ShiftClose PRZED liczeniem gotowki                                                          | srednia           |
+| 10  | Kolory przyciskow         | Zasada globalna: wyplata = czerwony, wplata = zielony. Znany blad: TipTab.tsx "Potwierdz wyplate" jest green zamiast red                                                                         | mala              |
+| 11  | Panel pracownika          | Usunac "Oczekiwany stan kasy" i "Twoja prowizja" z isPersonal. Dodac przycisk "Sprzedaz" + wyeksponowac ilosc uslug                                                                              | mala              |
+| 12  | Zakupy bez rozliczenia    | Prosta wyplata z kasy + opis. Usunac expense_settle, SettleModal, pending expenses                                                                                                               | srednia           |
+
+### Co sie laczy
+
+- **Likwidacja platnosci + raport terminala** - jedno wymusza drugie (system nie wie co karta, trzeba reczny wpis)
+- **BottomNavBar + Portfel** - Portfel to nowy widok na stalym pasku
+- **BottomNavBar + bon w POS** - "Zakupy" na pasku = POS ze sprzedaza bonow
+- **Kasa (/cash)** - zostanie wchlonieta przez inny widok (do ustalenia pozniej)
+
+### Sugerowana kolejnosc implementacji
+
+1. Male fixy: PIN numeryczny, koperta=0, kolory przyciskow
+2. Likwidacja form platnosci (duza zmiana, odblokuje raport terminala)
+3. BottomNavBar + reorganizacja nawigacji
+4. Portfel pracownika + panel pracownika
+5. Bon w POS + kolejnosc uslug
+6. Historia filtr dat + raport terminala
+7. Zakupy bez rozliczenia
+
+### Wnioski z prototypu HTML (temp/example.html)
+
+Prototyp pokazuje idealny wyglad aplikacji. Ponizej elementy do przeniesienia do naszego projektu (Mantine UI, Tabler Icons zamiast emoji).
+
+**Nowe koncepcje (nie mamy tego):**
+
+| Element                  | Opis                                                                                                                                            | Priorytet                         |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| Plywajacy cart bar       | Zielony pasek na dole POS: ilosc pozycji + kwota + "Podsumowanie >". Lepsze niz obecne podejscie                                                | wysoki                            |
+| Action buttons pattern   | Ikona + tytul + podtytul + strzalka (np. "Wyjalem na zakupy / Kawa, srodki czystosci itp. >"). Uzyc w Kasie i wszedzie gdzie sa opcje do wyboru | wysoki                            |
+| Hero section w Kasie     | Duza kwota "W kasie powinno byc: 155 zl" z podtekstem utargu. Bardzo czytelne                                                                   | wysoki                            |
+| Success screen           | Duzy zielony check + kwota + pracownik po sprzedazy. Daje satysfakcje z ukonczenia                                                              | wysoki                            |
+| Quick amounts w Portfelu | Przyciski 10 zl, 20 zl, Calosc do szybkiej wyplaty napiwkow. Touch-friendly                                                                     | sredni                            |
+| Terminal check UI        | Wizualny feedback: zielony = OK, zolty = roznica. Z kwotami oczekiwana vs wpisana                                                               | sredni                            |
+| Worker cards z border    | Zaokraglone karty z border zamiast flat list. Avatar + inicjaly + badge + ilosc uslug + strzalka                                                | sredni                            |
+| Statusy pracownikow      | Odznaki gamifikacyjne: gold (MISTRZ), diamond (MISTRZ), green (SOLIDNY), gray (ROZWOJ). Element motywacyjny                                     | niski (do potwierdzenia z szefem) |
+
+**Lepsze nazewnictwo z prototypu (naturalny jezyk):**
+
+| Prototyp               | Nasz obecny      | Uwaga                  |
+| ---------------------- | ---------------- | ---------------------- |
+| "Wyjalem na zakupy"    | "Wydatek"        | naturalniejsze         |
+| "Dolozylem drobne"     | "Wplata wlasna"  | naturalniejsze         |
+| "Portfel"              | "Saldo napiwkow" | zgodne z decyzja szefa |
+| "Sprawdz z terminalem" | brak             | nowa funkcja           |
+| "Sprzedaj bon"         | "Sprzedaz bonu"  | krotsze, czytelniejsze |
+
+**Co z prototypu NIE pasuje do naszych ustalen:**
+
+- BottomNav 4 przyciski - szef chce 5 (Panel glowny, Historia, Portfel, Zakupy, Zamkniecie zmiany)
+- Bon w Kasie - szef chce bon w POS (3. zakladka)
+- Brak filtra dat w Historii - szef chce od/do z kalendarzem
+- Emoji zamiast ikon - my uzywamy Tabler Icons (spojnosc z Mantine)
+- Kolor #10a060 - my mamy wlasny motyw Mantine (zachowac spojnosc)
+
+### Przyklady kodu z prototypu do adaptacji
+
+**Cart bar (plywajacy pasek koszyka):**
+
+```tsx
+// Mantine equivalent of prototype's .cart-bar
+<Box pos="fixed" bottom={80} left={0} right={0} bg="green" c="white" p="md"
+     style={{ zIndex: 100, boxShadow: "0 -4px 12px rgba(0,0,0,0.1)" }}>
+  <Group justify="space-between">
+    <div>
+      <Text fz="xs" opacity={0.9}>{count} pozycji</Text>
+      <Text fz="xl" fw={700}>{total} zl</Text>
+    </div>
+    <Text fz="sm" fw={600}>Podsumowanie ></Text>
+  </Group>
+</Box>
+```
+
+**Action button pattern:**
+
+```tsx
+// Mantine equivalent of prototype's .action-btn
+<UnstyledButton
+  w="100%"
+  p="md"
+  style={{
+    border: "1px solid var(--mantine-color-default-border)",
+    borderRadius: "var(--mantine-radius-md)",
+  }}
+>
+  <Group gap="md" wrap="nowrap">
+    <ThemeIcon size={44} radius="md" variant="light" color="orange">
+      <IconShoppingCart size={22} />
+    </ThemeIcon>
+    <div style={{ flex: 1 }}>
+      <Text fw={600} fz="md">
+        Wyjalem na zakupy
+      </Text>
+      <Text fz="xs" c="dimmed">
+        Kawa, srodki czystosci itp.
+      </Text>
+    </div>
+    <IconChevronRight size={20} color="var(--mantine-color-dimmed)" />
+  </Group>
+</UnstyledButton>
+```
+
+---
+
+## Uproszczenie systemu platnosci (POTWIERDZONE 2026-04-17)
+
+**Status:** Potwierdzone przez szefa na spotkaniu 2026-04-17. Wszystko = gotowka. Bon tez traktowany jako gotowka (ale mechanizm bonu zostaje - saldo, waznosc).
+
+**Kontekst:** Szef chce usunac wybor formy zaplaty przy rejestracji sprzedazy. Argument: roztargnieni fryzjerzy klikaja "karta" a przyjmuja gotowke (lub odwrotnie) i kasa sie rozjezdza. Terminal platniczy jest nieomylnym zrodlem prawdy o platosciach elektronicznych.
+
+### Nowy flow sprzedazy
+
+1. Wybierz uslugi/produkty -> "Zaplac" -> gotowe (zero pytan o forme)
+2. Bon: 3. zakladka w POS (obok Uslug i Produktow), bez prowizji
+
+### Nowy flow zamkniecia zmiany
+
+1. Wybor pracownika zamykajacego
+2. **Krok posredni: raport terminala** - wpisanie kwoty z terminala (karta + BLIK)
+3. System od razu pokazuje ile powinno byc gotowki
+4. Wpisanie gotowki (pogotowie + koperta, koperta moze byc 0 zl)
+5. Porownanie z kwota systemowa -> roznica
+
+### Co znika z UI
+
+- PaymentModal (5 przyciskow: Gotowka/Karta/BLIK/Split/Bon)
+- SplitPaymentModal
+- Filtry formy zaplaty w Historii
+- Checkboxy "dostepne metody platnosci" w Ustawieniach
+
+### Co zostaje
+
+- Bon podarunkowy (sprzedaz w POS jako 3. zakladka, realizacja przy platnosci)
+- Prowizje (juz niezalezne od formy zaplaty)
+- Ruchy kasowe (osobny mechanizm)
+
+### Odpowiedzi szefa (2026-04-17)
+
+1. **Bon:** tez traktowany jako gotowka (potwierdzone)
+2. **Dashboard:** "Oczekiwany stan kasy" usunac z widoku pracownika (zostaje dla admina)
+3. **Raport terminala:** biezacy wpis w ciagu dnia + krok posredni przy zamknieciu
+
+### Wplyw na baze
+
+- Kolumna `payment_method` w `transaction` -> nullable lub usunac
+- Tabela `payment_detail` -> do usuniecia (zachowac tylko dla bonow)
+- Nowe pole `terminal_amount NUMERIC(10,2)` w `daily_report`
+- `calcSystemCash()` -> nowa logika oparta o terminal_amount
+
+---
+
+## Uproszczenie schematu bazy danych
+
+**Kontekst:** Przy okazji migracji na SQLite+Hono mozna radykalnie uproscic schemat. Mniej tabel, mniej kolumn, czytelniejsze dane w DB Browser dla szefa.
+
+### Redukcja tabel: 14 -> 10
+
+| Tabela do usuniecia | Co zamiast                                   | Uzasadnienie                                  |
+| ------------------- | -------------------------------------------- | --------------------------------------------- |
+| `tip_withdrawal`    | `cash_movement` z reason='tip_withdrawal'    | Duplikat - dane juz trafiaja do cash_movement |
+| `expense`           | `cash_movement` z polami status + final_cost | Wydatek to ruch kasowy z dwoma etapami        |
+| `payment_detail`    | Zalezy od decyzji o platosciach              | Jesli szef zatwierdzi uproszczenie platnosci  |
+| `client`            | Usunac (jesli nieuzywana)                    | Pytanie do szefa: czy ktos wpisuje klientow?  |
+
+**Zostaje 10 tabel:** salon, employee, service, product, transaction, transaction_item, voucher, cash_movement, daily_report, device_registration.
+
+Uwaga: `transaction_item` zostaje jako osobna tabela (nie JSON) - czytelniejsza w DB Browser i latwiejsza w zapytaniach raportowych.
+
+### Usun `salon_id` z kazdej tabeli
+
+Decyzja: "jeden salon = jedna baza". Mimo to kazda tabela ma `salon_id` i kazde zapytanie filtruje po nim. To martwy kod. Usuwamy kolumne z 10+ tabel, upraszczamy kazdy SELECT.
+
+### Integer zamiast UUID
+
+Szef w DB Browser widzi `id: 1` zamiast `id: a3f7b2c1-8d4e-4f6a-9c1b-3e5f7a2d8b4c`. Prostsze, czytelniejsze, szybsze. UUID ma sens w systemach rozproszonych - salon fryzjerski potrzebuje `INTEGER PRIMARY KEY AUTOINCREMENT`.
+
+### Martwe kolumny w `salon` (usunac 7)
+
+| Kolumna                   | Dlaczego usunac                     |
+| ------------------------- | ----------------------------------- |
+| `voucher_expiry_months`   | Zawsze 12, stala w kodzie           |
+| `voucher_min_amount`      | Zawsze 1, stala w kodzie            |
+| `voucher_code_prefix`     | Zawsze 'BON-', stala w kodzie       |
+| `receipt_footer`          | Brak drukarki fiskalnej             |
+| `knowledge_base_enabled`  | Feature flag, nieuzywany            |
+| `cash_tolerance`          | Decyzja: pokazuj kazda roznice (=0) |
+| `enabled_payment_methods` | Znika przy uproszczeniu platnosci   |
+
+Zostaje: name, address, phone, nip, admin_pin_hash, operations_pin_hash, month_target, default_commission_service, default_commission_product.
+
+### Nieuzywane kolumny w `service` (usunac 4)
+
+| Kolumna            | Dlaczego usunac            |
+| ------------------ | -------------------------- |
+| `duration_minutes` | Brak kalendarza/rezerwacji |
+| `category`         | Lista uslug jest krotka    |
+| `description`      | Fryzjer wie co robi        |
+| `description_long` | Nieuzywane                 |
+
+Usluga sprowadza sie do: **nazwa + cena + price_from + is_active**.
+
+### VIEWy po polsku (dla szefa w DB Browser)
+
+Kod uzywa angielskich nazw tabel. Szef widzi polskie VIEWy:
+
+```sql
+CREATE VIEW pracownicy AS
+  SELECT id, name AS imie, role AS rola,
+         commission_service_percent AS prowizja_uslugi,
+         tip_balance AS saldo_napiwkow, is_active AS aktywny
+  FROM employee;
+
+CREATE VIEW transakcje AS
+  SELECT t.id, t.date AS data, e.name AS fryzjer,
+         t.total_amount AS kwota, t.tip_amount AS napiwek, t.status
+  FROM "transaction" t LEFT JOIN employee e ON e.id = t.employee_id;
+```
+
+### System urzadzen
+
+Zostaje bez zmian. Analiza wykazala ze jest uzasadniony:
+
+- Ochrona przed dostepem z zewnatrz
+- Blokada konkretnego urzadzenia
+- Widocznosc kto ma dostep
+- Przypisanie fryzjera do urzadzenia (prowizje na personal view)
+
+Wspolny PIN byłby prostszy ale nie pozwala blokowac pojedynczych urzadzen ani identyfikowac kto jest zalogowany.
+
+### Kiedy realizowac
+
+Razem z migracją na SQLite+Hono (i opcjonalnie z uproszczeniem platnosci). Wszystkie te zmiany sa "pakietowe" - lepiej zrobic je w jednym kroku niz po kolei.
+
+---
+
 ## Inne pomysly (krotko)
 
 ### Label printer - etykieta jako plomba na kopercie

@@ -100,7 +100,7 @@ describe("useMovements", () => {
 
   it("handles voucher sale", async () => {
     const { result } = await renderAndFlush();
-    await act(async () => result.current.handleVoucherSale(100, "cash", "BON-001"));
+    await act(async () => result.current.handleVoucherSale(100, "BON-001"));
     expect(result.current.movements[0].type).toBe("voucher_sale");
     expect(result.current.movements[0].description).toContain("BON-001");
   });

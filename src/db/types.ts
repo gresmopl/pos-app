@@ -19,16 +19,15 @@ export interface SaveEmployeeInput {
   role?: "admin" | "barber";
   commissionServicePercent: number;
   commissionProductPercent: number;
+  retentionPercent?: number | null;
 }
 
 export interface SaveServiceInput {
   name: string;
   price: number;
   priceFrom?: boolean;
-  durationMinutes?: string;
-  category?: string;
   description?: string;
-  descriptionLong?: string;
+  displayOrder?: number;
 }
 
 export interface SaveProductInput {
@@ -44,7 +43,6 @@ export interface CreateCashMovementInput {
   description: string;
   status?: "pending" | "settled";
   voucherCode?: string;
-  paymentMethod?: string;
 }
 
 export interface CreateDailyReportInput {
@@ -67,10 +65,6 @@ export interface CreateTransactionInput {
   discount: DiscountState | null;
   discountAmount: number;
   totalAmount: number;
-  paymentMethod: string;
-  paymentDetails?: string;
-  voucherCode?: string;
-  voucherAmount?: number;
 }
 
 export interface RegisterDeviceInput {
@@ -94,9 +88,7 @@ export interface UpdateSalonInput {
   voucherCodePrefix?: string;
   defaultCommissionService?: number;
   defaultCommissionProduct?: number;
-  enabledPaymentMethods?: string[];
   receiptFooter?: string;
-  knowledgeBaseEnabled?: boolean;
 }
 
 export interface DbClient {

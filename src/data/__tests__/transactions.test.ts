@@ -31,13 +31,6 @@ describe("mockTransactions", () => {
     });
   });
 
-  it("should have valid payment methods", () => {
-    const validMethods = ["cash", "card", "blik", "voucher", "split"];
-    mockTransactions.forEach((t) => {
-      expect(validMethods).toContain(t.paymentMethod);
-    });
-  });
-
   it("should have at least one item per transaction", () => {
     mockTransactions.forEach((t) => {
       expect(t.items.length).toBeGreaterThan(0);

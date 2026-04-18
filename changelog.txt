@@ -1,6 +1,41 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.73] - 2026-04-18
+- refactor: likwidacja form platnosci - wszystko = gotowka
+  - usuniete typy: PaymentBreakdownItem, paymentMethod z Transaction/CashMovement
+  - usuniete enabledPaymentMethods z SalonSettings i AdminSettings
+  - usuniete komponenty: PaymentModal, SplitPaymentModal
+  - usuniete stale: PAYMENT_METHODS, SIMPLE_METHOD_MAP
+  - POS uproszczony: koszyk -> zatwierdzenie (bez wyboru metody platnosci)
+  - calcSystemCash zwraca number (bylo SystemCashSplit)
+  - Historia: usuniete filtry i ikony metod platnosci
+  - VoucherTab: usuniete SegmentedControl metody platnosci
+  - schemat DB: usuniete payment_method enum, payment_detail tabela, enabled_payment_methods
+  - seed.sql: usuniete wszystkie INSERT INTO payment_detail
+  - adaptery mock/supabase zaktualizowane (rest = thin proxy, bez zmian)
+  - 0 bledow tsc, 48/48 testow przechodzi
+
+[0.1.72] - 2026-04-18
+- feat: retencja pracownikow - nowe pole retention_percent w Employee
+  - widoczne w formularzu edycji pracownika (Admin > Pracownicy)
+  - zapisywane we wszystkich 3 adapterach (mock/supabase/rest)
+  - schemat DB: retention_percent NUMERIC(5,2) w tabeli employee
+  - badge gamifikacyjne (MISTRZ/SOLIDNY/ROZWOJ) gotowe do wyswietlenia
+- refactor: usuniecie Katalogu Wiedzy i kategorii uslug
+  - usuniety plik KnowledgeBase.tsx, route /help, import, link w Dashboard
+  - usuniety knowledge_base_enabled z SalonSettings, schema.sql, seed.sql
+  - usuniety category, durationMinutes, descriptionLong z Service i SaveServiceInput
+  - usuniety SERVICE_CATEGORIES z constants.ts
+  - zarchiwizowane do docs/knowledge-base-archive.md
+- feat: display_order dla uslug - konfigurowalna kolejnosc wyswietlania
+  - nowe pole w formularzu edycji uslugi (Admin > Cennik)
+  - sortowanie wg liczb (mniejsza = wyzej)
+  - schemat DB: display_order INT NOT NULL DEFAULT 0
+- fix: PIN numeric keyboard (inputMode="numeric") we wszystkich polach PIN
+- fix: koperta 0 zl dozwolona przy zamknieciu zmiany
+- fix: przycisk wyplaty napiwkow zmieniony na czerwony (zasada UX)
+
 [0.1.71] - 2026-04-15
 - docs: IDEAS.md - sekcja "Stack idealny - gdybym pisal od nowa"
   - referencja dla przyszlych projektow (barberCal, barberTime) lub hipotetycznego rewrite

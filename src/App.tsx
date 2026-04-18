@@ -15,7 +15,6 @@ const ShiftClose = lazy(() => import("@/pages/ShiftClose"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const AdminPricing = lazy(() => import("@/pages/AdminPricing"));
 const AdminEmployees = lazy(() => import("@/pages/AdminEmployees"));
-const KnowledgeBase = lazy(() => import("@/pages/KnowledgeBase"));
 const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
 const AdminDevices = lazy(() => import("@/pages/AdminDevices"));
 const OwnerSurvey = lazy(() => import("@/pages/OwnerSurvey"));
@@ -42,7 +41,6 @@ export function App() {
                 <Route path="/history" element={<History />} />
                 <Route path="/cash" element={<Cash />} />
                 <Route path="/shift-close" element={<ShiftClose />} />
-                <Route path="/help" element={<KnowledgeBase />} />
                 <Route
                   path="/admin"
                   element={

@@ -10,7 +10,6 @@ import {
   UnstyledButton,
   Divider,
   Container,
-  Badge,
   Button,
   Collapse,
   ScrollArea,
@@ -20,44 +19,15 @@ import {
   Avatar,
 } from "@mantine/core";
 import {
-  IconCash,
-  IconCreditCard,
-  IconDeviceMobile,
-  IconGift,
   IconChevronDown,
   IconChevronUp,
-  IconArrowsSplit,
   IconArrowBackUp,
   IconSearch,
   IconUsers,
-  IconStack2,
 } from "@tabler/icons-react";
 import { MOCK_OPERATIONS_PIN } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDeviceRole } from "@/contexts/DeviceContext";
-
-const paymentIcon: Record<string, typeof IconCash> = {
-  cash: IconCash,
-  card: IconCreditCard,
-  blik: IconDeviceMobile,
-  voucher: IconGift,
-  split: IconArrowsSplit,
-};
-
-const paymentLabel: Record<string, string> = {
-  cash: "Gotówka",
-  card: "Karta",
-  blik: "BLIK",
-  voucher: "Bon",
-  split: "Split",
-};
-
-function getPaymentLabel(t: Transaction): string {
-  if (t.paymentMethod === "split" && t.paymentBreakdown?.length) {
-    return t.paymentBreakdown.map((b) => paymentLabel[b.method] ?? b.method).join(" + ");
-  }
-  return paymentLabel[t.paymentMethod] ?? t.paymentMethod;
-}
 
 export default function HistoryPage() {
   const { data: employees = [] } = useEmployees();
@@ -81,7 +51,6 @@ export default function HistoryPage() {
   const [undoTransactionId, setUndoTransactionId] = useState<string | null>(null);
   const [undoing, setUndoing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [paymentFilter, setPaymentFilter] = useState("all");
 
   const uniqueEmployees = Array.from(new Set(transactions.map((t) => t.employeeName)));
 
@@ -90,7 +59,6 @@ export default function HistoryPage() {
   const filtered = transactions.filter((t) => {
     if (lockedEmployee && t.employeeName !== lockedEmployee.name) return false;
     if (!lockedEmployee && filter !== "all" && t.employeeName !== filter) return false;
-    if (paymentFilter !== "all" && t.paymentMethod !== paymentFilter) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const matchesName = t.employeeName.toLowerCase().includes(q);
@@ -178,54 +146,6 @@ export default function HistoryPage() {
           </ScrollArea>
         )}
 
-        {/* ===== FILTER: PAYMENT METHOD ===== */}
-        <ScrollArea type="auto" offsetScrollbars scrollbarSize={4}>
-          <Group gap="sm" wrap="nowrap" mb="sm">
-            <UnstyledButton onClick={() => setPaymentFilter("all")} style={{ flexShrink: 0 }}>
-              <Stack align="center" gap={2}>
-                <Avatar
-                  size={44}
-                  radius="xl"
-                  color={paymentFilter === "all" ? "blue" : "gray"}
-                  variant={paymentFilter === "all" ? "filled" : "light"}
-                >
-                  <IconStack2 size={20} />
-                </Avatar>
-                <Text fz="xs" c="dimmed">
-                  Wszystko
-                </Text>
-              </Stack>
-            </UnstyledButton>
-            {[
-              { value: "cash", icon: IconCash, label: "Gotówka" },
-              { value: "card", icon: IconCreditCard, label: "Karta" },
-              { value: "blik", icon: IconDeviceMobile, label: "BLIK" },
-              { value: "voucher", icon: IconGift, label: "Bon" },
-              { value: "split", icon: IconArrowsSplit, label: "Split" },
-            ].map((opt) => (
-              <UnstyledButton
-                key={opt.value}
-                onClick={() => setPaymentFilter(opt.value)}
-                style={{ flexShrink: 0 }}
-              >
-                <Stack align="center" gap={2}>
-                  <Avatar
-                    size={44}
-                    radius="xl"
-                    color={paymentFilter === opt.value ? "blue" : "gray"}
-                    variant={paymentFilter === opt.value ? "filled" : "light"}
-                  >
-                    <opt.icon size={20} />
-                  </Avatar>
-                  <Text fz="xs" c="dimmed">
-                    {opt.label}
-                  </Text>
-                </Stack>
-              </UnstyledButton>
-            ))}
-          </Group>
-        </ScrollArea>
-
         <Divider />
 
         {/* ===== TRANSACTION LIST ===== */}
@@ -235,13 +155,12 @@ export default function HistoryPage() {
               <Text fz="sm" c="dimmed" ta="center">
                 Brak transakcji od ostatniego zamknięcia
               </Text>
-              {(filter !== "all" || paymentFilter !== "all" || searchQuery) && (
+              {(filter !== "all" || searchQuery) && (
                 <Button
                   variant="subtle"
                   size="xs"
                   onClick={() => {
                     setFilter("all");
-                    setPaymentFilter("all");
                     setSearchQuery("");
                   }}
                 >
@@ -251,7 +170,6 @@ export default function HistoryPage() {
             </Stack>
           ) : (
             filtered.map((transaction, index) => {
-              const PayIcon = paymentIcon[transaction.paymentMethod];
               const isExpanded = expandedId === transaction.id;
               const itemsSummary = transaction.items.map((i) => i.name).join(", ");
 
@@ -285,7 +203,6 @@ export default function HistoryPage() {
                         </div>
                       </Group>
                       <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
-                        <PayIcon size={18} color="var(--mantine-color-dimmed)" />
                         <Text fw={600} fz="md">
                           {transaction.totalAmount.toLocaleString("pl-PL")} zł
                         </Text>
@@ -338,11 +255,8 @@ export default function HistoryPage() {
                             {transaction.totalAmount.toLocaleString("pl-PL")} zł
                           </Text>
                         </Group>
-                        <Group justify="space-between" align="center">
-                          <Badge size="sm" variant="light">
-                            {getPaymentLabel(transaction)}
-                          </Badge>
-                          {transaction.id === transactions[0]?.id && (
+                        {transaction.id === transactions[0]?.id && (
+                          <Group justify="flex-end">
                             <Button
                               variant="subtle"
                               color="red"
@@ -358,8 +272,8 @@ export default function HistoryPage() {
                             >
                               Cofnij transakcję
                             </Button>
-                          )}
-                        </Group>
+                          </Group>
+                        )}
                       </Stack>
                     </Box>
                   </Collapse>
@@ -454,6 +368,7 @@ export default function HistoryPage() {
               <PinInput
                 length={4}
                 type="number"
+                inputMode="numeric"
                 mask
                 value={undoPin}
                 onChange={(val) => {

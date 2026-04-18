@@ -105,6 +105,7 @@ function RegisterScreen(): React.JSX.Element {
                 placeholder="Wprowadź PIN"
                 leftSection={<IconLock size={16} />}
                 type="password"
+                inputMode="numeric"
                 maxLength={4}
                 {...form.getInputProps("adminPin")}
               />

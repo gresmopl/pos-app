@@ -8,8 +8,6 @@ interface ConfirmModalProps {
   total: number;
   employeeName: string;
   itemCount: number;
-  paymentMethod: string;
-  paymentDetails: string;
   tipAmount: number;
   discount: DiscountState | null;
   discountAmount: number;
@@ -23,8 +21,6 @@ export function ConfirmModal({
   total,
   employeeName,
   itemCount,
-  paymentMethod,
-  paymentDetails,
   tipAmount,
   discount,
   discountAmount,
@@ -72,17 +68,6 @@ export function ConfirmModal({
                 {itemCount}
               </Text>
             </Group>
-            <Group justify="space-between">
-              <Text fz="sm">Metoda:</Text>
-              <Text fz="sm" fw={600}>
-                {paymentMethod}
-              </Text>
-            </Group>
-            {paymentDetails && (
-              <Text fz="xs" c="dimmed" ta="center" mt={4}>
-                {paymentDetails}
-              </Text>
-            )}
             {tipAmount > 0 && (
               <Group justify="space-between">
                 <Text fz="sm">Napiwek:</Text>

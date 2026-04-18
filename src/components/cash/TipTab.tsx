@@ -95,7 +95,7 @@ export function TipTab({ employeeOptions, onWithdraw, lockedEmployeeId }: TipTab
 
       <Button
         size="lg"
-        color="green"
+        color="red"
         fullWidth
         onClick={handleSubmit}
         loading={submitting}
