@@ -25,10 +25,7 @@ import {
   IconGift,
   IconChevronRight,
   IconReceipt,
-  IconCheck,
-  IconCopy,
 } from "@tabler/icons-react";
-import { CopyButton } from "@mantine/core";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MovementHistory } from "@/components/cash/MovementHistory";
 import { SettleModal } from "@/components/cash/SettleModal";
@@ -182,15 +179,19 @@ export default function CashPage() {
     [showSuccess]
   );
 
-  const handleVoucherSale = useCallback(async (amount: number, code: string) => {
-    const movement = await db.cashMovements.create({
-      type: "voucher_sale",
-      amount,
-      description: `Sprzedaż bonu ${code}`,
-      voucherCode: code,
-    });
-    setMovements((prev) => [movement, ...prev]);
-  }, []);
+  const handleVoucherSale = useCallback(
+    async (amount: number) => {
+      const movement = await db.cashMovements.create({
+        type: "voucher_sale",
+        amount,
+        description: `Sprzedaż bonu ${amount} zł`,
+      });
+      setMovements((prev) => [movement, ...prev]);
+      setActiveModal(null);
+      showSuccess(`Sprzedano bon na ${amount} zł`);
+    },
+    [showSuccess]
+  );
 
   const handleSettle = useCallback(async () => {
     if (!settleTarget) return;
@@ -704,11 +705,9 @@ function VoucherModal({
 }: {
   opened: boolean;
   onClose: () => void;
-  onSale: (amount: number, code: string) => void;
+  onSale: (amount: number) => void;
 }) {
   const [value, setValue] = useState<number | string>("");
-  const [success, setSuccess] = useState(false);
-  const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const handleSale = () => {
@@ -718,17 +717,12 @@ function VoucherModal({
       return;
     }
     setError(null);
-
-    const generatedCode = `BON-${Date.now().toString(36).toUpperCase()}`;
-    setCode(generatedCode);
-    setSuccess(true);
-    onSale(amount, generatedCode);
+    onSale(amount);
+    setValue("");
   };
 
   const handleClose = () => {
     setValue("");
-    setSuccess(false);
-    setCode("");
     setError(null);
     onClose();
   };
@@ -739,90 +733,40 @@ function VoucherModal({
       onClose={handleClose}
       title={
         <Text fw={700} fz="lg">
-          {success ? "Bon sprzedany!" : "Sprzedaj bon"}
+          Sprzedaj bon
         </Text>
       }
       size="sm"
     >
-      {success ? (
-        <Stack align="center" gap="md" py="md">
-          <Box
-            p="md"
-            style={{
-              borderRadius: "50%",
-              backgroundColor: "var(--mantine-color-green-light)",
-            }}
-          >
-            <IconCheck size={40} color="var(--mantine-color-green-filled)" />
-          </Box>
-          <Box
-            p="md"
-            w="100%"
-            style={{
-              borderRadius: "var(--mantine-radius-md)",
-              border: "1px solid var(--mantine-color-default-border)",
-              textAlign: "center",
-            }}
-          >
-            <Text fz="xs" c="dimmed">
-              Kod bonu
-            </Text>
-            <Text fw={700} fz={22} style={{ letterSpacing: 2 }}>
-              {code}
-            </Text>
-            <Text fz="sm" c="dimmed" mt="xs">
-              Wartość: {Number(value).toLocaleString("pl-PL")} zł
-            </Text>
-          </Box>
-          <CopyButton value={code}>
-            {({ copied, copy }) => (
-              <Button
-                fullWidth
-                size="md"
-                variant="light"
-                color={copied ? "green" : "gray"}
-                leftSection={copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
-                onClick={copy}
-              >
-                {copied ? "Skopiowano!" : "Kopiuj kod"}
-              </Button>
-            )}
-          </CopyButton>
-          <Button fullWidth size="lg" variant="light" onClick={handleClose}>
-            Zamknij
-          </Button>
-        </Stack>
-      ) : (
-        <Stack gap="md">
-          <Text fz="sm" c="dimmed">
-            Bon nie jest przypisany do fryzjera - wpływa do kasy salonu.
-          </Text>
+      <Stack gap="md">
+        <Text fz="sm" c="dimmed">
+          Bon nie jest przypisany do fryzjera - wpływa do kasy salonu.
+        </Text>
 
-          <NumberInput
-            label="Kwota bonu"
-            placeholder="0"
-            value={value}
-            onChange={(v) => {
-              setValue(v);
-              setError(null);
-            }}
-            min={1}
-            suffix=" zł"
-            size="md"
-            error={error}
-          />
+        <NumberInput
+          label="Kwota bonu"
+          placeholder="0"
+          value={value}
+          onChange={(v) => {
+            setValue(v);
+            setError(null);
+          }}
+          min={1}
+          suffix=" zł"
+          size="md"
+          error={error}
+        />
 
-          <Button
-            fullWidth
-            size="lg"
-            color="green"
-            onClick={handleSale}
-            leftSection={<IconGift size={20} />}
-          >
-            Sprzedaj bon - {Number(value) || 0} zł
-          </Button>
-        </Stack>
-      )}
+        <Button
+          fullWidth
+          size="lg"
+          color="green"
+          onClick={handleSale}
+          leftSection={<IconGift size={20} />}
+        >
+          Sprzedaj bon - {Number(value) || 0} zł
+        </Button>
+      </Stack>
     </Modal>
   );
 }

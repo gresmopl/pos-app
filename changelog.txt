@@ -1,6 +1,13 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.81] - 2026-04-19
+- refactor: uproszczenie bonu w Kasie - tylko kwota, bez generowania kodu
+  - VoucherModal: usuniety ekran sukcesu z kodem i CopyButton
+  - modal dziala jak inne (kwota -> potwierdz -> toast sukcesu -> zamknij)
+  - handleVoucherSale bez parametru code, bez voucherCode w DB
+  - usuniete nieuzywane importy: CopyButton, IconCheck, IconCopy
+
 [0.1.80] - 2026-04-19
 - feat: ekran Napiwki/Portfel (/wallet) wg prototypu szefa
   - lista pracownikow z saldami portfeli (admin/station mode)
