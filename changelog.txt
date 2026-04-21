@@ -1,6 +1,13 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.96] - 2026-04-21
+- fix(ux): 4 problemy HIGH z audytu UX
+  - PageHeader: nowy prop hideBack, ukryta strzalka na Kasa/Napiwki (dostepne z BottomNavBar)
+  - Cash ExpenseModal/VoucherModal: loading state na submit (ochrona przed podwojnym kliknieciem)
+  - ShiftClose: "Zatwierdz i drukuj" -> "Zamknij zmiane" z IconCheck (bez mylacego drukuj)
+  - Cash: przycisk Rozlicz size sm -> md (wiekszy touch target)
+
 [0.1.95] - 2026-04-21
 - fix(ux): 3 problemy CRITICAL z audytu UX
   - POS: notyfikacja bledu przy nieudanej finalizacji transakcji (bylo: tylko console.error)

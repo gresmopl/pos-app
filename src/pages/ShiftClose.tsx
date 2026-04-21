@@ -336,11 +336,11 @@ export default function ShiftClosePage(): React.JSX.Element {
               if (form.validate().hasErrors) return;
               setConfirmModal(true);
             }}
-            leftSection={<IconPrinter size={20} />}
+            leftSection={<IconCheck size={20} />}
             fz="md"
             fw={600}
           >
-            Zatwierdź i drukuj
+            Zamknij zmianę
           </Button>
         </Container>
       </Box>
