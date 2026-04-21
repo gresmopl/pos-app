@@ -1,3 +1,4 @@
+declare const APP_VERSION: string;
 import { useState } from "react";
 import { useDevice } from "@/contexts/DeviceContext";
 import { useEmployees } from "@/hooks/useDbData";
@@ -116,7 +117,7 @@ function RegisterScreen(): React.JSX.Element {
           </Stack>
 
           <Text fz={10} c="dimmed" ta="center">
-            ID: {deviceId.slice(0, 8)}...
+            ID: {deviceId.slice(0, 8)}... · v{APP_VERSION}
           </Text>
         </Stack>
       </Container>

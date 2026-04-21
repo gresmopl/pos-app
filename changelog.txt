@@ -1,6 +1,15 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.94] - 2026-04-21
+- docs: aktualizacja dokumentacji technicznej i CLAUDE.md
+  - technical.md: routing (wallet/more/stats), usuniety KnowledgeBase/PaymentModal
+  - technical.md: mappery DB, native touch CSS, Wake Lock, autofocus
+  - technical.md: POS/Cash/ShiftClose flow zaktualizowane (modalne Kasa, brak metod platnosci)
+  - technical.md: 61 testow, useWakeLock, BottomNavBar, DeviceGate z nr wersji
+  - CLAUDE.md: struktura (mappers, useWakeLock, cash.ts, commission.ts, BottomNavBar)
+- feat: nr wersji na ekranie rejestracji urzadzenia (DeviceGate)
+
 [0.1.93] - 2026-04-21
 - feat: Screen Wake Lock - ekran nie gasnie podczas pracy z aplikacja
 - feat: autofocus na pierwszym inpucie we wszystkich 11 modalach (data-autofocus)

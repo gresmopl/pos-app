@@ -94,44 +94,44 @@ Klucz `anon` Supabase jest publiczny - trafia do bundla JS w przegladarce. Bezpi
 src/
   main.tsx              Entry point: BrowserRouter + MantineProvider + DeviceProvider
   App.tsx               Routing (React Router v7) + DeviceGate + ErrorBoundary + Suspense
-  globals.css           Globalne style, animacje, @media print
+  globals.css           Globalne style, animacje, @media print, native touch CSS
 
   pages/                Strony (lazy-loaded przez React.lazy)
-    Dashboard.tsx       Ekran glowny: statystyki, lista pracownikow, bottom bar
-    POS.tsx             Sprzedaz: koszyk, rabaty, napiwki, platnosci
-    History.tsx         Historia transakcji (od ostatniego zamkniecia)
-    Cash.tsx            Ruchy kasowe: napiwki, zakupy, wplaty, zwroty, bony
-    ShiftClose.tsx      Zamkniecie zmiany: rozliczenie kasowe + bonowe, raport
+    Dashboard.tsx       Ekran glowny: lista pracownikow z badge retencji
+    POS.tsx             Sprzedaz: koszyk, rabaty, napiwki, floating cart bar
+    History.tsx         Historia transakcji (filtr dat od/do z kalendarzem)
+    Cash.tsx            Ruchy kasowe: terminal check, zakupy, wplaty, bony (modalne)
+    ShiftClose.tsx      Zamkniecie zmiany: rozliczenie kasowe, raport
+    Wallet.tsx          Portfel pracownika: napiwki + wplaty wlasne, wyplata
+    More.tsx            Hub nawigacyjny: historia, cennik, zamkniecie, admin
+    Stats.tsx           Statystyki salonu (dzis, miesiac, rok, rekord)
     Admin.tsx           Panel admina (PIN gate)
-    AdminPricing.tsx    Cennik CRUD
-    AdminEmployees.tsx  Pracownicy CRUD
-    AdminSettings.tsx   Ustawienia salonu (dane, kasa, bony, prowizje, platnosci)
+    AdminPricing.tsx    Cennik CRUD (uslugi + produkty, display_order)
+    AdminEmployees.tsx  Pracownicy CRUD (prowizje, retencja)
+    AdminSettings.tsx   Ustawienia salonu (kasa, prowizje, cel miesiezny)
     AdminDevices.tsx    Zarzadzanie urzadzeniami (zatwierdzanie, blokowanie)
-    KnowledgeBase.tsx   Katalog Wiedzy (opisy uslug/produktow, wyszukiwarka)
     OwnerSurvey.tsx     Ankieta dla szefa
     NotFound.tsx        Strona 404
 
   components/
     layout/
-      PageHeader.tsx    Wspolny header: strzalka + tytul + rightSection
-      PinModal.tsx      Reusable modal PIN (4 cyfry)
+      PageHeader.tsx    Wspolny header: strzalka + tytul + rightSection + onBack
+      PinModal.tsx      Reusable modal PIN (4 cyfry, data-autofocus)
+      BottomNavBar.tsx  Staly dolny pasek: Sprzedaz, Kasa, Napiwki, Wiecej
     pos/
       CartItemList.tsx  Lista pozycji w koszyku (+/- ilosc)
       TipSelector.tsx   Wybor napiwku (kwota)
-      AddItemModal.tsx  Dodawanie uslug/produktow do koszyka
-      DiscountModal.tsx Rabat procentowy lub kwotowy
-      PaymentModal.tsx  Wybor metody platnosci (+ bon z doplata)
-      SplitPaymentModal.tsx  Platnosc gotowka + karta
+      AddItemModal.tsx  Dodawanie uslug/produktow do koszyka (data-autofocus)
+      DiscountModal.tsx Rabat procentowy lub kwotowy (data-autofocus)
       ConfirmModal.tsx  Potwierdzenie przed finalizacja
     cash/
-      TipTab.tsx        Zakladka Portfel - wyplata z tipBalance (async z DB)
-      ExpenseTab.tsx    Zakladka Zakupy salonowe
-      DepositTab.tsx    Zakladka Wplata do kasy (zasila kasetke + Portfel pracownika)
-      VoucherTab.tsx    Zakladka sprzedazy bonu (generuje kod + zapis do DB)
+      TipTab.tsx        Portfel - wyplata z tipBalance (async z DB)
+      ExpenseTab.tsx    Zakupy salonowe
+      DepositTab.tsx    Wplata do kasy (zasila kasetke + Portfel pracownika)
+      VoucherTab.tsx    Sprzedaz bonu (tylko kwota)
       SettleModal.tsx   Rozliczenie zakupow (paragon + zwrot reszty)
       MovementHistory.tsx  Lista operacji kasowych
-      types.ts          Re-export CashMovement z lib/types
-    DeviceGate.tsx      Bramka urzadzen (rejestracja, oczekiwanie, blokada)
+    DeviceGate.tsx      Bramka urzadzen (rejestracja z nr wersji, oczekiwanie, blokada)
     ErrorBoundary.tsx   Obsluga crashy runtime
     PageSkeleton.tsx    Loading skeleton (code splitting)
     SwipeBack.tsx       Swipe back z lewej krawedzi
@@ -142,19 +142,20 @@ src/
 
   hooks/
     useCart.ts          Koszyk POS (addToCart, removeFromCart, tip, discount, total)
-    useMovements.ts     Ruchy kasowe z persystencja DB (7 handlerow async)
     useDbQuery.ts       Generyczny hook async (loading/error/refetch)
     useDbData.ts        Hooki zasobowe (useEmployees, useServices, useSalonSettings, ...)
+    useWakeLock.ts      Screen Wake Lock API (ekran nie gasnie podczas pracy)
 
   db/                   Warstwa bazy danych
     config.ts           Konfiguracja srodowiskowa (VITE_DB_ADAPTER)
     client.ts           Fabryka klienta DB (wybor adaptera)
     types.ts            Interfejsy DB (DbClient, CreateTransactionInput, ...)
+    mappers.ts          Mappery DB row -> typ domenowy (testowalne bez Supabase)
     schema.sql          Schemat PostgreSQL (docelowy stan bazy)
     seed.sql            Dane testowe DEV (salon, pracownicy, uslugi, transakcje)
     adapters/
       mock.ts           Adapter mock (testy, offline)
-      supabase.ts       Adapter Supabase DEV (JS SDK)
+      supabase.ts       Adapter Supabase DEV (JS SDK, importuje mappery)
       rest.ts           Adapter REST (produkcja Hetzner VPS)
 
   lib/
@@ -181,23 +182,25 @@ src/
 
 Zdefiniowany w `App.tsx` z lazy loading (code splitting):
 
-| Sciezka              | Komponent      | Opis                               |
-| -------------------- | -------------- | ---------------------------------- |
-| `/`                  | Dashboard      | Ekran glowny                       |
-| `/pos?employee={id}` | POS            | Sprzedaz (pracownik z query param) |
-| `/history`           | History        | Historia transakcji                |
-| `/cash`              | Cash           | Ruchy kasowe                       |
-| `/shift-close`       | ShiftClose     | Zamkniecie zmiany                  |
-| `/help`              | KnowledgeBase  | Katalog Wiedzy (opisy uslug/prod.) |
-| `/admin`             | Admin          | Panel admina (PIN)                 |
-| `/admin/pricing`     | AdminPricing   | Cennik CRUD                        |
-| `/admin/employees`   | AdminEmployees | Pracownicy CRUD                    |
-| `/admin/settings`    | AdminSettings  | Ustawienia salonu                  |
-| `/admin/devices`     | AdminDevices   | Zarzadzanie urzadzeniami           |
-| `/admin/survey`      | OwnerSurvey    | Ankieta dla szefa                  |
-| `*`                  | NotFound       | Strona 404                         |
+| Sciezka              | Komponent      | Opis                                          |
+| -------------------- | -------------- | --------------------------------------------- |
+| `/`                  | Dashboard      | Ekran glowny (lista pracownikow)              |
+| `/pos?employee={id}` | POS            | Sprzedaz (personal: lockedEmployeeId > URL)   |
+| `/history`           | History        | Historia transakcji (filtr dat od/do)         |
+| `/cash`              | Cash           | Ruchy kasowe (terminal, zakupy, wplaty, bony) |
+| `/wallet`            | Wallet         | Portfel pracownika (napiwki + wplaty wlasne)  |
+| `/more`              | More           | Hub nawigacyjny (historia, cennik, admin)     |
+| `/stats`             | Stats          | Statystyki salonu                             |
+| `/shift-close`       | ShiftClose     | Zamkniecie zmiany                             |
+| `/admin`             | Admin          | Panel admina (PIN)                            |
+| `/admin/pricing`     | AdminPricing   | Cennik CRUD                                   |
+| `/admin/employees`   | AdminEmployees | Pracownicy CRUD                               |
+| `/admin/settings`    | AdminSettings  | Ustawienia salonu                             |
+| `/admin/devices`     | AdminDevices   | Zarzadzanie urzadzeniami                      |
+| `/admin/survey`      | OwnerSurvey    | Ankieta dla szefa                             |
+| `*`                  | NotFound       | Strona 404                                    |
 
-Nawigacja: `useNavigate()` z React Router. Brak nested routes.
+Nawigacja: `useNavigate()` z React Router + staly BottomNavBar (4 przyciski: Sprzedaz, Kasa, Napiwki, Wiecej).
 Cala aplikacja owinieta w `DeviceGate` - blokuje dostep do niezarejestrowanych/oczekujacych/zablokowanych urzadzen.
 
 ---
@@ -241,22 +244,13 @@ dailyReports:   create(), getToday(), getLastClosedAt(), getLastFloat()
 - **useDailyStats** - statystyki salonowe
 - **useSalonSettings** - konfiguracja salonu
 
-### Mapowanie metod platnosci
+### Mappery DB (mappers.ts)
 
-UI wysyla polskie nazwy metod platnosci ("Gotowka", "Karta", "Bon + Karta"), adapter mapuje je na wartosci DB enum:
+Czyste funkcje mapujace surowe wiersze z bazy na typy domenowe. Wyodrebnione z supabase.ts dla testowalnosci (20 testow jednostkowych).
 
-| UI (polski)       | DB enum            | Opis                         |
-| ----------------- | ------------------ | ---------------------------- |
-| "Gotowka"         | `cash`             | Platnosc gotowka             |
-| "Karta"           | `card`             | Platnosc karta               |
-| "BLIK"            | `blik`             | Platnosc BLIK                |
-| "Bon podarunkowy" | `voucher`          | Caly rachunek bonem          |
-| "Gotowka + Karta" | `cash` + `card`    | Split: 2 payment_detail rows |
-| "Bon + Gotowka"   | `voucher` + `cash` | Split: bon + doplata gotowka |
-| "Bon + Karta"     | `voucher` + `card` | Split: bon + doplata karta   |
-| "Bon + BLIK"      | `voucher` + `blik` | Split: bon + doplata BLIK    |
+Mappery: `mapEmployee`, `mapService`, `mapProduct`, `mapTransaction`, `mapCashMovement`, `mapSalon`.
 
-Funkcja `parsePaymentInput()` w adapterach parsuje nazwe + details string i zwraca tablice `PaymentBreakdownItem[]`. Dla splitow tworzony jest osobny `payment_detail` per metoda.
+Kluczowe: `!= null ? Number(value) : default` zamiast `Number(value) || default` - zabezpieczenie przed utrata wartosci 0 (np. cashTolerance=0, monthTarget=0).
 
 ### Obliczanie prowizji
 
@@ -276,7 +270,7 @@ Reguly:
 - Prowizja od rabatu: od kwoty PO rabacie (proporcjonalny rozklad)
 - Napiwek NIE wchodzi do bazy prowizji
 - Zmiana % prowizji nie wplywa na historyczne transakcje (snapshot)
-- Prowizja niewidoczna w UI (do ustalenia z szefem: raporty miesieczne lub telefon fryzjera)
+- Prowizja widoczna na biezaco na telefonie fryzjera (personal view Dashboard)
 
 ### Mapowanie discount_type
 
@@ -293,14 +287,14 @@ UI: `"percent"` / `"amount"` -> DB enum: `"percentage"` / `"amount"`. Mapowanie 
 ### Stan lokalny
 
 - **useState** w kazdej stronie
-- **Custom hooks**: useCart (koszyk POS), useMovements (ruchy kasowe z DB)
-- **DeviceContext** - jedyny globalny context (UUID urzadzenia, status, rejestracja)
+- **Custom hooks**: useCart (koszyk POS), useWakeLock (Screen Wake Lock)
+- **DeviceContext** - jedyny globalny context (UUID urzadzenia, status, rejestracja, useDeviceRole)
 
 ### Persystencja
 
 - Wszystkie operacje zapisywane do DB przez adaptery
-- useMovements laduje ruchy "od ostatniego zamkniecia" z DB przy starcie
-- History laduje transakcje "od ostatniego zamkniecia" z DB
+- Cash.tsx laduje ruchy kasowe "od ostatniego zamkniecia" z DB przy starcie (useEffect)
+- History laduje transakcje wg filtra dat (domyslnie dzisiaj) z DB
 - ShiftClose laduje transakcje + ruchy kasowe "od ostatniego zamkniecia"
 
 ### Wzorzec "od ostatniego zamkniecia"
@@ -351,49 +345,50 @@ Animacja przejscia: CSS `@keyframes fadeIn` na `.page-transition` (globals.css).
 
 ```
 Dashboard (klik pracownika)
-  -> /pos?employee={id}
+  -> /pos?employee={id} (personal: lockedEmployeeId ma priorytet nad URL)
   -> useCart: addToCart(), applyDiscount(), setTip()
-  -> Platnosc (PaymentModal / SplitPaymentModal)
+  -> Floating cart bar (zielony pasek z kwota)
   -> Potwierdzenie (ConfirmModal)
-  -> db.transactions.create() (transaction + items + payment_detail + tip_balance)
-  -> Haptic feedback + navigate("/")
+  -> db.transactions.create() (transaction + items + tip_balance)
+  -> Haptic feedback + success screen (kwota + pracownik)
 ```
 
-Adapter tworzy: transaction row, transaction_item rows, payment_detail row(s), aktualizuje tip_balance jesli napiwek > 0.
+Wszystkie platnosci traktowane jako gotowka (bez wyboru metody). Adapter tworzy: transaction row, transaction_item rows, aktualizuje tip_balance jesli napiwek > 0.
 
 ### Ruchy kasowe (Cash)
 
 ```
-Cash.tsx (orkiestrator)
-  -> SegmentedControl (4 zakladki: Portfel / Zakupy / Wplata do kasy / Bon)
-  -> TipTab / ExpenseTab / DepositTab / VoucherTab
-  -> useMovements: handlery async -> db.cashMovements.create() -> stan lokalny
-  -> MovementHistory wyswietla liste
+Cash.tsx (orkiestrator z modalami)
+  -> Hero: stan kasy (kwota z terminala / utarg od zamkniecia)
+  -> Przyciski akcji: Sprawdz z terminalem, Zakupy, Wplata, Bon
+  -> Kazda akcja otwiera modal z formularzem
+  -> db.cashMovements.create() -> przeladowanie danych
+  -> MovementHistory wyswietla liste ruchow od ostatniego zamkniecia
+  -> Sekcja "Do rozliczenia" dla pending expenses
 ```
 
-useMovements laduje ruchy z DB przy starcie (`getSince(lastClosedAt)`) i dodaje nowe przez handlery async. Kazdy handler najpierw zapisuje do DB, potem aktualizuje stan lokalny.
+Cash.tsx laduje dane z DB przy starcie (`getSince(lastClosedAt)`) i po kazdej operacji. Stan kasy obliczany z `calcExpectedCash()` i `calcSystemCash()` (src/lib/cash.ts).
 
 Side effects w adapterze:
 
-- `tip_withdrawal`: insert do tip_withdrawal + decrement tip_balance (RPC)
-- `own_cash_deposit`: insert do cash_movement + increment tip_balance (RPC) - wplata zasila Portfel pracownika
-- `voucher_sale`: insert do voucher (kod, wartosc, 12 mies. waznosc)
+- `tip_withdrawal`: insert do cash_movement + decrement tip_balance (RPC)
+- `own_cash_deposit`: insert do cash_movement + increment tip_balance (RPC)
+- `voucher_sale`: insert do voucher (wartosc, 12 mies. waznosc)
+- `expense_take`: insert do cash_movement (kwota + opis zakupu)
 
 ### Zamkniecie zmiany (ShiftClose)
 
 ```
 1. Ladowanie danych: transakcje + ruchy kasowe "od ostatniego zamkniecia"
-2. Obliczenie systemowych wartosci z paymentBreakdown (per metoda, nie per transakcja)
-3. Obliczenie oczekiwanej gotowki:
-   expectedCash = systemCash + cashIn(top_up, expense_settle, own_cash_deposit, voucher_sale cash)
-                             - cashOut(tip_withdrawal, expense_take, barber_payback)
-4. Obliczenie oczekiwanych bonow: expectedVouchers = suma platnosci voucher
-5. Pracownik wpisuje: gotowka, drobne, bony papierowe
-6. Roznice: gotowkowa + bonowa (kazda roznica pokazywana, brak tolerancji)
-7. db.dailyReports.create() -> raport kasowy -> wydruk
+2. Obliczenie oczekiwanej gotowki:
+   systemCash = calcSystemCash(transactions) - suma cash z transakcji
+   expectedCash = calcExpectedCash(openingBalance, systemCash, movements)
+3. Pracownik wpisuje: "Drobne na jutro" + "Do koperty"
+4. Weryfikacja na zywo: Manko / Nadwyzka / Stan kasy sie zgadza
+5. db.dailyReports.create() -> raport kasowy -> wydruk
 ```
 
-Wiele zamkniec dziennie dozwolone (brak blokady).
+Wiele zamkniec dziennie dozwolone (brak blokady). Koperta 0 zl dozwolona (dzien bez utargu).
 
 ---
 
@@ -442,21 +437,20 @@ Szef z dwoma salonami: 2 PWA na telefonie (osobne subdomeny/origin).
 
 Zdefiniowane w `src/lib/types.ts`:
 
-| Typ                  | Opis                                                | Uzywany w                |
-| -------------------- | --------------------------------------------------- | ------------------------ |
-| Employee             | Pracownik (imie, rola, saldo napiwkow, statystyki)  | Dashboard, POS, Cash     |
-| DailyStats           | Statystyki salonowe (dzis, miesiac, rok, rekord)    | Dashboard                |
-| Service              | Usluga (nazwa, cena, czas, opis, kategoria)         | POS, AdminPricing        |
-| Product              | Produkt (nazwa, cena, opis)                         | POS, AdminPricing        |
-| Transaction          | Transakcja (pozycje, platnosc, rabat, napiwek)      | History, ShiftClose      |
-| TransactionItem      | Pozycja transakcji (nazwa, cena, typ)               | History, POS             |
-| PaymentBreakdownItem | Metoda + kwota (per payment_detail)                 | ShiftClose (rozliczenie) |
-| CashMovement         | Operacja kasowa (typ, kwota, status, paymentMethod) | Cash, ShiftClose         |
-| CartItem             | Pozycja w koszyku (ilosc, typ)                      | POS                      |
-| DiscountState        | Stan rabatu (typ + wartosc)                         | POS                      |
-| Voucher              | Bon podarunkowy (kod, wartosc, saldo, waznosc)      | Cash, POS                |
-| SalonSettings        | Konfiguracja salonu (dane, kasa, bony, prowizje)    | AdminSettings, Dashboard |
-| DeviceRegistration   | Rejestracja urzadzenia (UUID, typ, status)          | DeviceGate, AdminDevices |
+| Typ                | Opis                                               | Uzywany w                |
+| ------------------ | -------------------------------------------------- | ------------------------ |
+| Employee           | Pracownik (imie, rola, saldo napiwkow, statystyki) | Dashboard, POS, Cash     |
+| DailyStats         | Statystyki salonowe (dzis, miesiac, rok, rekord)   | Dashboard                |
+| Service            | Usluga (nazwa, cena, czas, opis, kategoria)        | POS, AdminPricing        |
+| Product            | Produkt (nazwa, cena, opis)                        | POS, AdminPricing        |
+| Transaction        | Transakcja (pozycje, rabat, napiwek)               | History, ShiftClose      |
+| TransactionItem    | Pozycja transakcji (nazwa, cena, typ, prowizja)    | History, POS             |
+| CashMovement       | Operacja kasowa (typ, kwota, status)               | Cash, ShiftClose         |
+| CartItem           | Pozycja w koszyku (ilosc, typ)                     | POS                      |
+| DiscountState      | Stan rabatu (typ + wartosc)                        | POS                      |
+| Voucher            | Bon podarunkowy (wartosc, saldo, waznosc)          | Cash                     |
+| SalonSettings      | Konfiguracja salonu (kasa, prowizje, cel)          | AdminSettings, Dashboard |
+| DeviceRegistration | Rejestracja urzadzenia (UUID, typ, status)         | DeviceGate, AdminDevices |
 
 ---
 
@@ -465,12 +459,13 @@ Zdefiniowane w `src/lib/types.ts`:
 Framework: vitest + @testing-library/react + jsdom
 
 ```bash
-npm test           # uruchom testy (51 testow)
+npm test           # uruchom testy (61 testow, 7 plikow)
 npm test -- --ui   # interfejs graficzny
 ```
 
-Pokrycie: mock dane, logika biznesowa hookow, renderowanie komponentow.
+Pokrycie: mock dane, logika biznesowa hookow, renderowanie komponentow, mappery DB.
 Testy mockuja modul `@/db` (`vi.mock`) - nie komunikuja sie z Supabase.
+Mappery (src/db/mappers.ts) testowane bezposrednio - czyste funkcje bez zaleznosci.
 
 Lokalizacja testow: `src/**/__tests__/*.test.ts(x)`
 
@@ -519,10 +514,10 @@ Automatyczny przez GitHub Actions przy push do `main`:
 
 Zdefiniowane w `vite.config.ts`:
 
-| Zmienna        | Wartosc                        | Uzywana w             |
-| -------------- | ------------------------------ | --------------------- |
-| APP_VERSION    | Z package.json (np. "0.1.47")  | Admin.tsx (ekran PIN) |
-| APP_BUILD_DATE | Data buildu (np. "2026.04.10") | Admin.tsx (ekran PIN) |
+| Zmienna        | Wartosc                           | Uzywana w                 |
+| -------------- | --------------------------------- | ------------------------- |
+| APP_VERSION    | Z package.json + timestamp buildu | Admin.tsx, DeviceGate.tsx |
+| APP_BUILD_DATE | Data buildu (np. "2026.04.10")    | Admin.tsx (ekran PIN)     |
 
 ---
 
@@ -534,7 +529,28 @@ Zdefiniowane w `vite.config.ts`:
 
 ---
 
-## 15. Helpery i narzedzia
+## 15. Native touch UX
+
+### CSS (globals.css)
+
+- `user-select: none` na `*` (blokada zaznaczania tekstu, wyjatki: input, textarea)
+- `touch-action: manipulation` na body (blokada double-tap zoom)
+- `overscroll-behavior: none` na html (brak bounce na iOS/Android)
+- `-webkit-touch-callout: none` (brak menu kontekstowego przy long-press)
+- `-webkit-tap-highlight-color: transparent` (brak niebieskiego flash)
+- viewport: `user-scalable=no, maximum-scale=1.0` (blokada pinch zoom)
+
+### Screen Wake Lock (useWakeLock.ts)
+
+Hook w App.tsx - ekran nie gasnie podczas pracy z aplikacja. Re-request po powrocie z tla (visibilitychange). Gracefully degraduje na nieobslugiwanych przegladarkach.
+
+### Autofocus w modalach
+
+Wszystkie modale uzywaja `data-autofocus` na pierwszym inpucie (Mantine convention). Dotyczy: AddItemModal, DiscountModal, PinModal, ExpenseModal, DepositModal, VoucherModal, TerminalCheckModal, SettleModal, AdminPricing, AdminEmployees, History (undo PIN).
+
+---
+
+## 16. Helpery i narzedzia
 
 ### pluralize() (constants.ts)
 
