@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from "react-router";
 import { useEmployees, useServices, useProducts } from "@/hooks/useDbData";
 import { db } from "@/db";
 import { Text, Group, Stack, Box, Avatar, Divider, Container, Badge, Button } from "@mantine/core";
+import { notifications } from "@mantine/notifications";
 import { IconPlus, IconDiscount2, IconCheck, IconChevronRight } from "@tabler/icons-react";
 import { pluralize } from "@/lib/constants";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
@@ -72,6 +73,10 @@ export default function POSPage() {
       setSuccessData({ total: savedTotal, employeeName: savedName });
     } catch (err) {
       console.error("[POS] Failed to save transaction:", err);
+      notifications.show({
+        message: "Nie udało się zapisać transakcji. Spróbuj ponownie.",
+        color: "red",
+      });
     } finally {
       setFinalizing(false);
     }

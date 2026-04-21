@@ -143,7 +143,7 @@ function PendingScreen(): React.JSX.Element {
             </Text>{" "}
             zostało zarejestrowane. Poczekaj, aż szef zatwierdzi dostęp w panelu admina.
           </Text>
-          <Button variant="light" onClick={refetch}>
+          <Button variant="light" size="lg" fullWidth onClick={refetch}>
             Sprawdź status
           </Button>
         </Stack>

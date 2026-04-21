@@ -1,6 +1,12 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.95] - 2026-04-21
+- fix(ux): 3 problemy CRITICAL z audytu UX
+  - POS: notyfikacja bledu przy nieudanej finalizacji transakcji (bylo: tylko console.error)
+  - Historia: "Cofnij transakcje" porownuje z filtered[0] zamiast transactions[0] (filtr pracowal blednie)
+  - DeviceGate: przycisk "Sprawdz status" size lg + fullWidth (bylo: domyslny SM)
+
 [0.1.94] - 2026-04-21
 - docs: aktualizacja dokumentacji technicznej i CLAUDE.md
   - technical.md: routing (wallet/more/stats), usuniety KnowledgeBase/PaymentModal

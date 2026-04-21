@@ -305,7 +305,7 @@ export default function HistoryPage() {
                             {transaction.totalAmount.toLocaleString("pl-PL")} zł
                           </Text>
                         </Group>
-                        {transaction.id === transactions[0]?.id &&
+                        {transaction.id === filtered[0]?.id &&
                           new Date(transaction.timestamp).toDateString() === today && (
                             <Group justify="flex-end">
                               <Button
