@@ -23,9 +23,9 @@ describe("mockServices", () => {
     });
   });
 
-  it("should have non-empty categories", () => {
+  it("should have displayOrder as a number", () => {
     mockServices.forEach((s) => {
-      expect(s.category.trim().length).toBeGreaterThan(0);
+      expect(typeof s.displayOrder).toBe("number");
     });
   });
 });

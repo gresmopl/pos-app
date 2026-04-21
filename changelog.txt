@@ -1,6 +1,210 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.93] - 2026-04-21
+- feat: Screen Wake Lock - ekran nie gasnie podczas pracy z aplikacja
+- feat: autofocus na pierwszym inpucie we wszystkich 11 modalach (data-autofocus)
+
+[0.1.92] - 2026-04-21
+- feat: natywne zachowanie dotykowe (app-like UX)
+  - blokada zaznaczania tekstu (user-select: none, input/textarea wyjątek)
+  - blokada zoomu (viewport user-scalable=no, touch-action: manipulation)
+  - blokada menu kontekstowego przy long-press (-webkit-touch-callout: none)
+  - brak niebieskiego highlight przy tapnięciu (-webkit-tap-highlight-color)
+  - brak overscroll bounce (overscroll-behavior: none)
+
+[0.1.91] - 2026-04-21
+- fix(ux): medium issues - inputy size md w panelu admina
+  - AdminSettings: wszystkie NumberInput i TextInput size md
+  - AdminPricing: tytuł modalu kontekstowy ("Nowa usługa"/"Nowy produkt"), inputy size md
+  - AdminEmployees: TextInput i NumberInput size md
+
+[0.1.90] - 2026-04-21
+- fix(ux): touch-friendly sizes po audycie UX
+  - DiscountModal: przyciski size lg
+  - PinModal: przyciski size lg
+  - Cash/TerminalCheck: przycisk Zamknij size lg
+  - Cash/ExpenseModal: przycisk czerwony (wyplata), TextInput size md
+  - Cash: pluralize() zamiast recznej odmiany "transakcja/e/i"
+  - SettleModal: przycisk Rozlicz zielony (wplata)
+  - History: DatePicker i search size md, Cofnij transakcje size md
+  - ShiftClose: NumberInput size lg, przyciski sukcesu size lg
+  - AdminDevices: przyciski akcji size md
+
+[0.1.89] - 2026-04-21
+- fix: POS personal device ignoruje ?employee z URL, wymusza lockedEmployeeId
+
+[0.1.88] - 2026-04-21
+- fix: mapSalon || -> != null (0 traktowane jako brak wartosci, fallback nadpisywal)
+- refactor: mappery DB wyodrebnione do src/db/mappers.ts (testowalne bez Supabase)
+- test: 20 testow mapperow (salon zero-value, employee, service, transaction discount, cash movement)
+
+[0.1.87] - 2026-04-21
+- fix: neutralne plciowo etykiety w Kasie
+  - "Wyjalem na zakupy" -> "Pobranie na zakupy"
+  - "Dolozylem drobne" -> "Wplata drobnych"
+  - opis wplaty wlasnej: forma bezosobowa zamiast meskiej
+  - "Utarg dzis" -> "Sprzedaz w tej zmianie" (precyzyjniejsze po zamknieciu zmiany)
+- fix: error resilience w Cash.tsx i ShiftClose.tsx (osobne try/catch)
+
+[0.1.86] - 2026-04-21
+- refactor: czyszczenie ustawien salonu i spojnosc UI
+  - AdminSettings: usuniete Adres/Telefon/NIP, Bony podarunkowe, Wydruki z GUI
+    (kolumny zostaja w bazie, usuniete z typow i adapterow - zero martwego kodu)
+  - Stats: usuniety tekst "raporty miesieczne pojawia sie w kolejnej wersji"
+  - Wallet: lista pracownikow ze spojnym stylem (chevron, borderRadius, fonty jak w Wiecej)
+
+[0.1.85] - 2026-04-21
+- fix: poprawki UX z uwag szefa
+  - Napiwki: usuniety tekst "Kliknij pracownika aby wyplacic"
+  - Wiecej: reorganizacja menu - Statystyki przeniesione do Codzienne (dostepne dla wszystkich),
+    usuniete Cennik i Pracownicy (oba dostepne w Panelu admina za PIN-em)
+  - Kasa: hero z timestampem raportu terminala zamiast mylacego "W kasie powinno byc"
+    - przed raportem: pokazuje "Utarg dzis" (zawsze prawidlowy)
+    - po wpisaniu raportu terminala: "Gotowka w kasie: X zl, stan na HH:MM"
+    - po nowych transakcjach: "+N transakcji od ostatniego raportu"
+  - Stats: usuniety AdminGuard (statystyki dostepne dla wszystkich)
+  - Terminal modal: nowy flow - wpisz karty z terminala, oblicz gotowke
+
+[0.1.84] - 2026-04-21
+- fix: audyt kodu - naprawy po duzych zmianach interfejsu
+  - supabase adapter: getById bez filtra is_active (historyczne dane pracownikow)
+  - supabase adapter: poprawne mapowanie discount_value dla rabatow procentowych
+  - supabase adapter: monthTarget z tabeli salon zamiast hardcoded 600
+  - config.ts: walidacja nieprawidlowej wartosci VITE_DB_ADAPTER z logiem bledu
+  - More.tsx: modal potwierdzenia przed wylogowaniem urzadzenia
+  - Stats.tsx: obsluga stanu bledu i pustych danych
+  - MovementHistory: usuniete sekundy z formatu czasu (spojnosc z Historia)
+  - AdminEmployees/AdminPricing: Switch size sm->md, przyciski w modalach size lg
+  - BOTTOM_NAV_HEIGHT zamiast hardcoded 60 w ShiftClose i AdminSettings
+  - AdminGuard na route /stats
+  - History: null guard na undoTransactionId, przycisk sm zamiast xs
+  - Admin: przyciski sm zamiast compact-sm
+  - Usunieto martwy hook useMovements.ts (152 linie dead code)
+
+[0.1.83] - 2026-04-19
+- feat: badge retencji na ekranie Sprzedazy (ARCYMISTRZ/MISTRZ/SOLIDNY/ROZWOJ)
+  - getRetentionRank() w constants.ts: 4 progi (95/85/75/0) z emoji i kolorem
+  - null retentionPercent fallbackuje do ROZWOJ (nowy pracownik)
+  - karty przyciskowe z chevronem > zamiast plaskiej listy
+  - usunieto tekst "Wybierz fryzjera..." i kwoty z ekranu Sprzedazy
+  - domyslna wartosc retencji 0 w formularzu pracownika (AdminEmployees)
+
+[0.1.82] - 2026-04-19
+- feat: Historia transakcji - filtr dat od/do z kalendarzem
+  - dwa DatePickerInput (Od/Do) z polskim kalendarzem (DatesProvider locale=pl)
+  - domyslnie dzisiaj, daty wzajemnie sie ograniczaja (min/maxDate)
+  - format kompaktowy "D MMM YYYY" (np. 19 kwi 2026)
+  - dane ladowane dynamicznie po zmianie zakresu dat (getSince + filtr client-side)
+  - cofniecie transakcji ograniczone tylko do dzisiejszych
+  - tekst pustego stanu: "Brak transakcji w wybranym okresie"
+  - @mantine/dates/styles.css + dayjs/locale/pl w main.tsx
+
+[0.1.81] - 2026-04-19
+- refactor: uproszczenie bonu w Kasie - tylko kwota, bez generowania kodu
+  - VoucherModal: usuniety ekran sukcesu z kodem i CopyButton
+  - modal dziala jak inne (kwota -> potwierdz -> toast sukcesu -> zamknij)
+  - handleVoucherSale bez parametru code, bez voucherCode w DB
+  - usuniete nieuzywane importy: CopyButton, IconCheck, IconCopy
+
+[0.1.80] - 2026-04-19
+- feat: ekran Napiwki/Portfel (/wallet) wg prototypu szefa
+  - lista pracownikow z saldami portfeli (admin/station mode)
+  - widok szczegolowy: saldo + quick amounts (10/20/calosc) + pole kwoty + wyplata
+  - personal mode: od razu widok portfela zalogowanego pracownika
+  - historia ruchow per pracownik (wyplaty + wplaty wlasne)
+  - czerwony przycisk "Wyplac z kasy" (zasada UX: wyplata = czerwony)
+- refactor: PageHeader - dodano opcjonalny prop onBack (callback zamiast backTo)
+
+[0.1.79] - 2026-04-19
+- feat: plywajacy cart bar w POS (zielony pasek: ilosc pozycji + kwota + "Podsumowanie")
+  - widoczny tylko gdy koszyk niepusty, nad BottomNavBar
+  - zastepuje stary bottom CTA "X zl · Zatwierdz"
+- feat: success screen po zapisaniu sprzedazy
+  - pelnoekranowy widok: checkmark + "Sprzedaz zapisana" + kwota + pracownik + "Wroc"
+  - zamiast natychmiastowej nawigacji do Dashboard
+
+[0.1.78] - 2026-04-19
+- refactor: redesign ekranu Kasy wg prototypu szefa
+  - hero sekcja: oczekiwany stan kasy + utarg dzis (calcExpectedCash/calcSystemCash)
+  - usunieto SegmentedControl (taby Portfel/Zakupy/Wplata/Bon)
+  - akcje jako przyciski z ikonami: Sprawdz z terminalem, Zakupy, Wplata, Bon
+  - kazda akcja otwiera modal z formularzem (zamiast tabow)
+  - terminal check modal: porownanie kwoty z raportu terminala z systemem
+  - sekcja "Do rozliczenia" dla pending expenses na glownej stronie
+  - historia ruchow kasowych (od ostatniego zamkniecia) pod akcjami
+  - dane ladowane "since last close" (spojne z ShiftClose)
+  - usunieto Portfel/TipTab z Kasy (przeniesiony do /wallet)
+
+[0.1.77] - 2026-04-18
+- refactor: redesign ekranu glownego (Sprzedaz) wg prototypu szefa
+  - uproszczony do: header (FORMEN + data + dark/light) + lista pracownikow
+  - usuniete: stats bar, oczekiwany stan kasy, utarg, prowizja personal, ostatnie zamkniecia
+  - usuniety przycisk Ustawienia z headera (dostepny z Wiecej > Panel admina)
+
+[0.1.76] - 2026-04-18
+- fix: usuniete stare przyciski nawigacji z Dashboard (zduplikowane z BottomNavBar)
+- fix: bottom CTA na 4 stronach przesuniety nad BottomNavBar (bottom: 60px)
+  - AdminSettings, ShiftClose, POS, History
+
+[0.1.75] - 2026-04-18
+- feat: ekran Wiecej (/more) - hub nawigacyjny z prototypu szefa
+  - sekcja Codzienne: Historia sprzedazy, Cennik, Zamkniecie zmiany
+  - sekcja Dla szefa (tylko admin): Statystyki, Pracownicy, Panel admina
+  - sekcja Urzadzenie: nazwa + badge typu (personal/station/admin)
+  - przycisk Wyloguj urzadzenie (czerwony)
+
+[0.1.74] - 2026-04-18
+- feat: BottomNavBar - staly dolny pasek nawigacyjny na kazdej stronie
+  - 4 przyciski: Sprzedaz (/), Kasa (/cash), Napiwki (/wallet), Wiecej (/more)
+  - aktywny stan (niebieski) na podstawie biezacej sciezki
+  - fixed position z z-index 200, paddingBottom 60px na content
+  - placeholder strony: Wallet.tsx, More.tsx (do wypelnienia w kolejnych taskach)
+  - nowe route'y /wallet i /more w App.tsx
+
+[0.1.73] - 2026-04-18
+- refactor: likwidacja form platnosci - wszystko = gotowka
+  - usuniete typy: PaymentBreakdownItem, paymentMethod z Transaction/CashMovement
+  - usuniete enabledPaymentMethods z SalonSettings i AdminSettings
+  - usuniete komponenty: PaymentModal, SplitPaymentModal
+  - usuniete stale: PAYMENT_METHODS, SIMPLE_METHOD_MAP
+  - POS uproszczony: koszyk -> zatwierdzenie (bez wyboru metody platnosci)
+  - calcSystemCash zwraca number (bylo SystemCashSplit)
+  - Historia: usuniete filtry i ikony metod platnosci
+  - VoucherTab: usuniete SegmentedControl metody platnosci
+  - schemat DB: usuniete payment_method enum, payment_detail tabela, enabled_payment_methods
+  - seed.sql: usuniete wszystkie INSERT INTO payment_detail
+  - adaptery mock/supabase zaktualizowane (rest = thin proxy, bez zmian)
+  - 0 bledow tsc, 48/48 testow przechodzi
+
+[0.1.72] - 2026-04-18
+- feat: retencja pracownikow - nowe pole retention_percent w Employee
+  - widoczne w formularzu edycji pracownika (Admin > Pracownicy)
+  - zapisywane we wszystkich 3 adapterach (mock/supabase/rest)
+  - schemat DB: retention_percent NUMERIC(5,2) w tabeli employee
+  - badge gamifikacyjne (MISTRZ/SOLIDNY/ROZWOJ) gotowe do wyswietlenia
+- refactor: usuniecie Katalogu Wiedzy i kategorii uslug
+  - usuniety plik KnowledgeBase.tsx, route /help, import, link w Dashboard
+  - usuniety knowledge_base_enabled z SalonSettings, schema.sql, seed.sql
+  - usuniety category, durationMinutes, descriptionLong z Service i SaveServiceInput
+  - usuniety SERVICE_CATEGORIES z constants.ts
+  - zarchiwizowane do docs/knowledge-base-archive.md
+- feat: display_order dla uslug - konfigurowalna kolejnosc wyswietlania
+  - nowe pole w formularzu edycji uslugi (Admin > Cennik)
+  - sortowanie wg liczb (mniejsza = wyzej)
+  - schemat DB: display_order INT NOT NULL DEFAULT 0
+- fix: PIN numeric keyboard (inputMode="numeric") we wszystkich polach PIN
+- fix: koperta 0 zl dozwolona przy zamknieciu zmiany
+- fix: przycisk wyplaty napiwkow zmieniony na czerwony (zasada UX)
+
+[0.1.71] - 2026-04-15
+- docs: IDEAS.md - sekcja "Stack idealny - gdybym pisal od nowa"
+  - referencja dla przyszlych projektow (barberCal, barberTime) lub hipotetycznego rewrite
+  - pelen stack 2026: Vite+React+TS, shadcn/Mantine, tRPC+Hono, Drizzle+PG, Zod, TanStack Query
+  - infrastruktura: Hetzner VPS + Docker Compose + Traefik + auto backup
+  - porownanie z trendami 2026 (8/9 pozycji zgodnych)
+  - rekomendacja: nie przepisywac - ten stack jako referencja dla nowych projektow
+
 [0.1.70] - 2026-04-15
 - docs: IDEAS.md - backlog pomyslow na przyszlosc
   - plan deploya PROD: Hetzner CX23 VPS + PostgreSQL + PostgREST (6 etapow, ~2 dni)

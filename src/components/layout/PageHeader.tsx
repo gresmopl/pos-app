@@ -3,13 +3,14 @@ import { Text, Group, ActionIcon } from "@mantine/core";
 import { IconArrowLeft } from "@tabler/icons-react";
 import { useNavigate } from "react-router";
 
-interface PageHeaderProps {
+export interface PageHeaderProps {
   title: string;
   rightSection?: ReactNode;
   backTo?: string;
+  onBack?: () => void;
 }
 
-export function PageHeader({ title, rightSection, backTo = "/" }: PageHeaderProps) {
+export function PageHeader({ title, rightSection, backTo = "/", onBack }: PageHeaderProps) {
   const navigate = useNavigate();
 
   return (
@@ -19,7 +20,7 @@ export function PageHeader({ title, rightSection, backTo = "/" }: PageHeaderProp
           variant="subtle"
           color="gray"
           size="lg"
-          onClick={() => navigate(backTo)}
+          onClick={onBack ?? (() => navigate(backTo))}
           aria-label="Powrót"
         >
           <IconArrowLeft size={22} />

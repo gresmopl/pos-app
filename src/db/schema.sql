@@ -12,7 +12,6 @@ CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 -- ENUMS
 -- ============================================
 CREATE TYPE employee_role AS ENUM ('admin', 'barber');
-CREATE TYPE payment_method AS ENUM ('cash', 'card', 'blik', 'voucher', 'split');
 CREATE TYPE transaction_status AS ENUM ('completed', 'cancelled');
 CREATE TYPE discount_type AS ENUM ('percentage', 'amount');
 CREATE TYPE transaction_item_type AS ENUM ('service', 'product', 'voucher_sale');
@@ -45,9 +44,7 @@ CREATE TABLE salon (
   voucher_code_prefix VARCHAR(10) NOT NULL DEFAULT 'BON-',
   default_commission_service NUMERIC(5,2) NOT NULL DEFAULT 40,
   default_commission_product NUMERIC(5,2) NOT NULL DEFAULT 20,
-  enabled_payment_methods TEXT NOT NULL DEFAULT 'cash,card,blik',
   receipt_footer TEXT NOT NULL DEFAULT 'Dziękujemy za wizytę!',
-  knowledge_base_enabled BOOLEAN NOT NULL DEFAULT false,
   is_active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -65,6 +62,7 @@ CREATE TABLE employee (
   pin_hash VARCHAR(255),
   commission_service_percent NUMERIC(5,2) NOT NULL DEFAULT 0,
   commission_product_percent NUMERIC(5,2) NOT NULL DEFAULT 0,
+  retention_percent NUMERIC(5,2),
   tip_balance NUMERIC(10,2) NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -83,10 +81,8 @@ CREATE TABLE service (
   name VARCHAR(200) NOT NULL,
   price NUMERIC(10,2) NOT NULL,
   price_from BOOLEAN NOT NULL DEFAULT false,
-  duration_minutes VARCHAR(20),
-  category VARCHAR(100),
   description TEXT,
-  description_long TEXT,
+  display_order INT NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
@@ -181,19 +177,6 @@ CREATE TABLE transaction_item (
 CREATE INDEX idx_transaction_item_tx ON transaction_item(transaction_id);
 
 -- ============================================
--- PAYMENT DETAIL
--- ============================================
-CREATE TABLE payment_detail (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  transaction_id UUID NOT NULL REFERENCES transaction(id) ON DELETE CASCADE,
-  method payment_method NOT NULL,
-  amount NUMERIC(10,2) NOT NULL,
-  voucher_id UUID REFERENCES voucher(id)
-);
-
-CREATE INDEX idx_payment_detail_tx ON payment_detail(transaction_id);
-
--- ============================================
 -- CASH MOVEMENT
 -- ============================================
 CREATE TABLE cash_movement (
@@ -206,7 +189,6 @@ CREATE TABLE cash_movement (
   description TEXT,
   status VARCHAR(20),
   final_cost NUMERIC(10,2),
-  payment_method VARCHAR(20),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 

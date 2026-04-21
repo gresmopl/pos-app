@@ -135,7 +135,7 @@ function DeviceCard({
       {device.status === "pending" && (
         <Group mt="sm" gap="sm">
           <Button
-            size="sm"
+            size="md"
             color="green"
             leftSection={<IconCheck size={16} />}
             onClick={handleApprove}
@@ -144,7 +144,7 @@ function DeviceCard({
             Zatwierdź
           </Button>
           <Button
-            size="sm"
+            size="md"
             color="red"
             variant="light"
             leftSection={<IconBan size={16} />}
@@ -159,7 +159,7 @@ function DeviceCard({
       {device.status === "approved" && (
         <Group mt="sm">
           <Button
-            size="sm"
+            size="md"
             color="red"
             variant="light"
             leftSection={<IconBan size={16} />}
@@ -174,7 +174,7 @@ function DeviceCard({
       {device.status === "blocked" && (
         <Group mt="sm">
           <Button
-            size="sm"
+            size="md"
             color="green"
             variant="light"
             leftSection={<IconCheck size={16} />}

@@ -80,7 +80,6 @@ export function MovementHistory({ movements }: MovementHistoryProps) {
                       {new Date(m.timestamp).toLocaleTimeString("pl-PL", {
                         hour: "2-digit",
                         minute: "2-digit",
-                        second: "2-digit",
                       })}
                     </Text>
                   </div>

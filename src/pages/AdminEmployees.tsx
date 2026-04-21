@@ -43,11 +43,14 @@ export default function AdminEmployeesPage() {
       role: "barber" as "admin" | "barber",
       commissionService: 0 as number | string,
       commissionProduct: 0 as number | string,
+      retentionPercent: 0 as number | string,
     },
     validate: {
       name: (v) => (v.trim() ? null : "Imię jest wymagane"),
       commissionService: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
       commissionProduct: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
+      retentionPercent: (v) =>
+        v === "" || v === undefined ? null : Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%",
     },
   });
 
@@ -68,6 +71,7 @@ export default function AdminEmployeesPage() {
       role: emp.role,
       commissionService: emp.commissionServicePercent,
       commissionProduct: emp.commissionProductPercent,
+      retentionPercent: emp.retentionPercent ?? 0,
     });
     editForm.clearErrors();
     setEditModal(true);
@@ -77,13 +81,16 @@ export default function AdminEmployeesPage() {
 
   const saveEmployee = async () => {
     if (editForm.validate().hasErrors) return;
-    const { name, avatar, role, commissionService, commissionProduct } = editForm.values;
+    const { name, avatar, role, commissionService, commissionProduct, retentionPercent } =
+      editForm.values;
     const input = {
       name,
       avatarUrl: avatar.trim() || undefined,
       role,
       commissionServicePercent: Number(commissionService),
       commissionProductPercent: Number(commissionProduct),
+      retentionPercent:
+        retentionPercent === "" || retentionPercent === undefined ? null : Number(retentionPercent),
     };
 
     setSaving(true);
@@ -170,7 +177,7 @@ export default function AdminEmployeesPage() {
             <IconPencil size={20} />
           </ActionIcon>
         )}
-        <Switch checked={emp.isActive} onChange={() => toggleActive(emp.id)} size="sm" />
+        <Switch checked={emp.isActive} onChange={() => toggleActive(emp.id)} size="md" />
       </Group>
     </Group>
   );
@@ -242,12 +249,15 @@ export default function AdminEmployeesPage() {
           <TextInput
             label="Imię / pseudonim"
             placeholder="np. Oliwia"
+            size="md"
+            data-autofocus
             {...editForm.getInputProps("name")}
           />
           <TextInput
             label="Symbol (2-3 litery)"
             placeholder="np. OL"
             maxLength={3}
+            size="md"
             {...editForm.getInputProps("avatar")}
             description="Wyświetlany gdy brak zdjęcia"
           />
@@ -271,6 +281,7 @@ export default function AdminEmployeesPage() {
             min={0}
             max={100}
             suffix="%"
+            size="md"
             {...editForm.getInputProps("commissionService")}
           />
           <NumberInput
@@ -279,13 +290,24 @@ export default function AdminEmployeesPage() {
             min={0}
             max={100}
             suffix="%"
+            size="md"
             {...editForm.getInputProps("commissionProduct")}
           />
+          <NumberInput
+            label="Retencja (%)"
+            description="Procent klientów wracających do pracownika"
+            placeholder="Brak danych"
+            min={0}
+            max={100}
+            suffix="%"
+            size="md"
+            {...editForm.getInputProps("retentionPercent")}
+          />
           <Group justify="flex-end">
-            <Button variant="subtle" onClick={() => setEditModal(false)}>
+            <Button variant="subtle" size="lg" onClick={() => setEditModal(false)}>
               Anuluj
             </Button>
-            <Button onClick={saveEmployee} loading={saving}>
+            <Button size="lg" onClick={saveEmployee} loading={saving}>
               Zapisz
             </Button>
           </Group>

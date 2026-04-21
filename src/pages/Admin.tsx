@@ -80,6 +80,7 @@ export default function AdminPage() {
             </Text>
             <PinInput
               length={4}
+              inputMode="numeric"
               mask
               size="xl"
               value={pin}
@@ -98,10 +99,9 @@ export default function AdminPage() {
             <Button
               variant="subtle"
               color="gray"
-              size="compact-sm"
+              size="sm"
               leftSection={<IconRefresh size={14} />}
               onClick={forceUpdate}
-              fz="xs"
             >
               v{APP_VERSION} · Wymuś aktualizację
             </Button>
@@ -109,10 +109,9 @@ export default function AdminPage() {
               <Button
                 variant="subtle"
                 color="gray"
-                size="compact-sm"
+                size="sm"
                 leftSection={<IconDownload size={14} />}
                 onClick={handleInstall}
-                fz="xs"
               >
                 Zainstaluj na ekranie głównym
               </Button>

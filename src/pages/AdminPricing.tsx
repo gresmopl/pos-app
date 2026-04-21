@@ -17,23 +17,20 @@ import {
   TextInput,
   NumberInput,
   Textarea,
-  Select,
   Button,
 } from "@mantine/core";
 import { IconPlus, IconPencil, IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { SERVICE_CATEGORIES } from "@/lib/constants";
 
 type PricingItem = {
   id: string;
   name: string;
   price: number;
   isActive: boolean;
-  category?: string;
   description?: string;
-  descriptionLong?: string;
+  displayOrder?: number;
 };
 
 export default function PricingPage() {
@@ -58,10 +55,8 @@ export default function PricingPage() {
     initialValues: {
       name: "",
       price: 0 as number | string,
-      category: "Strzyżenie" as string,
-      durationMinutes: "",
       description: "",
-      descriptionLong: "",
+      displayOrder: 0 as number | string,
     },
     validate: {
       name: (v) => (v.trim() ? null : "Nazwa jest wymagana"),
@@ -83,14 +78,11 @@ export default function PricingPage() {
 
   const openEdit = (item: PricingItem) => {
     setEditItem(item);
-    const svc = tab === "services" ? services.find((s) => s.id === item.id) : null;
     editForm.setValues({
       name: item.name,
       price: item.price,
-      category: item.category || "Strzyżenie",
-      durationMinutes: svc?.durationMinutes ?? "",
       description: item.description || "",
-      descriptionLong: item.descriptionLong || "",
+      displayOrder: item.displayOrder ?? 0,
     });
     editForm.clearErrors();
     setEditModal(true);
@@ -100,16 +92,8 @@ export default function PricingPage() {
 
   const saveItem = async () => {
     if (editForm.validate().hasErrors) return;
-    const {
-      name: editName,
-      price: editPrice,
-      category,
-      durationMinutes,
-      description,
-      descriptionLong,
-    } = editForm.values;
+    const { name: editName, price: editPrice, description, displayOrder } = editForm.values;
     const price = Number(editPrice);
-    const duration = durationMinutes?.toString().trim() || undefined;
 
     setSaving(true);
     try {
@@ -117,10 +101,8 @@ export default function PricingPage() {
         const input = {
           name: editName,
           price,
-          durationMinutes: duration,
-          category,
           description: description || undefined,
-          descriptionLong: descriptionLong || undefined,
+          displayOrder: Number(displayOrder) || 0,
         };
         if (editItem) {
           const updated = await db.services.update(editItem.id, input);
@@ -255,7 +237,7 @@ export default function PricingPage() {
                   <Switch
                     checked={item.isActive}
                     onChange={() => toggleActive(item.id)}
-                    size="sm"
+                    size="md"
                   />
                 </Group>
               </Group>
@@ -307,7 +289,13 @@ export default function PricingPage() {
         onClose={() => setEditModal(false)}
         title={
           <Text fw={700} fz="lg">
-            {editItem ? "Edytuj" : "Nowa pozycja"}
+            {editItem
+              ? tab === "services"
+                ? "Edytuj usługę"
+                : "Edytuj produkt"
+              : tab === "services"
+                ? "Nowa usługa"
+                : "Nowy produkt"}
           </Text>
         }
         size="sm"
@@ -316,6 +304,8 @@ export default function PricingPage() {
           <TextInput
             label="Nazwa"
             placeholder={tab === "services" ? "np. Strzyżenie Męskie" : "np. Pomada do włosów"}
+            size="md"
+            data-autofocus
             {...editForm.getInputProps("name")}
           />
           <NumberInput
@@ -323,22 +313,9 @@ export default function PricingPage() {
             placeholder="0"
             min={0}
             suffix=" zł"
+            size="md"
             {...editForm.getInputProps("price")}
           />
-          {tab === "services" && (
-            <>
-              <Select
-                label="Kategoria"
-                data={SERVICE_CATEGORIES.map((c) => ({ value: c, label: c }))}
-                {...editForm.getInputProps("category")}
-              />
-              <TextInput
-                label="Czas trwania (min)"
-                placeholder="np. 45 lub 30-45"
-                {...editForm.getInputProps("durationMinutes")}
-              />
-            </>
-          )}
           <Textarea
             label="Krótki opis"
             placeholder={
@@ -349,23 +326,24 @@ export default function PricingPage() {
             autosize
             minRows={2}
             maxRows={3}
+            size="md"
             {...editForm.getInputProps("description")}
           />
           {tab === "services" && (
-            <Textarea
-              label="Opis szczegółowy"
-              placeholder="Pełny opis usługi dla pracowników (widoczny w Katalogu Wiedzy)"
-              autosize
-              minRows={3}
-              maxRows={6}
-              {...editForm.getInputProps("descriptionLong")}
+            <NumberInput
+              label="Kolejność wyświetlania"
+              description="Mniejsza liczba = wyżej na liście (np. 1, 5, 10, 20)"
+              placeholder="0"
+              min={0}
+              size="md"
+              {...editForm.getInputProps("displayOrder")}
             />
           )}
           <Group justify="flex-end">
-            <Button variant="subtle" onClick={() => setEditModal(false)}>
+            <Button variant="subtle" size="lg" onClick={() => setEditModal(false)}>
               Anuluj
             </Button>
-            <Button onClick={saveItem} loading={saving}>
+            <Button size="lg" onClick={saveItem} loading={saving}>
               Zapisz
             </Button>
           </Group>

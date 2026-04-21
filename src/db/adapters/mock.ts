@@ -19,67 +19,11 @@ import type {
   Service,
   Product,
   CashMovement,
-  PaymentBreakdownItem,
   Voucher,
   SalonSettings,
   DeviceRegistration,
   DailyReportSummary,
 } from "@/lib/types";
-
-// Map Polish UI payment method names to DB enum values
-const SIMPLE_METHOD_MAP: Record<string, PaymentBreakdownItem["method"]> = {
-  Gotówka: "cash",
-  Karta: "card",
-  BLIK: "blik",
-  "Bon podarunkowy": "voucher",
-};
-
-function parseLocaleNumber(s: string): number {
-  return Number(s.replace(/\s/g, "").replace(",", ".")) || 0;
-}
-
-function parsePaymentInput(
-  uiMethod: string,
-  details: string,
-  totalAmount: number
-): PaymentBreakdownItem[] {
-  const simple = SIMPLE_METHOD_MAP[uiMethod];
-  if (simple) return [{ method: simple, amount: totalAmount }];
-
-  if (uiMethod === "Gotówka + Karta") {
-    const cashMatch = details.match(/Gotówka:\s*([\d\s,.]+)\s*zł/);
-    const cashAmt = cashMatch ? parseLocaleNumber(cashMatch[1]) : 0;
-    return [
-      { method: "cash", amount: cashAmt },
-      { method: "card", amount: totalAmount - cashAmt },
-    ];
-  }
-  if (uiMethod === "Bon + Gotówka") {
-    const bonMatch = details.match(/Bon:\s*([\d\s,.]+)\s*zł/);
-    const bonAmt = bonMatch ? parseLocaleNumber(bonMatch[1]) : 0;
-    return [
-      { method: "voucher", amount: bonAmt },
-      { method: "cash", amount: totalAmount - bonAmt },
-    ];
-  }
-  if (uiMethod === "Bon + Karta") {
-    const bonMatch = details.match(/Bon:\s*([\d\s,.]+)\s*zł/);
-    const bonAmt = bonMatch ? parseLocaleNumber(bonMatch[1]) : 0;
-    return [
-      { method: "voucher", amount: bonAmt },
-      { method: "card", amount: totalAmount - bonAmt },
-    ];
-  }
-  if (uiMethod === "Bon + BLIK") {
-    const bonMatch = details.match(/Bon:\s*([\d\s,.]+)\s*zł/);
-    const bonAmt = bonMatch ? parseLocaleNumber(bonMatch[1]) : 0;
-    return [
-      { method: "voucher", amount: bonAmt },
-      { method: "blik", amount: totalAmount - bonAmt },
-    ];
-  }
-  return [{ method: "cash", amount: totalAmount }];
-}
 
 export function createMockClient(): DbClient {
   const mockDevices: DeviceRegistration[] = [];
@@ -100,21 +44,12 @@ export function createMockClient(): DbClient {
   const mockSalon: SalonSettings = {
     id: "a0000000-0000-0000-0000-000000000001",
     name: "FORMEN DEV",
-    address: "ul. Testowa 1, 00-001 Warszawa",
-    phone: "+48 123 456 789",
-    nip: "1234567890",
     adminPinHash: "placeholder_admin_1234",
     operationsPinHash: "placeholder_operations_1234",
     cashTolerance: 10,
     monthTarget: 600,
-    voucherExpiryMonths: 12,
-    voucherMinAmount: 1,
-    voucherCodePrefix: "BON-",
     defaultCommissionService: 40,
     defaultCommissionProduct: 20,
-    enabledPaymentMethods: ["cash", "card", "blik"],
-    receiptFooter: "Dziękujemy za wizytę w FORMEN!",
-    knowledgeBaseEnabled: false,
   };
 
   return {
@@ -123,10 +58,7 @@ export function createMockClient(): DbClient {
         return mockSalon;
       },
       async update(input: UpdateSalonInput) {
-        Object.assign(mockSalon, {
-          ...input,
-          enabledPaymentMethods: input.enabledPaymentMethods ?? mockSalon.enabledPaymentMethods,
-        });
+        Object.assign(mockSalon, input);
         return mockSalon;
       },
     },
@@ -191,6 +123,7 @@ export function createMockClient(): DbClient {
           tipBalance: 0,
           commissionServicePercent: input.commissionServicePercent,
           commissionProductPercent: input.commissionProductPercent,
+          retentionPercent: input.retentionPercent ?? null,
           isActive: true,
         };
         mockEmployees.push(emp);
@@ -206,6 +139,10 @@ export function createMockClient(): DbClient {
           role: input.role || "barber",
           commissionServicePercent: input.commissionServicePercent,
           commissionProductPercent: input.commissionProductPercent,
+          retentionPercent:
+            input.retentionPercent !== undefined
+              ? input.retentionPercent
+              : mockEmployees[idx].retentionPercent,
         };
         return mockEmployees[idx];
       },
@@ -232,10 +169,8 @@ export function createMockClient(): DbClient {
           name: input.name,
           price: input.price,
           priceFrom: input.priceFrom,
-          durationMinutes: input.durationMinutes,
-          category: input.category || "Inne",
           description: input.description,
-          descriptionLong: input.descriptionLong,
+          displayOrder: input.displayOrder ?? 0,
           isActive: true,
         };
         mockServices.push(svc);
@@ -298,12 +233,6 @@ export function createMockClient(): DbClient {
       },
       async create(input: CreateTransactionInput): Promise<Transaction> {
         const emp = mockEmployees.find((e) => e.id === input.employeeId);
-        const breakdown = parsePaymentInput(
-          input.paymentMethod,
-          input.paymentDetails || "",
-          input.totalAmount
-        );
-        const paymentMethod = breakdown.length > 1 ? "split" : breakdown[0]?.method || "cash";
         const tx: Transaction = {
           id: crypto.randomUUID(),
           employeeId: input.employeeId,
@@ -312,42 +241,19 @@ export function createMockClient(): DbClient {
           totalAmount: input.totalAmount,
           tipAmount: input.tipAmount,
           discountAmount: input.discountAmount,
-          paymentMethod: paymentMethod as Transaction["paymentMethod"],
-          paymentBreakdown: breakdown,
           timestamp: new Date().toISOString(),
         };
         mockTransactions.unshift(tx);
-
-        // Redeem voucher if paying with bon
-        if (input.voucherCode && input.voucherAmount) {
-          const v = mockVouchers.find((v) => v.code === input.voucherCode);
-          if (v) {
-            v.remainingBalance = Math.max(0, v.remainingBalance - input.voucherAmount);
-            if (v.remainingBalance <= 0) v.status = "used";
-          }
-        }
-
         return tx;
       },
       async cancel(id: string): Promise<void> {
         const idx = mockTransactions.findIndex((t) => t.id === id);
         if (idx === -1) return;
         const tx = mockTransactions[idx];
-        // Reverse tip
         if (tx.tipAmount > 0) {
           const emp = mockEmployees.find((e) => e.id === tx.employeeId);
           if (emp) emp.tipBalance = Math.max(0, emp.tipBalance - tx.tipAmount);
         }
-        // Reverse voucher
-        const voucherPart = tx.paymentBreakdown?.find((b) => b.method === "voucher");
-        if (voucherPart) {
-          const v = mockVouchers.find((v) => v.status === "used" || v.status === "active");
-          if (v) {
-            v.remainingBalance += voucherPart.amount;
-            v.status = "active";
-          }
-        }
-        // Remove from list (mock doesn't have status field)
         mockTransactions.splice(idx, 1);
       },
     },
@@ -391,7 +297,6 @@ export function createMockClient(): DbClient {
           description: input.description,
           timestamp: new Date().toISOString(),
           status: input.status,
-          paymentMethod: input.paymentMethod,
         };
         mockMovements.unshift(movement);
         return movement;

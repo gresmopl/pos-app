@@ -19,6 +19,7 @@ import {
 } from "@mantine/core";
 import { IconPrinter, IconCheck } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 
 export default function ShiftClosePage(): React.JSX.Element {
@@ -35,7 +36,11 @@ export default function ShiftClosePage(): React.JSX.Element {
       closingEmployee: (v) => (v ? null : "Wybierz pracownika"),
       floatAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
       envelopeAmount: (v) =>
-        Number(v) < 0 ? "Kwota nie może być ujemna" : !Number(v) ? "Podaj kwotę do koperty" : null,
+        v === "" || v === undefined
+          ? "Podaj kwotę do koperty"
+          : Number(v) < 0
+            ? "Kwota nie może być ujemna"
+            : null,
     },
   });
 
@@ -50,16 +55,26 @@ export default function ShiftClosePage(): React.JSX.Element {
 
   useEffect(() => {
     async function load(): Promise<void> {
-      const [since, lastFloat] = await Promise.all([
-        db.dailyReports.getLastClosedAt(),
-        db.dailyReports.getLastFloat(),
-      ]);
-      const [txs, mvs] = await Promise.all([
-        db.transactions.getSince(since),
-        db.cashMovements.getSince(since),
-      ]);
-      setTransactions(txs);
-      setMovements(mvs);
+      let since: string | null = null;
+      let lastFloat = 0;
+      try {
+        [since, lastFloat] = await Promise.all([
+          db.dailyReports.getLastClosedAt(),
+          db.dailyReports.getLastFloat(),
+        ]);
+      } catch (err) {
+        console.error("[ShiftClose] dailyReports load failed, using defaults:", err);
+      }
+      try {
+        const [txs, mvs] = await Promise.all([
+          db.transactions.getSince(since),
+          db.cashMovements.getSince(since),
+        ]);
+        setTransactions(txs);
+        setMovements(mvs);
+      } catch (err) {
+        console.error("[ShiftClose] transactions/movements load failed:", err);
+      }
       setOpeningBalance(lastFloat);
     }
     load().catch(console.error);
@@ -71,7 +86,7 @@ export default function ShiftClosePage(): React.JSX.Element {
   }));
 
   // === SYSTEM VALUES ===
-  const { systemCash, systemNonCash } = calcSystemCash(transactions);
+  const systemCash = calcSystemCash(transactions);
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
 
   // === FORM VALUES ===
@@ -92,7 +107,7 @@ export default function ShiftClosePage(): React.JSX.Element {
         closingEmployeeId: form.values.closingEmployee,
         expectedCash,
         actualCash,
-        expectedVouchers: systemNonCash,
+        expectedVouchers: 0,
         actualVouchersValue: 0,
         floatAmount: floatVal,
         depositAmount: envelopeVal,
@@ -152,12 +167,6 @@ export default function ShiftClosePage(): React.JSX.Element {
               <Divider mb="sm" variant="dashed" />
 
               <Group justify="space-between" mb={4}>
-                <Text fz="xs">Sprzedaż Karta / BLIK:</Text>
-                <Text fz="xs" fw={600}>
-                  {systemNonCash.toLocaleString("pl-PL")} zł
-                </Text>
-              </Group>
-              <Group justify="space-between" mb={4}>
                 <Text fz="xs">Oczekiwana gotówka:</Text>
                 <Text fz="xs" fw={600}>
                   {expectedCash.toLocaleString("pl-PL")} zł
@@ -197,12 +206,15 @@ export default function ShiftClosePage(): React.JSX.Element {
             <Group>
               <Button
                 variant="light"
+                size="lg"
                 leftSection={<IconPrinter size={18} />}
                 onClick={() => window.print()}
               >
                 Drukuj raport
               </Button>
-              <Button onClick={() => navigate("/")}>Powrót do ekranu głównego</Button>
+              <Button size="lg" onClick={() => navigate("/")}>
+                Powrót do ekranu głównego
+              </Button>
             </Group>
           </Stack>
         </Container>
@@ -237,12 +249,6 @@ export default function ShiftClosePage(): React.JSX.Element {
               <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
                 Podgląd systemowy
               </Text>
-              <Group justify="space-between">
-                <Text fz="sm">Sprzedaż Karta / BLIK:</Text>
-                <Text fz="sm" fw={600}>
-                  {systemNonCash.toLocaleString("pl-PL")} zł
-                </Text>
-              </Group>
               <Divider />
               <div>
                 <Text fz="sm" fw={700}>
@@ -267,6 +273,7 @@ export default function ShiftClosePage(): React.JSX.Element {
                 placeholder="0"
                 min={0}
                 suffix=" zł"
+                size="lg"
                 {...form.getInputProps("floatAmount")}
               />
 
@@ -276,6 +283,7 @@ export default function ShiftClosePage(): React.JSX.Element {
                 placeholder="0"
                 min={0}
                 suffix=" zł"
+                size="lg"
                 {...form.getInputProps("envelopeAmount")}
               />
             </Stack>
@@ -309,7 +317,7 @@ export default function ShiftClosePage(): React.JSX.Element {
       <Box
         style={{
           position: "fixed",
-          bottom: 0,
+          bottom: BOTTOM_NAV_HEIGHT,
           left: 0,
           right: 0,
           zIndex: 100,

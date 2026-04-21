@@ -13,7 +13,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 140,
     tipAmount: 10,
     discountAmount: 0,
-    paymentMethod: "card",
     timestamp: `${today}T14:20:00`,
   },
   {
@@ -27,7 +26,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 150,
     tipAmount: 0,
     discountAmount: 10,
-    paymentMethod: "cash",
     timestamp: `${today}T13:45:00`,
   },
   {
@@ -42,7 +40,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 145,
     tipAmount: 15,
     discountAmount: 0,
-    paymentMethod: "card",
     timestamp: `${today}T13:10:00`,
   },
   {
@@ -53,7 +50,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 190,
     tipAmount: 20,
     discountAmount: 0,
-    paymentMethod: "blik",
     timestamp: `${today}T12:55:00`,
   },
   {
@@ -64,7 +60,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 80,
     tipAmount: 0,
     discountAmount: 0,
-    paymentMethod: "cash",
     timestamp: `${today}T12:20:00`,
   },
   {
@@ -79,7 +74,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 155,
     tipAmount: 5,
     discountAmount: 0,
-    paymentMethod: "card",
     timestamp: `${today}T11:40:00`,
   },
   {
@@ -90,7 +84,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 140,
     tipAmount: 0,
     discountAmount: 0,
-    paymentMethod: "cash",
     timestamp: `${today}T11:00:00`,
   },
   {
@@ -101,7 +94,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 75,
     tipAmount: 5,
     discountAmount: 0,
-    paymentMethod: "card",
     timestamp: `${today}T10:30:00`,
   },
   {
@@ -112,7 +104,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 80,
     tipAmount: 0,
     discountAmount: 0,
-    paymentMethod: "cash",
     timestamp: `${today}T10:00:00`,
   },
   {
@@ -126,7 +117,6 @@ export const mockTransactions: Transaction[] = [
     totalAmount: 195,
     tipAmount: 0,
     discountAmount: 0,
-    paymentMethod: "blik",
     timestamp: `${today}T09:30:00`,
   },
 ];

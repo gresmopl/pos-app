@@ -2,17 +2,18 @@ import { useState } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import { useEmployees, useServices, useProducts } from "@/hooks/useDbData";
 import { db } from "@/db";
-import { Text, Group, Box, Avatar, Divider, Container, Badge, Button } from "@mantine/core";
-import { IconPlus, IconDiscount2 } from "@tabler/icons-react";
+import { Text, Group, Stack, Box, Avatar, Divider, Container, Badge, Button } from "@mantine/core";
+import { IconPlus, IconDiscount2, IconCheck, IconChevronRight } from "@tabler/icons-react";
+import { pluralize } from "@/lib/constants";
+import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useCart } from "@/hooks/useCart";
+import { useDeviceRole } from "@/contexts/DeviceContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { CartItemList } from "@/components/pos/CartItemList";
 import { TipSelector } from "@/components/pos/TipSelector";
 import { AddItemModal } from "@/components/pos/AddItemModal";
 import { DiscountModal } from "@/components/pos/DiscountModal";
-import { PaymentModal } from "@/components/pos/PaymentModal";
-import { SplitPaymentModal } from "@/components/pos/SplitPaymentModal";
 import { ConfirmModal } from "@/components/pos/ConfirmModal";
 
 export default function POSPage() {
@@ -22,7 +23,8 @@ export default function POSPage() {
   const { data: services = [] } = useServices();
   const { data: products = [] } = useProducts();
 
-  const employeeId = searchParams.get("employee");
+  const { lockedEmployeeId } = useDeviceRole();
+  const employeeId = lockedEmployeeId ?? searchParams.get("employee");
   const employee = employees.find((e) => e.id === employeeId);
 
   const {
@@ -43,29 +45,12 @@ export default function POSPage() {
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [splitModalOpen, setSplitModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
-  const [pendingPaymentMethod, setPendingPaymentMethod] = useState("");
-  const [pendingPaymentDetails, setPendingPaymentDetails] = useState("");
-  const [pendingVoucherCode, setPendingVoucherCode] = useState<string | undefined>();
-  const [pendingVoucherAmount, setPendingVoucherAmount] = useState<number | undefined>();
   const [finalizing, setFinalizing] = useState(false);
-
-  const requestFinalize = (
-    method: string,
-    details?: string,
-    voucherCode?: string,
-    voucherAmount?: number
-  ) => {
-    setPendingPaymentMethod(method);
-    setPendingPaymentDetails(details || "");
-    setPendingVoucherCode(voucherCode);
-    setPendingVoucherAmount(voucherAmount);
-    setPaymentModalOpen(false);
-    setSplitModalOpen(false);
-    setConfirmModalOpen(true);
-  };
+  const [successData, setSuccessData] = useState<{
+    total: number;
+    employeeName: string;
+  } | null>(null);
 
   const finalize = async () => {
     if (finalizing) return;
@@ -78,15 +63,13 @@ export default function POSPage() {
         discount,
         discountAmount,
         totalAmount: total,
-        paymentMethod: pendingPaymentMethod,
-        paymentDetails: pendingPaymentDetails,
-        voucherCode: pendingVoucherCode,
-        voucherAmount: pendingVoucherAmount,
       });
+      const savedTotal = total;
+      const savedName = employee?.name ?? "";
       setConfirmModalOpen(false);
       resetCart();
       if (navigator.vibrate) navigator.vibrate(100);
-      navigate("/");
+      setSuccessData({ total: savedTotal, employeeName: savedName });
     } catch (err) {
       console.error("[POS] Failed to save transaction:", err);
     } finally {
@@ -106,6 +89,50 @@ export default function POSPage() {
           Powrót do ekranu głównego
         </Button>
       </Container>
+    );
+  }
+
+  if (successData) {
+    return (
+      <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
+        <Stack align="center" justify="center" gap="lg" py={80} px="md">
+          <Box
+            p="xl"
+            style={{
+              borderRadius: "50%",
+              backgroundColor: "var(--mantine-color-green-filled)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <IconCheck size={56} color="white" stroke={3} />
+          </Box>
+          <Text fw={700} fz={24}>
+            Sprzedaż zapisana
+          </Text>
+          <Text fw={700} fz={48} c="green" lh={1}>
+            {successData.total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł
+          </Text>
+          <Box
+            p="md"
+            style={{
+              borderRadius: "var(--mantine-radius-md)",
+              backgroundColor: "var(--mantine-color-gray-light)",
+            }}
+          >
+            <Text fz="sm" c="dimmed">
+              Pracownik:{" "}
+              <Text span fw={600}>
+                {successData.employeeName}
+              </Text>
+            </Text>
+          </Box>
+          <Button fullWidth size="lg" maw={400} color="green" onClick={() => navigate("/")} mt="xl">
+            Wróć
+          </Button>
+        </Stack>
+      </Box>
     );
   }
 
@@ -194,33 +221,43 @@ export default function POSPage() {
         </Group>
       </Container>
 
-      {/* Bottom CTA */}
-      <Box
-        style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          borderTop: "1px solid var(--mantine-color-default-border)",
-          backgroundColor: "var(--mantine-color-body)",
-        }}
-        p="md"
-      >
-        <Container size="lg">
-          <Button
-            fullWidth
-            size="lg"
-            color="dark"
-            disabled={cart.length === 0}
-            onClick={() => setPaymentModalOpen(true)}
-            fz="md"
-            fw={600}
-          >
-            {total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł · Dalej
-          </Button>
-        </Container>
-      </Box>
+      {/* Floating cart bar */}
+      {cart.length > 0 && (
+        <Box
+          style={{
+            position: "fixed",
+            bottom: BOTTOM_NAV_HEIGHT,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            backgroundColor: "var(--mantine-color-green-filled)",
+            color: "white",
+            cursor: "pointer",
+            boxShadow: "0 -4px 12px rgba(0,0,0,0.1)",
+          }}
+          p="md"
+          onClick={() => setConfirmModalOpen(true)}
+        >
+          <Container size="lg">
+            <Group justify="space-between">
+              <div>
+                <Text fz="xs" c="white" opacity={0.85}>
+                  {pluralize(itemCount, "pozycja", "pozycje", "pozycji")}
+                </Text>
+                <Text fw={700} fz="xl" c="white">
+                  {total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł
+                </Text>
+              </div>
+              <Group gap={4}>
+                <Text fw={600} fz="md" c="white">
+                  Podsumowanie
+                </Text>
+                <IconChevronRight size={18} color="white" />
+              </Group>
+            </Group>
+          </Container>
+        </Box>
+      )}
 
       {/* Modals */}
       <AddItemModal
@@ -240,30 +277,12 @@ export default function POSPage() {
         subtotal={subtotal}
         onApply={setDiscount}
       />
-      <PaymentModal
-        opened={paymentModalOpen}
-        onClose={() => setPaymentModalOpen(false)}
-        total={total}
-        onSelectMethod={requestFinalize}
-        onOpenSplit={() => {
-          setPaymentModalOpen(false);
-          setSplitModalOpen(true);
-        }}
-      />
-      <SplitPaymentModal
-        opened={splitModalOpen}
-        onClose={() => setSplitModalOpen(false)}
-        total={total}
-        onConfirm={requestFinalize}
-      />
       <ConfirmModal
         opened={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}
         total={total}
         employeeName={employee.name}
         itemCount={itemCount}
-        paymentMethod={pendingPaymentMethod}
-        paymentDetails={pendingPaymentDetails}
         tipAmount={tipAmount}
         discount={discount}
         discountAmount={discountAmount}

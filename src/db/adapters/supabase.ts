@@ -13,18 +13,24 @@ import type {
 import type { DbConfig } from "../config";
 import type {
   Employee,
-  DailyStats,
   Service,
   Product,
   Transaction,
+  DailyStats,
   TransactionItem,
   CashMovement,
-  PaymentBreakdownItem,
   Voucher,
-  SalonSettings,
   DeviceRegistration,
   DailyReportSummary,
 } from "@/lib/types";
+import {
+  mapEmployee,
+  mapService,
+  mapProduct,
+  mapTransaction,
+  mapCashMovement,
+  mapSalon,
+} from "../mappers";
 
 export function createSupabaseClient(config: DbConfig): DbClient {
   const { supabaseUrl, supabaseAnonKey } = config;
@@ -40,45 +46,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
   // Hardcoded salon ID for dev (single salon)
   const SALON_ID = "a0000000-0000-0000-0000-000000000001";
 
-  function mapEmployee(row: Record<string, unknown>): Employee {
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      avatar: (row.avatar_url as string) || (row.name as string).slice(0, 2).toUpperCase(),
-      role: row.role as "admin" | "barber",
-      todayRevenue: 0, // calculated separately
-      todayServices: 0,
-      tipBalance: Number(row.tip_balance) || 0,
-      commissionServicePercent: Number(row.commission_service_percent) || 0,
-      commissionProductPercent: Number(row.commission_product_percent) || 0,
-      isActive: row.is_active as boolean,
-    };
-  }
-
-  function mapService(row: Record<string, unknown>): Service {
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      price: Number(row.price),
-      priceFrom: (row.price_from as boolean) || false,
-      durationMinutes: (row.duration_minutes as string) || undefined,
-      category: (row.category as string) || "",
-      description: (row.description as string) || undefined,
-      descriptionLong: (row.description_long as string) || undefined,
-      isActive: row.is_active as boolean,
-    };
-  }
-
-  function mapProduct(row: Record<string, unknown>): Product {
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      price: Number(row.price),
-      description: (row.description as string) || undefined,
-      isActive: row.is_active as boolean,
-    };
-  }
-
   const DIRECTION_MAP: Record<CashMovement["type"], "in" | "out"> = {
     tip_withdrawal: "out",
     expense_take: "out",
@@ -92,114 +59,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
     float: "in",
   };
 
-  function mapCashMovement(row: Record<string, unknown>, employeeName: string): CashMovement {
-    return {
-      id: row.id as string,
-      type: row.reason as CashMovement["type"],
-      employeeName,
-      amount: Number(row.amount),
-      description: (row.description as string) || "",
-      timestamp: row.created_at as string,
-      status: (row.status as CashMovement["status"]) || undefined,
-      finalCost: row.final_cost != null ? Number(row.final_cost) : undefined,
-      paymentMethod: (row.payment_method as string) || undefined,
-    };
-  }
-
-  // Map Polish UI payment method names to DB enum values + amounts breakdown
-  const SIMPLE_METHOD_MAP: Record<string, PaymentBreakdownItem["method"]> = {
-    Gotówka: "cash",
-    Karta: "card",
-    BLIK: "blik",
-    "Bon podarunkowy": "voucher",
-  };
-
-  function parseLocaleNumber(s: string): number {
-    return Number(s.replace(/\s/g, "").replace(",", ".")) || 0;
-  }
-
-  function parsePaymentInput(
-    uiMethod: string,
-    details: string,
-    totalAmount: number
-  ): PaymentBreakdownItem[] {
-    // Simple single-method payments
-    const simple = SIMPLE_METHOD_MAP[uiMethod];
-    if (simple) {
-      return [{ method: simple, amount: totalAmount }];
-    }
-
-    // Split: Gotówka + Karta
-    if (uiMethod === "Gotówka + Karta") {
-      const cashMatch = details.match(/Gotówka:\s*([\d\s,.]+)\s*zł/);
-      const cashAmt = cashMatch ? parseLocaleNumber(cashMatch[1]) : 0;
-      return [
-        { method: "cash", amount: cashAmt },
-        { method: "card", amount: totalAmount - cashAmt },
-      ];
-    }
-
-    // Split: Bon + Gotówka
-    if (uiMethod === "Bon + Gotówka") {
-      const bonMatch = details.match(/Bon:\s*([\d\s,.]+)\s*zł/);
-      const bonAmt = bonMatch ? parseLocaleNumber(bonMatch[1]) : 0;
-      return [
-        { method: "voucher", amount: bonAmt },
-        { method: "cash", amount: totalAmount - bonAmt },
-      ];
-    }
-
-    // Split: Bon + Karta
-    if (uiMethod === "Bon + Karta") {
-      const bonMatch = details.match(/Bon:\s*([\d\s,.]+)\s*zł/);
-      const bonAmt = bonMatch ? parseLocaleNumber(bonMatch[1]) : 0;
-      return [
-        { method: "voucher", amount: bonAmt },
-        { method: "card", amount: totalAmount - bonAmt },
-      ];
-    }
-
-    // Split: Bon + BLIK
-    if (uiMethod === "Bon + BLIK") {
-      const bonMatch = details.match(/Bon:\s*([\d\s,.]+)\s*zł/);
-      const bonAmt = bonMatch ? parseLocaleNumber(bonMatch[1]) : 0;
-      return [
-        { method: "voucher", amount: bonAmt },
-        { method: "blik", amount: totalAmount - bonAmt },
-      ];
-    }
-
-    // Fallback
-    return [{ method: "cash", amount: totalAmount }];
-  }
-
-  // Derive high-level paymentMethod from breakdown
-  function derivePaymentMethod(breakdown: PaymentBreakdownItem[]): Transaction["paymentMethod"] {
-    if (breakdown.length > 1) return "split";
-    return breakdown[0]?.method || "cash";
-  }
-
-  function mapTransaction(
-    row: Record<string, unknown>,
-    items: TransactionItem[],
-    employeeName: string,
-    paymentBreakdown?: PaymentBreakdownItem[]
-  ): Transaction {
-    return {
-      id: row.id as string,
-      employeeId: (row.employee_id as string) || "",
-      employeeName,
-      clientName: (row.client_name as string) || undefined,
-      items,
-      totalAmount: Number(row.total_amount),
-      tipAmount: Number(row.tip_amount) || 0,
-      discountAmount: Number(row.discount_value) || 0,
-      paymentMethod: (row.payment_method as Transaction["paymentMethod"]) || "cash",
-      paymentBreakdown,
-      timestamp: row.date as string,
-    };
-  }
-
   async function fetchTransactions(filter?: {
     employeeId?: string;
     todayOnly?: boolean;
@@ -212,8 +71,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         *,
         employee:employee_id(name),
         client:client_id(name),
-        transaction_item(*),
-        payment_detail(*)
+        transaction_item(*)
       `
       )
       .eq("salon_id", SALON_ID)
@@ -252,44 +110,8 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       const clientName =
         ((row.client as Record<string, unknown> | null)?.name as string) || undefined;
 
-      // Build payment breakdown from payment_detail rows
-      const payments = (row.payment_detail as Record<string, unknown>[]) || [];
-      const breakdown: PaymentBreakdownItem[] = payments.map((p) => ({
-        method: p.method as PaymentBreakdownItem["method"],
-        amount: Number(p.amount),
-      }));
-      const paymentMethod = derivePaymentMethod(breakdown);
-
-      return mapTransaction(
-        { ...row, payment_method: paymentMethod, client_name: clientName },
-        items,
-        employeeName,
-        breakdown.length > 0 ? breakdown : undefined
-      );
+      return mapTransaction({ ...row, client_name: clientName }, items, employeeName);
     });
-  }
-
-  function mapSalon(row: Record<string, unknown>): SalonSettings {
-    const methods = (row.enabled_payment_methods as string) || "cash,card,blik";
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      address: (row.address as string) || "",
-      phone: (row.phone as string) || "",
-      nip: (row.nip as string) || "",
-      adminPinHash: (row.admin_pin_hash as string) || "",
-      operationsPinHash: (row.operations_pin_hash as string) || "",
-      cashTolerance: Number(row.cash_tolerance) || 10,
-      monthTarget: Number(row.month_target) || 600,
-      voucherExpiryMonths: Number(row.voucher_expiry_months) || 12,
-      voucherMinAmount: Number(row.voucher_min_amount) || 1,
-      voucherCodePrefix: (row.voucher_code_prefix as string) || "BON-",
-      defaultCommissionService: Number(row.default_commission_service) || 40,
-      defaultCommissionProduct: Number(row.default_commission_product) || 20,
-      enabledPaymentMethods: methods.split(",").filter(Boolean),
-      receiptFooter: (row.receipt_footer as string) || "",
-      knowledgeBaseEnabled: (row.knowledge_base_enabled as boolean) ?? false,
-    };
   }
 
   function mapDevice(row: Record<string, unknown>): DeviceRegistration {
@@ -322,29 +144,15 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       async update(input: UpdateSalonInput) {
         const dbInput: Record<string, unknown> = {};
         if (input.name !== undefined) dbInput.name = input.name;
-        if (input.address !== undefined) dbInput.address = input.address;
-        if (input.phone !== undefined) dbInput.phone = input.phone;
-        if (input.nip !== undefined) dbInput.nip = input.nip;
         if (input.adminPinHash !== undefined) dbInput.admin_pin_hash = input.adminPinHash;
         if (input.operationsPinHash !== undefined)
           dbInput.operations_pin_hash = input.operationsPinHash;
         if (input.cashTolerance !== undefined) dbInput.cash_tolerance = input.cashTolerance;
         if (input.monthTarget !== undefined) dbInput.month_target = input.monthTarget;
-        if (input.voucherExpiryMonths !== undefined)
-          dbInput.voucher_expiry_months = input.voucherExpiryMonths;
-        if (input.voucherMinAmount !== undefined)
-          dbInput.voucher_min_amount = input.voucherMinAmount;
-        if (input.voucherCodePrefix !== undefined)
-          dbInput.voucher_code_prefix = input.voucherCodePrefix;
         if (input.defaultCommissionService !== undefined)
           dbInput.default_commission_service = input.defaultCommissionService;
         if (input.defaultCommissionProduct !== undefined)
           dbInput.default_commission_product = input.defaultCommissionProduct;
-        if (input.enabledPaymentMethods !== undefined)
-          dbInput.enabled_payment_methods = input.enabledPaymentMethods.join(",");
-        if (input.receiptFooter !== undefined) dbInput.receipt_footer = input.receiptFooter;
-        if (input.knowledgeBaseEnabled !== undefined)
-          dbInput.knowledge_base_enabled = input.knowledgeBaseEnabled;
 
         const { data, error } = await supabase
           .from("salon")
@@ -472,12 +280,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       },
 
       async getById(id: string) {
-        const { data, error } = await supabase
-          .from("employee")
-          .select("*")
-          .eq("id", id)
-          .eq("is_active", true)
-          .single();
+        const { data, error } = await supabase.from("employee").select("*").eq("id", id).single();
 
         if (error || !data) return undefined;
         return mapEmployee(data);
@@ -493,6 +296,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             role: input.role || "barber",
             commission_service_percent: input.commissionServicePercent,
             commission_product_percent: input.commissionProductPercent,
+            retention_percent: input.retentionPercent ?? null,
           })
           .select()
           .single();
@@ -510,6 +314,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             role: input.role || "barber",
             commission_service_percent: input.commissionServicePercent,
             commission_product_percent: input.commissionProductPercent,
+            retention_percent: input.retentionPercent ?? null,
           })
           .eq("id", id)
           .select()
@@ -534,7 +339,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         const now = new Date();
         const today = now.toISOString().split("T")[0];
         const year = now.getFullYear();
-        const month = now.getMonth(); // 0-based
+        const month = now.getMonth();
 
         const yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
@@ -552,7 +357,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             .eq("salon_id", SALON_ID)
             .eq("status", "completed");
 
-        const [todayR, yesterdayR, monthR, yearR, lastYearR] = await Promise.all([
+        const [todayR, yesterdayR, monthR, yearR, lastYearR, salonR] = await Promise.all([
           baseQuery().gte("date", `${today}T00:00:00`).lte("date", `${today}T23:59:59`),
           baseQuery()
             .gte("date", `${yesterdayStr}T00:00:00`)
@@ -562,9 +367,11 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           baseQuery()
             .gte("date", `${lastYearStart}T00:00:00`)
             .lte("date", `${lastYearEnd}T23:59:59`),
+          supabase.from("salon").select("month_target").eq("id", SALON_ID).single(),
         ]);
 
-        // All-time daily record: fetch dates and count per day
+        const monthTarget = Number(salonR.data?.month_target) || 600;
+
         const { data: txDates } = await supabase
           .from("transaction")
           .select("date")
@@ -587,7 +394,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           todayServices: todayR.count || 0,
           yesterdayServices: yesterdayR.count || 0,
           monthServices: monthR.count || 0,
-          monthTarget: 600,
+          monthTarget,
           yearServices: yearR.count || 0,
           lastYearServices: lastYearR.count || 0,
           allTimeRecord,
@@ -613,7 +420,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           .select("*")
           .eq("salon_id", SALON_ID)
           .eq("is_active", true)
-          .order("category")
+          .order("display_order")
           .order("name");
 
         if (error) throw error;
@@ -628,10 +435,8 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             name: input.name,
             price: input.price,
             price_from: input.priceFrom || false,
-            duration_minutes: input.durationMinutes || null,
-            category: input.category || "Inne",
             description: input.description || null,
-            description_long: input.descriptionLong || null,
+            display_order: input.displayOrder ?? 0,
           })
           .select()
           .single();
@@ -647,10 +452,8 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             name: input.name,
             price: input.price,
             price_from: input.priceFrom || false,
-            duration_minutes: input.durationMinutes || null,
-            category: input.category || "Inne",
             description: input.description || null,
-            description_long: input.descriptionLong || null,
+            display_order: input.displayOrder ?? 0,
           })
           .eq("id", id)
           .select()
@@ -818,50 +621,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           if (itemError) throw itemError;
         }
 
-        // 3. Insert payment detail(s) - parse UI method to DB enum(s)
-        const breakdown = parsePaymentInput(
-          input.paymentMethod,
-          input.paymentDetails || "",
-          input.totalAmount
-        );
-        const paymentRows = breakdown.map((pd) => ({
-          id: crypto.randomUUID(),
-          transaction_id: txId,
-          method: pd.method,
-          amount: pd.amount,
-        }));
-        const { error: payError } = await supabase.from("payment_detail").insert(paymentRows);
-        if (payError) throw payError;
-
-        // 4. Redeem voucher if paying with bon
-        if (input.voucherCode && input.voucherAmount) {
-          const { data: voucher } = await supabase
-            .from("voucher")
-            .select("id, remaining_balance")
-            .eq("code", input.voucherCode)
-            .single();
-          if (voucher) {
-            const newBalance = Math.max(0, Number(voucher.remaining_balance) - input.voucherAmount);
-            await supabase
-              .from("voucher")
-              .update({
-                remaining_balance: newBalance,
-                status: newBalance <= 0 ? "used" : "active",
-              })
-              .eq("id", voucher.id);
-
-            // Link voucher to payment_detail
-            const voucherPayment = paymentRows.find((p) => p.method === "voucher");
-            if (voucherPayment) {
-              await supabase
-                .from("payment_detail")
-                .update({ voucher_id: voucher.id })
-                .eq("id", voucherPayment.id);
-            }
-          }
-        }
-
-        // 5. Update employee tip_balance if tip > 0 (atomic increment)
+        // 3. Update employee tip_balance if tip > 0 (atomic increment)
         if (input.tipAmount > 0 && input.employeeId) {
           await supabase.rpc("increment_tip_balance", {
             emp_id: input.employeeId,
@@ -890,8 +650,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           totalAmount: input.totalAmount,
           tipAmount: input.tipAmount,
           discountAmount: input.discountAmount,
-          paymentMethod: derivePaymentMethod(breakdown),
-          paymentBreakdown: breakdown,
           timestamp: now,
         };
       },
@@ -919,36 +677,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             emp_id: tx.employee_id,
             delta: -tipAmount,
           });
-        }
-
-        // 4. Reverse voucher redemption if paid with voucher
-        const { data: payments } = await supabase
-          .from("payment_detail")
-          .select("voucher_id, amount")
-          .eq("transaction_id", id)
-          .not("voucher_id", "is", null);
-
-        if (payments && payments.length > 0) {
-          for (const p of payments) {
-            const voucherId = p.voucher_id as string;
-            const amount = Number(p.amount);
-            // Get current balance
-            const { data: voucher } = await supabase
-              .from("voucher")
-              .select("remaining_balance")
-              .eq("id", voucherId)
-              .single();
-            if (voucher) {
-              const newBalance = Number(voucher.remaining_balance) + amount;
-              await supabase
-                .from("voucher")
-                .update({
-                  remaining_balance: newBalance,
-                  status: "active",
-                })
-                .eq("id", voucherId);
-            }
-          }
         }
       },
     },
@@ -992,7 +720,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           employee_id: input.employeeId || null,
           description: input.description || null,
           status: input.status || null,
-          payment_method: input.paymentMethod || null,
         });
         if (error) throw error;
 
@@ -1047,7 +774,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           description: input.description,
           timestamp: now,
           status: input.status,
-          paymentMethod: input.paymentMethod,
         };
       },
 

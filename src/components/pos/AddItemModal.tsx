@@ -73,6 +73,7 @@ export function AddItemModal({ opened, onClose, services, products, onAdd }: Add
         leftSection={<IconSearch size={16} />}
         value={search}
         onChange={(e) => setSearch(e.currentTarget.value)}
+        data-autofocus
         mb="md"
       />
       <Stack gap={0}>
@@ -90,9 +91,11 @@ export function AddItemModal({ opened, onClose, services, products, onAdd }: Add
                       <Text fw={500} fz="md">
                         {service.name}
                       </Text>
-                      <Text fz="xs" c="dimmed">
-                        {service.category}
-                      </Text>
+                      {service.description && (
+                        <Text fz="xs" c="dimmed">
+                          {service.description}
+                        </Text>
+                      )}
                     </div>
                     <Text fw={600} fz="md">
                       {service.priceFrom ? "od " : ""}

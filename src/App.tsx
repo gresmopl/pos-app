@@ -6,6 +6,8 @@ import { DeviceGate } from "@/components/DeviceGate";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { useDeviceRole } from "@/contexts/DeviceContext";
+import { BottomNavBar } from "@/components/layout/BottomNavBar";
+import { useWakeLock } from "@/hooks/useWakeLock";
 
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const POS = lazy(() => import("@/pages/POS"));
@@ -15,10 +17,12 @@ const ShiftClose = lazy(() => import("@/pages/ShiftClose"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const AdminPricing = lazy(() => import("@/pages/AdminPricing"));
 const AdminEmployees = lazy(() => import("@/pages/AdminEmployees"));
-const KnowledgeBase = lazy(() => import("@/pages/KnowledgeBase"));
 const AdminSettings = lazy(() => import("@/pages/AdminSettings"));
 const AdminDevices = lazy(() => import("@/pages/AdminDevices"));
 const OwnerSurvey = lazy(() => import("@/pages/OwnerSurvey"));
+const Wallet = lazy(() => import("@/pages/Wallet"));
+const More = lazy(() => import("@/pages/More"));
+const Stats = lazy(() => import("@/pages/Stats"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
 function AdminGuard({ children }: { children: React.ReactNode }): React.JSX.Element {
@@ -28,21 +32,24 @@ function AdminGuard({ children }: { children: React.ReactNode }): React.JSX.Elem
 }
 
 export function App() {
+  useWakeLock();
   return (
     <>
       <SwipeBack />
       <ServiceWorkerRegistration />
       <ErrorBoundary>
         <DeviceGate>
-          <div className="page-transition">
+          <div className="page-transition" style={{ paddingBottom: 60 }}>
             <Suspense fallback={<PageSkeleton />}>
               <Routes>
                 <Route path="/" element={<Dashboard />} />
                 <Route path="/pos" element={<POS />} />
                 <Route path="/history" element={<History />} />
                 <Route path="/cash" element={<Cash />} />
+                <Route path="/wallet" element={<Wallet />} />
+                <Route path="/more" element={<More />} />
+                <Route path="/stats" element={<Stats />} />
                 <Route path="/shift-close" element={<ShiftClose />} />
-                <Route path="/help" element={<KnowledgeBase />} />
                 <Route
                   path="/admin"
                   element={
@@ -95,6 +102,7 @@ export function App() {
               </Routes>
             </Suspense>
           </div>
+          <BottomNavBar />
         </DeviceGate>
       </ErrorBoundary>
     </>

@@ -8,7 +8,6 @@
 TRUNCATE TABLE tip_withdrawal CASCADE;
 TRUNCATE TABLE expense CASCADE;
 TRUNCATE TABLE cash_movement CASCADE;
-TRUNCATE TABLE payment_detail CASCADE;
 TRUNCATE TABLE transaction_item CASCADE;
 TRUNCATE TABLE transaction CASCADE;
 TRUNCATE TABLE voucher CASCADE;
@@ -43,7 +42,7 @@ TRUNCATE TABLE salon CASCADE;
 -- ============================================
 INSERT INTO salon (id, name, address, phone, nip, admin_pin_hash, operations_pin_hash,
   cash_tolerance, month_target, voucher_expiry_months, voucher_min_amount, voucher_code_prefix,
-  default_commission_service, default_commission_product, enabled_payment_methods, receipt_footer)
+  default_commission_service, default_commission_product, receipt_footer)
 VALUES (
   'a0000000-0000-0000-0000-000000000001',
   'FORMEN DEV',
@@ -54,7 +53,6 @@ VALUES (
   'placeholder_operations_1234',  -- docelowo: crypt('1234', gen_salt('bf'))
   10.00, 600, 12, 1.00, 'BON-',
   40.00, 20.00,
-  'cash,card,blik',
   'Dziękujemy za wizytę w FORMEN!'
 );
 
@@ -63,87 +61,76 @@ VALUES (
 -- Prowizje: admin 50/30, barber 40/20 (realistyczne stawki barber shop)
 -- tip_balance odpowiada mock-om z employees.ts
 -- ============================================
-INSERT INTO employee (id, salon_id, name, avatar_url, role, pin_hash, commission_service_percent, commission_product_percent, tip_balance)
+INSERT INTO employee (id, salon_id, name, avatar_url, role, pin_hash, commission_service_percent, commission_product_percent, retention_percent, tip_balance)
 VALUES
   ('e0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001',
    'Zbyszek', NULL, 'admin', 'placeholder_pin_1234',
-   50.00, 30.00, 150.00),
+   50.00, 30.00, 96.00, 150.00),
 
   ('e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001',
    'Oliwia', NULL, 'barber', NULL,
-   40.00, 20.00, 85.00),
+   40.00, 20.00, 85.00, 85.00),
 
   ('e0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
    'Edi', NULL, 'barber', NULL,
-   40.00, 20.00, 40.00),
+   40.00, 20.00, 72.00, 40.00),
 
   ('e0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001',
    'Tomek', NULL, 'barber', NULL,
-   40.00, 20.00, 25.00),
+   40.00, 20.00, 91.00, 25.00),
 
   ('e0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001',
    'Ewelina', NULL, 'barber', NULL,
-   40.00, 20.00, 110.00);
+   40.00, 20.00, 65.00, 110.00);
 
 -- ============================================
 -- USLUGI (z cennika mock - services.ts)
 -- ============================================
-INSERT INTO service (id, salon_id, name, price, price_from, duration_minutes, category, description, description_long)
+INSERT INTO service (id, salon_id, name, price, price_from, description, display_order)
 VALUES
   ('50000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001',
-   'Strzyżenie Męskie', 80.00, false, 45, 'Strzyżenie',
-   'Strzyżenie + mycie + stylizacja, 30-45 min',
-   'Klasyczne strzyżenie męskie obejmujące konsultację, mycie włosów, strzyżenie nożyczkami i/lub maszynką, stylizację oraz produkt do układania. Czas wizyty 30-45 min w zależności od fryzury. Obejmuje wszystkie techniki: skin fade, taper fade, nożyczki, włosy długie.'),
+   'Strzyżenie Męskie', 80.00, false,
+   'Strzyżenie + mycie + stylizacja, 30-45 min', 10),
 
   ('50000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001',
-   'Strzyżenie Dziecięce', 75.00, false, 40, 'Strzyżenie',
-   'Do lat 12, wybrani styliści. Nie obejmuje skin fade, taper fade, włosów długich',
-   'Strzyżenie dla dzieci do lat 12. Wykonywane przez wybranych stylistów z doświadczeniem w pracy z dziećmi. Usługa nie obejmuje zaawansowanych technik: skin fade, taper fade, włosów długich - w takich przypadkach należy wybrać Strzyżenie Męskie. Czas 30-40 min.'),
+   'Strzyżenie Dziecięce', 75.00, false,
+   'Do lat 12, wybrani styliści', 20),
 
   ('50000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001',
-   'Strzyżenie Męskie + Broda Spa', 140.00, false, 70, 'Combo',
-   'Strzyżenie + broda + kompres z gorącego ręcznika + golenie brzytwą konturów, 60-70 min',
-   'Pełny pakiet: strzyżenie męskie + pielęgnacja brody w wersji spa. Obejmuje strzyżenie włosów, mycie, trimowanie i cieniowanie brody, kompres z gorącego ręcznika, precyzyjne golenie konturów brzytwą, olejek do brody i stylizację. Czas wizyty 60-70 min. Najbardziej kompleksowa usługa w ofercie.'),
+   'Strzyżenie Męskie + Broda Spa', 140.00, false,
+   'Strzyżenie + broda + kompres + golenie brzytwą, 60-70 min', 30),
 
   ('50000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001',
-   'Strzyżenie Ojciec & Syn', 140.00, false, 70, 'Strzyżenie',
-   'Ojciec + dziecko do lat 12, wspólna wizyta, 60-70 min',
-   'Wspólna wizyta ojca i syna (dziecko do lat 12). Obaj klienci strzyżeni podczas jednej sesji. Cena obejmuje dwa strzyżenia. Dla dziecka obowiązują te same ograniczenia co przy Strzyżeniu Dziecięcym (bez skin fade, taper fade, włosów długich). Czas 60-70 min łącznie.'),
+   'Strzyżenie Ojciec & Syn', 140.00, false,
+   'Ojciec + dziecko do lat 12, wspólna wizyta', 40),
 
   ('50000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001',
-   'Strzyżenie brody', 80.00, false, 40, 'Broda',
-   'Trimowanie + cieniowanie + kompres + kontur brzytwą + pielęgnacja, 30-45 min',
-   'Kompletna pielęgnacja brody: trimowanie, cieniowanie, formowanie kształtu, kompres z gorącego ręcznika, precyzyjne golenie konturów brzytwą, olejek lub balsam do brody. Czas 30-45 min. Usługa samodzielna (bez strzyżenia włosów).'),
+   'Strzyżenie brody', 80.00, false,
+   'Trimowanie + cieniowanie + kompres + kontur brzytwą', 50),
 
   ('50000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001',
-   'Strzyżenie maszynką + broda maszynką', 110.00, false, 50, 'Combo',
-   'Strzyżenie maszynką + broda maszynką, 50 min',
-   'Pakiet combo: strzyżenie włosów maszynką (bez nożyczek) oraz trimowanie brody maszynką. Szybsza alternatywa dla pełnego combo z brodą spa. Nie obejmuje kompresów, golenia brzytwą ani zaawansowanej stylizacji brody. Czas ok. 50 min.'),
+   'Strzyżenie maszynką + broda maszynką', 110.00, false,
+   'Strzyżenie maszynką + broda maszynką, 50 min', 60),
 
   ('50000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000001',
-   'Odświeżenie Strzyżenia', 75.00, false, 30, 'Strzyżenie',
-   'Szybkie wyrównanie fryzury, wybrani fryzjerzy. Nie obejmuje skin fade, taper fade, włosów długich',
-   'Szybkie odświeżenie fryzury między pełnymi wizytami. Wyrównanie boków, karku i konturu. Wykonywane przez wybranych fryzjerów. Nie obejmuje zaawansowanych technik (skin fade, taper fade) ani włosów długich - w takich przypadkach należy wybrać Strzyżenie Męskie. Czas ok. 30 min.'),
+   'Odświeżenie Strzyżenia', 75.00, false,
+   'Szybkie wyrównanie fryzury, wybrani fryzjerzy', 70),
 
   ('50000000-0000-0000-0000-000000000008', 'a0000000-0000-0000-0000-000000000001',
-   'Combo & Farbowanie brody', 190.00, false, 100, 'Combo',
-   'Strzyżenie + stylizacja brody + farbowanie brody, 1h 40min',
-   'Najobszerniejszy pakiet: strzyżenie męskie + pełna pielęgnacja brody + farbowanie brody. Obejmuje strzyżenie, mycie, trimowanie brody, dobór i aplikację koloru brody (beard cover), kompres, kontur brzytwą i stylizację. Czas ok. 1h 40min. Kolor dobierany indywidualnie do odcienia włosów.'),
+   'Combo & Farbowanie brody', 190.00, false,
+   'Strzyżenie + stylizacja brody + farbowanie brody, 1h 40min', 80),
 
   ('50000000-0000-0000-0000-000000000009', 'a0000000-0000-0000-0000-000000000001',
-   'Tonowanie siwych włosów', 70.00, true, 30, 'Koloryzacja',
-   'Męski odsiwiacz, ekspresowe pokrycie siwych włosów, 30 min',
-   'Ekspresowe tonowanie siwych włosów (męski odsiwiacz). Kolor dobierany indywidualnie. Cena od 70 zł - końcowa kwota zależy od długości włosów i ilości użytego produktu. Czas ok. 30 min. Usługa dodatkowa - można łączyć ze strzyżeniem.'),
+   'Tonowanie siwych włosów', 70.00, true,
+   'Męski odsiwiacz, ekspresowe pokrycie siwych włosów', 90),
 
   ('50000000-0000-0000-0000-000000000010', 'a0000000-0000-0000-0000-000000000001',
-   'Farbowanie brody (beard cover)', 70.00, true, 40, 'Koloryzacja',
-   'Odświeżenie koloru brody lub ukrycie siwizny, kolor dopasowany do włosów, 40 min',
-   'Farbowanie brody techniką beard cover. Odświeżenie koloru lub ukrycie siwizny w brodzie. Kolor dobierany indywidualnie do naturalnego odcienia włosów. Cena od 70 zł - końcowa kwota zależy od gęstości i długości brody. Czas ok. 40 min. Usługa dodatkowa - często łączona z combo.'),
+   'Farbowanie brody (beard cover)', 70.00, true,
+   'Odświeżenie koloru brody lub ukrycie siwizny', 100),
 
   ('50000000-0000-0000-0000-000000000011', 'a0000000-0000-0000-0000-000000000001',
-   'Podgalanie karku brzytwą', 30.00, false, 15, 'Dodatkowe',
-   'Precyzyjne podgolenie baków i karku brzytwą, 15-20 min. Idealne między pełnymi wizytami',
-   'Szybka usługa uzupełniająca: precyzyjne podgolenie baków i karku brzytwą. Idealne między pełnymi wizytami, gdy fryzura wymaga tylko odświeżenia konturu. Czas 15-20 min. Najtańsza usługa w ofercie.');
+   'Podgalanie karku brzytwą', 30.00, false,
+   'Precyzyjne podgolenie boków i karku brzytwą, 15-20 min', 110);
 
 -- ============================================
 -- PRODUKTY (z cennika mock - products.ts)
@@ -203,7 +190,7 @@ VALUES
 -- Data: dzisiejsza (CURRENT_DATE), godziny jak w mock-ach
 -- ============================================
 
--- T1: Oliwia, Strzyżenie + Broda Spa, 140 zl, karta, napiwek 10 zl, klient: Patryk Fabisiak
+-- T1: Oliwia, Strzyżenie + Broda Spa, 140 zl, napiwek 10 zl, klient: Patryk Fabisiak
 INSERT INTO transaction (id, salon_id, employee_id, client_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000001',
@@ -223,14 +210,7 @@ VALUES (
   'Strzyżenie + Broda Spa', 140.00, 1, 56.00  -- 40% prowizja Oliwii
 );
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000001',
-  '10000000-0000-0000-0000-000000000001',
-  'card', 150.00  -- 140 + 10 napiwek
-);
-
--- T2: Tomek, Strzyżenie Męskie + Strzyżenie brody, 150 zl (rabat 10 zl), gotowka
+-- T2: Tomek, Strzyżenie Męskie + Strzyżenie brody, 150 zl (rabat 10 zl)
 INSERT INTO transaction (id, salon_id, employee_id, date, total_amount, tip_amount, discount_type, discount_value, status)
 VALUES (
   '10000000-0000-0000-0000-000000000002',
@@ -252,14 +232,7 @@ VALUES
    'service', '50000000-0000-0000-0000-000000000004',
    'Strzyżenie brody', 80.00, 1, 32.00);
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000002',
-  '10000000-0000-0000-0000-000000000002',
-  'cash', 150.00
-);
-
--- T3: Zbyszek, Strzyżenie Męskie + Pomada Reuzel, 145 zl, karta, napiwek 15 zl, klient: Jan Kowalski
+-- T3: Zbyszek, Strzyżenie Męskie + Pomada Reuzel, 145 zl, napiwek 15 zl, klient: Jan Kowalski
 INSERT INTO transaction (id, salon_id, employee_id, client_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000003',
@@ -282,14 +255,7 @@ VALUES
    'product', 'd0000000-0000-0000-0000-000000000001',
    'Pomada Reuzel', 65.00, 1, 19.50);         -- 30% prowizja od kosmetykow
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000003',
-  '10000000-0000-0000-0000-000000000003',
-  'card', 160.00  -- 145 + 15 napiwek
-);
-
--- T4: Ewelina, Combo & Farbowanie brody, 190 zl, BLIK, napiwek 20 zl
+-- T4: Ewelina, Combo & Farbowanie brody, 190 zl, napiwek 20 zl
 INSERT INTO transaction (id, salon_id, employee_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000004',
@@ -307,14 +273,7 @@ VALUES (
   'Combo & Farbowanie brody', 190.00, 1, 76.00  -- 40% prowizja Eweliny
 );
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000004',
-  '10000000-0000-0000-0000-000000000004',
-  'blik', 210.00  -- 190 + 20 napiwek
-);
-
--- T5: Zbyszek, Strzyżenie Męskie, 80 zl, gotowka
+-- T5: Zbyszek, Strzyżenie Męskie, 80 zl
 INSERT INTO transaction (id, salon_id, employee_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000005',
@@ -332,14 +291,7 @@ VALUES (
   'Strzyżenie Męskie', 80.00, 1, 40.00
 );
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000005',
-  '10000000-0000-0000-0000-000000000005',
-  'cash', 80.00
-);
-
--- T6: Edi, Strzyżenie maszynka + broda + Olejek do brody, 155 zl, karta, napiwek 5 zl, klient: Marek Nowak
+-- T6: Edi, Strzyżenie maszynka + broda + Olejek do brody, 155 zl, napiwek 5 zl, klient: Marek Nowak
 INSERT INTO transaction (id, salon_id, employee_id, client_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000006',
@@ -362,14 +314,7 @@ VALUES
    'product', 'd0000000-0000-0000-0000-000000000002',
    'Olejek do brody', 45.00, 1, 9.00);                          -- 20% od kosmetykow
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000006',
-  '10000000-0000-0000-0000-000000000006',
-  'card', 160.00  -- 155 + 5 napiwek
-);
-
--- T7: Ewelina, Strzyżenie Ojciec & Syn, 140 zl, gotowka
+-- T7: Ewelina, Strzyżenie Ojciec & Syn, 140 zl
 INSERT INTO transaction (id, salon_id, employee_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000007',
@@ -387,14 +332,7 @@ VALUES (
   'Strzyżenie Ojciec & Syn', 140.00, 1, 56.00
 );
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000007',
-  '10000000-0000-0000-0000-000000000007',
-  'cash', 140.00
-);
-
--- T8: Oliwia, Odswiezenie Strzyzenia, 75 zl, karta, napiwek 5 zl
+-- T8: Oliwia, Odswiezenie Strzyzenia, 75 zl, napiwek 5 zl
 INSERT INTO transaction (id, salon_id, employee_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000008',
@@ -412,14 +350,7 @@ VALUES (
   'Odświeżenie Strzyżenia', 75.00, 1, 30.00
 );
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000008',
-  '10000000-0000-0000-0000-000000000008',
-  'card', 80.00  -- 75 + 5 napiwek
-);
-
--- T9: Tomek, Strzyżenie Męskie, 80 zl, gotowka
+-- T9: Tomek, Strzyżenie Męskie, 80 zl
 INSERT INTO transaction (id, salon_id, employee_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000009',
@@ -437,14 +368,7 @@ VALUES (
   'Strzyżenie Męskie', 80.00, 1, 32.00
 );
 
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000009',
-  '10000000-0000-0000-0000-000000000009',
-  'cash', 80.00
-);
-
--- T10: Edi, Strzyżenie + Broda Spa + Wosk matowy, 195 zl, BLIK
+-- T10: Edi, Strzyżenie + Broda Spa + Wosk matowy, 195 zl
 INSERT INTO transaction (id, salon_id, employee_id, date, total_amount, tip_amount, status)
 VALUES (
   '10000000-0000-0000-0000-000000000010',
@@ -465,13 +389,6 @@ VALUES
    '10000000-0000-0000-0000-000000000010',
    'product', 'd0000000-0000-0000-0000-000000000004',
    'Wosk matowy', 55.00, 1, 11.00);
-
-INSERT INTO payment_detail (id, transaction_id, method, amount)
-VALUES (
-  'f2000000-0000-0000-0000-000000000010',
-  '10000000-0000-0000-0000-000000000010',
-  'blik', 195.00
-);
 
 -- ============================================
 -- RUCHY KASOWE (przykladowe operacje z dzisiejszego dnia)
