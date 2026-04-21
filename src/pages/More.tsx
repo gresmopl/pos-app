@@ -61,8 +61,9 @@ function MenuRow({
   return (
     <UnstyledButton
       onClick={() => navigate(item.path)}
-      py="sm"
+      py="md"
       px="xs"
+      w="100%"
       style={{ borderRadius: "var(--mantine-radius-md)" }}
     >
       <Group wrap="nowrap">

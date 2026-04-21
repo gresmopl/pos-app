@@ -536,14 +536,19 @@ function TerminalCheckModal({
             style={{
               borderRadius: "var(--mantine-radius-md)",
               textAlign: "center",
-              backgroundColor: "var(--mantine-color-green-light)",
-              border: "2px solid var(--mantine-color-green-filled)",
+              backgroundColor:
+                cashInDrawer < 0
+                  ? "var(--mantine-color-red-light)"
+                  : "var(--mantine-color-green-light)",
+              border: `2px solid ${cashInDrawer < 0 ? "var(--mantine-color-red-filled)" : "var(--mantine-color-green-filled)"}`,
             }}
           >
             <Text fz="xs" c="dimmed">
-              Gotówka w kasie powinna wynosić
+              {cashInDrawer < 0
+                ? "Kwota terminala wydaje się za wysoka"
+                : "Gotówka w kasie powinna wynosić"}
             </Text>
-            <Text fw={700} fz={32} c="green">
+            <Text fw={700} fz={32} c={cashInDrawer < 0 ? "red" : "green"}>
               {cashInDrawer.toLocaleString("pl-PL")} zł
             </Text>
           </Box>

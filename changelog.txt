@@ -1,6 +1,16 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.97] - 2026-04-21
+- fix(ux): 7 problemow MEDIUM z audytu UX
+  - BottomNavBar: gap 4px + px 4px (minimalne oddzielenie przyciskow)
+  - History: timestamp fz sm, kolumna 70px (czytelniejsze daty)
+  - AdminPricing: "Pozycja na liscie (1 = pierwsze miejsce)" zamiast nieintuicyjnego opisu
+  - Cash TerminalCheck: ujemna gotowka wyswietlana na czerwono z ostrzezeniem
+  - More MenuRow: w 100% + py md (pelna szerokosc klikalna, wiekszy touch target)
+  - POS success: przycisk "Nastepny klient" (zostaje w POS) + "Wroc do ekranu glownego"
+  - AdminSettings: usuniete pole tolerancji kasowej (nieuzywane, decyzja szefa: brak tolerancji)
+
 [0.1.96] - 2026-04-21
 - fix(ux): 4 problemy HIGH z audytu UX
   - PageHeader: nowy prop hideBack, ukryta strzalka na Kasa/Napiwki (dostepne z BottomNavBar)

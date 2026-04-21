@@ -331,8 +331,8 @@ export default function PricingPage() {
           />
           {tab === "services" && (
             <NumberInput
-              label="Kolejność wyświetlania"
-              description="Mniejsza liczba = wyżej na liście (np. 1, 5, 10, 20)"
+              label="Pozycja na liście"
+              description="1 = pierwsze miejsce, 2 = drugie itd."
               placeholder="0"
               min={0}
               size="md"

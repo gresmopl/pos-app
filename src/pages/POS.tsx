@@ -133,8 +133,19 @@ export default function POSPage() {
               </Text>
             </Text>
           </Box>
-          <Button fullWidth size="lg" maw={400} color="green" onClick={() => navigate("/")} mt="xl">
-            Wróć
+          <Button
+            fullWidth
+            size="lg"
+            maw={400}
+            variant="light"
+            color="green"
+            onClick={() => setSuccessData(null)}
+            mt="xl"
+          >
+            Następny klient
+          </Button>
+          <Button fullWidth size="lg" maw={400} variant="subtle" onClick={() => navigate("/")}>
+            Wróć do ekranu głównego
           </Button>
         </Stack>
       </Box>
