@@ -71,7 +71,7 @@
 **Zrealizowane:**
 
 - [x] Schemat DB PostgreSQL (schema.sql + seed.sql z danymi testowymi)
-- [x] Warstwa abstrakcji DB (adaptery: mock / supabase / rest)
+- [x] Warstwa abstrakcji DB (adaptery: supabase / rest)
 - [x] Hooki async: useDbQuery, useEmployees, useServices, useProducts, useTodayTransactions, useDailyStats
 - [x] Wszystkie strony podlaczone do warstwy DB (Dashboard, POS, History, Cash, ShiftClose, AdminPricing)
 - [x] Zapis transakcji do bazy (transaction + items + payment_detail + tip_balance)

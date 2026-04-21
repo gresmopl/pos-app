@@ -35,10 +35,9 @@ Aplikacja dostepna pod `http://localhost:3000`
 src/
   pages/          Strony (Dashboard, POS, History, Cash, ShiftClose, Admin)
   components/     Komponenty wielokrotnego uzytku
-    layout/       PageHeader, PinModal
+    layout/       BottomNavBar, PageHeader, PinModal
     pos/          Komponenty ekranu sprzedazy
     cash/         Komponenty ruchow kasowych
-  data/           Mock dane (Faza 1)
   lib/            Logika, helpery, typy, stale
   hooks/          Custom React hooks
   test/           Konfiguracja testow
@@ -60,8 +59,8 @@ src/
 
 ## Fazy
 
-- **Faza 1** — MVP: prototyp UI z mock danymi (aktualna)
-- **Faza 2** — Integracja z Supabase, autoryzacja urzadzen, pelna funkcjonalnosc
+- **Faza 1** — MVP: prototyp UI (zakonczona)
+- **Faza 2** — Integracja z Supabase, autoryzacja urzadzen, pelna funkcjonalnosc (w trakcie)
 - **Faza 3** — Raporty miesieczne, drukarka etykiet, PWA offline, eksport
 
 ## Licencja

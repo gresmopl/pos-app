@@ -28,7 +28,7 @@ Docelowo: Progressive Web App (PWA) z offline fallback.
 | ----------- | ---------------- | --------------------------- | ------ | ----------------------------- |
 | Produkcja   | Hetzner CX24 VPS | PostgreSQL 16 (self-hosted) | main   | SSH/rsync (po npm run build)  |
 | Dev/Preview | GitHub Pages     | Supabase DEV (free)         | dev    | GitHub Actions (automatyczny) |
-| Lokalne     | Vite dev         | Supabase DEV / mock         | dev    | `npm run dev`                 |
+| Lokalne     | Vite dev         | Supabase DEV                | dev    | `npm run dev`                 |
 
 GitHub Pages wymaga basename `/pos-app` w BrowserRouter - wykrywane automatycznie w `main.tsx`.
 
@@ -46,7 +46,7 @@ Aplikacja uzywa zmiennych `VITE_*` ladowanych przez Vite z plikow `.env`:
 
 | Zmienna                  | Opis                               | Przyklad                           |
 | ------------------------ | ---------------------------------- | ---------------------------------- |
-| `VITE_DB_ADAPTER`        | Adapter bazy: mock/supabase/rest   | `supabase`                         |
+| `VITE_DB_ADAPTER`        | Adapter bazy: supabase/rest        | `supabase`                         |
 | `VITE_DB_ENV`            | Srodowisko: development/production | `development`                      |
 | `VITE_SUPABASE_URL`      | URL projektu Supabase              | `https://xxx.supabase.co`          |
 | `VITE_SUPABASE_ANON_KEY` | Klucz publiczny (anon) Supabase    | `eyJ...` (bezpieczny w repo - RLS) |
@@ -55,7 +55,7 @@ Aplikacja uzywa zmiennych `VITE_*` ladowanych przez Vite z plikow `.env`:
 **Dlaczego `.env.development` jest w repo:**
 Klucz `anon` Supabase jest publiczny - trafia do bundla JS w przegladarce. Bezpieczenstwo zapewnia Row Level Security (RLS), nie ukrywanie klucza. `.env.production` zawiera konfiguracje Hetzner VPS i jest w `.gitignore`.
 
-**GitHub Actions / Vercel:** build z `--mode development` laduje `.env.development` z repo. Bez tego fallback na adapter `mock`.
+**GitHub Actions / Vercel:** build z `--mode development` laduje `.env.development` z repo. Bez tego fallback na adapter `supabase`.
 
 **Jak zmienic baze na produkcyjna (Hetzner VPS):**
 
@@ -154,19 +154,12 @@ src/
     schema.sql          Schemat PostgreSQL (docelowy stan bazy)
     seed.sql            Dane testowe DEV (salon, pracownicy, uslugi, transakcje)
     adapters/
-      mock.ts           Adapter mock (testy, offline)
       supabase.ts       Adapter Supabase DEV (JS SDK, importuje mappery)
       rest.ts           Adapter REST (produkcja Hetzner VPS)
 
   lib/
     types.ts            Centralne typy domenowe (Employee, Transaction, CashMovement, ...)
-    constants.ts        Stale (PINy mock, VOUCHER_EXPIRY_MONTHS, pluralize())
-
-  data/                 Mock dane (fallback + testy)
-    employees.ts        Pracownicy + statystyki
-    services.ts         Uslugi (11 uslug z cenami)
-    products.ts         Produkty
-    transactions.ts     Transakcje
+    constants.ts        Stale (PINy, VOUCHER_EXPIRY_MONTHS, pluralize())
 
   themes/
     index.ts            Rejestr motywow + domyslny klucz
@@ -209,11 +202,10 @@ Cala aplikacja owinieta w `DeviceGate` - blokuje dostep do niezarejestrowanych/o
 
 ### Wzorzec adapter
 
-Trzy adaptery w `src/db/adapters/`, wybierane przez `VITE_DB_ADAPTER`:
+Dwa adaptery w `src/db/adapters/`, wybierane przez `VITE_DB_ADAPTER`:
 
 | Adapter    | Srodowisko | Opis                                    |
 | ---------- | ---------- | --------------------------------------- |
-| `mock`     | Testy      | Dane w pamieci, brak zapytan sieciowych |
 | `supabase` | DEV        | Supabase JS SDK, bezposrednie zapytania |
 | `rest`     | Produkcja  | REST API do Node.js na Hetzner VPS      |
 
@@ -459,11 +451,11 @@ Zdefiniowane w `src/lib/types.ts`:
 Framework: vitest + @testing-library/react + jsdom
 
 ```bash
-npm test           # uruchom testy (61 testow, 7 plikow)
+npm test           # uruchom testy (40 testow, 4 pliki)
 npm test -- --ui   # interfejs graficzny
 ```
 
-Pokrycie: mock dane, logika biznesowa hookow, renderowanie komponentow, mappery DB.
+Pokrycie: logika biznesowa hookow, renderowanie komponentow, mappery DB.
 Testy mockuja modul `@/db` (`vi.mock`) - nie komunikuja sie z Supabase.
 Mappery (src/db/mappers.ts) testowane bezposrednio - czyste funkcje bez zaleznosci.
 

@@ -1,6 +1,15 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.99] - 2026-04-21
+- docs: usuniecie pozostalych referencji do mock adaptera z dokumentacji
+  - CLAUDE.md: usuniety src/data/ ze struktury
+  - docs/technical.md: 2 adaptery, zaktualizowany file tree, test count 40/4
+  - docs/conventions.md: "we wszystkich adapterach (supabase + rest)"
+  - CONTRIBUTING.md: 2 adaptery, usuniety data/ z drzewa katalogow
+  - docs/decisions.md: ADR-002 zaktualizowany (2 srodowiska, 2 implementacje)
+  - TODO.md: adaptery supabase/rest
+
 [0.1.98] - 2026-04-21
 - refactor: usuniecie mock adaptera i danych mockowych (-669 linii kodu, -21 testow)
   - usuniety src/db/adapters/mock.ts (358 linii)

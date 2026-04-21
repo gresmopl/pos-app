@@ -31,7 +31,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 
 `src/pages/` (15 stron), `src/components/` (layout/BottomNavBar+PageHeader+PinModal, pos/, cash/),
 `src/hooks/` (useCart, useDbQuery, useWakeLock), `src/db/` (adaptery, mappers.ts, schema),
-`src/lib/` (types.ts, constants.ts, cash.ts, commission.ts), `src/data/` (mock)
+`src/lib/` (types.ts, constants.ts, cash.ts, commission.ts)
 
 ## Konwencje kodu
 

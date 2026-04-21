@@ -39,10 +39,9 @@ src/
   components/     # Komponenty UI (layout/, pos/, cash/)
   hooks/          # Custom hooks (useCart, useDbQuery, useDbData)
   db/             # Warstwa bazy danych (adaptery, schemat)
-    adapters/     # mock / supabase / rest
+    adapters/     # supabase / rest
   lib/            # Typy (types.ts), stale (constants.ts)
   contexts/       # DeviceContext
-  data/           # Dane mockowe
 docs/             # Dokumentacja (analityczna, techniczna, ADR)
 ```
 
@@ -68,9 +67,8 @@ docs/             # Dokumentacja (analityczna, techniczna, ADR)
 Kazda operacja na bazie przechodzi przez adapter (`src/db/`).
 **Nigdy** nie wywoluj Supabase SDK bezposrednio z komponentow.
 
-Nowa operacja DB wymaga implementacji we **wszystkich trzech** adapterach:
+Nowa operacja DB wymaga implementacji we **obu** adapterach:
 
-- `mock` - dane in-memory (dla testow)
 - `supabase` - Supabase SDK (development)
 - `rest` - REST API (produkcja)
 

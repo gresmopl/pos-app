@@ -99,13 +99,12 @@ Gdy jeden modal/formularz obsluguje rozne typy danych (np. uslugi i produkty):
 ```
 src/db/
   adapters/
-    mock.ts       # Dane in-memory (testy)
     supabase.ts   # Supabase SDK (development)
     rest.ts       # REST API (produkcja)
   index.ts        # Eksportuje aktywny adapter
 ```
 
-- Nowa operacja = implementacja we wszystkich trzech adapterach
+- Nowa operacja = implementacja we wszystkich adapterach (supabase + rest)
 - Komponenty importuja `db` z `@/db`, nigdy bezposrednio adapter
 - Hook `useDbQuery<T>` do odczytu (obsluguje loading/error/refetch)
 

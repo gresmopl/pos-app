@@ -188,9 +188,9 @@ Po migracji:
 | Baza               | PostgreSQL 16                             | ACID wymagane dla danych finansowych                                          |
 | Monorepo           | **pnpm workspaces + TurboRepo**           | Typy wspoldzielone, gotowe na barberCal/barberTime                            |
 | Testy jednostkowe  | Vitest + Testing Library                  | Bez zmian                                                                     |
-| Testy DB           | **pg-mem** (in-memory PG)                 | Zastepuje adapter mock. Testy trafiaja realne zapytania SQL                   |
+| Testy DB           | **pg-mem** (in-memory PG)                 | Testy trafiaja realne zapytania SQL zamiast vi.mock                           |
 | Testy e2e          | Playwright                                | Standard branzowy, lepsze od Cypress w 2026                                   |
-| Mockowanie fetch   | **MSW (Mock Service Worker)**             | Zastepuje adapter mock we frontend, przechwytuje network na poziomie SW       |
+| Mockowanie fetch   | **MSW (Mock Service Worker)**             | Przechwytuje network na poziomie SW, zastepuje vi.mock('@/db')                |
 | PIN auth           | Cookie session (http-only, signed)        | Prostsze niz JWT, standard, debugowalne                                       |
 | Device auth        | UUID w localStorage + whitelist w DB      | Bez zmian (obecna decyzja byla dobra)                                         |
 
@@ -365,7 +365,7 @@ Deploy:
 4. **Monorepo od dnia 1** - gotowe na barberCal/barberTime bez refactoringu.
 5. **Docker Compose zamiast Nginx + systemd + certbot** - jeden plik opisuje cala produkcje.
 6. **Cookie session zamiast JWT** - prostsze, nie potrzebuje PostgREST magic.
-7. **pg-mem zamiast mock adaptera** - realistyczne testy z prawdziwym SQL.
+7. **pg-mem zamiast vi.mock** - realistyczne testy z prawdziwym SQL.
 8. **react-hook-form zamiast Mantine useForm** - szybsze przy duzych formularzach.
 
 ### Ile by zabralo przepisanie
