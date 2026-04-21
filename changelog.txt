@@ -1,6 +1,14 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.98] - 2026-04-21
+- refactor: usuniecie mock adaptera i danych mockowych (-669 linii kodu, -21 testow)
+  - usuniety src/db/adapters/mock.ts (358 linii)
+  - usuniety src/data/ (employees, services, products, transactions + testy)
+  - config.ts: typ DbAdapter = supabase | rest (bez mock), fallback na supabase
+  - client.ts: usuniety import mock, domyslny adapter = supabase
+  - database.md rule: 2 adaptery zamiast 3
+
 [0.1.97] - 2026-04-21
 - fix(ux): 7 problemow MEDIUM z audytu UX
   - BottomNavBar: gap 4px + px 4px (minimalne oddzielenie przyciskow)

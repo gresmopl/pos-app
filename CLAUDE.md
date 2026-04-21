@@ -25,7 +25,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 | `dev`  | Supabase DEV (free)         | GitHub Pages     | `supabase` |
 | `main` | PostgreSQL 16 (self-hosted) | Hetzner CX24 VPS | `rest`     |
 
-`VITE_DB_ADAPTER` w .env: `mock` (testy), `supabase` (DEV), `rest` (PROD). Szczegoly: docs/technical.md
+`VITE_DB_ADAPTER` w .env: `supabase` (DEV), `rest` (PROD). Szczegoly: docs/technical.md
 
 ## Struktura
 
@@ -44,12 +44,12 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 
 ## Warstwa bazy danych
 
-- Wzorzec adapter w src/db/ (mock / supabase / rest). Schemat: src/db/schema.sql
+- Wzorzec adapter w src/db/ (supabase / rest). Schemat: src/db/schema.sql
 - Mappery DB wyodrebnione do src/db/mappers.ts (testowalne bez Supabase, 20 testow)
 - Hook `useDbQuery<T>` + hooki zasobowe (useEmployees, useServices, useProducts, useSalonSettings, ...)
 - Zapis: db.transactions.create(), db.services._, db.products._, db.cashMovements._, db.salon._, db.devices.\*
 - DeviceContext (src/contexts/) - jedyny globalny context (UUID, status urzadzenia, useDeviceRole)
-- Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts. 61 testow / 7 plikow
+- Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts. 40 testow / 4 pliki
 
 ## Decyzje szefa (potwierdzone 2026-04-10 i 2026-04-13)
 
