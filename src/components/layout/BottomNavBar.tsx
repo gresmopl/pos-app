@@ -31,7 +31,7 @@ export function BottomNavBar(): React.JSX.Element {
         backgroundColor: "var(--mantine-color-body)",
       }}
     >
-      <Group grow gap={0} h={60}>
+      <Group grow gap={4} h={60} px={4}>
         {NAV_ITEMS.map((item) => {
           const active = isActive(location.pathname, item.path);
           return (

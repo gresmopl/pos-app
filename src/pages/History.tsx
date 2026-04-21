@@ -233,7 +233,7 @@ export default function HistoryPage() {
                   >
                     <Group justify="space-between" wrap="nowrap">
                       <Group gap="xs" wrap="nowrap" style={{ flex: 1, minWidth: 0 }}>
-                        <Text fz="xs" c="dimmed" w={50} style={{ flexShrink: 0 }}>
+                        <Text fz="sm" c="dimmed" w={70} style={{ flexShrink: 0 }}>
                           {formatTime(transaction.timestamp)}
                         </Text>
                         <div style={{ minWidth: 0, flex: 1 }}>
@@ -305,7 +305,7 @@ export default function HistoryPage() {
                             {transaction.totalAmount.toLocaleString("pl-PL")} zł
                           </Text>
                         </Group>
-                        {transaction.id === transactions[0]?.id &&
+                        {transaction.id === filtered[0]?.id &&
                           new Date(transaction.timestamp).toDateString() === today && (
                             <Group justify="flex-end">
                               <Button

@@ -86,7 +86,7 @@ export default function WalletPage(): React.JSX.Element {
     return (
       <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
         <Container size="lg">
-          <PageHeader title="Napiwki" />
+          <PageHeader title="Napiwki" hideBack />
           <Divider />
           <WorkerDetail
             employee={lockedEmployee}
@@ -131,7 +131,7 @@ export default function WalletPage(): React.JSX.Element {
   return (
     <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
       <Container size="lg">
-        <PageHeader title="Napiwki" />
+        <PageHeader title="Napiwki" hideBack />
         <Divider />
 
         <Stack gap={0} mt="sm">

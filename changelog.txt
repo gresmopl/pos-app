@@ -1,6 +1,46 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.98] - 2026-04-21
+- refactor: usuniecie mock adaptera i danych mockowych (-669 linii kodu, -21 testow)
+  - usuniety src/db/adapters/mock.ts (358 linii)
+  - usuniety src/data/ (employees, services, products, transactions + testy)
+  - config.ts: typ DbAdapter = supabase | rest (bez mock), fallback na supabase
+  - client.ts: usuniety import mock, domyslny adapter = supabase
+  - database.md rule: 2 adaptery zamiast 3
+
+[0.1.97] - 2026-04-21
+- fix(ux): 7 problemow MEDIUM z audytu UX
+  - BottomNavBar: gap 4px + px 4px (minimalne oddzielenie przyciskow)
+  - History: timestamp fz sm, kolumna 70px (czytelniejsze daty)
+  - AdminPricing: "Pozycja na liscie (1 = pierwsze miejsce)" zamiast nieintuicyjnego opisu
+  - Cash TerminalCheck: ujemna gotowka wyswietlana na czerwono z ostrzezeniem
+  - More MenuRow: w 100% + py md (pelna szerokosc klikalna, wiekszy touch target)
+  - POS success: przycisk "Nastepny klient" (zostaje w POS) + "Wroc do ekranu glownego"
+  - AdminSettings: usuniete pole tolerancji kasowej (nieuzywane, decyzja szefa: brak tolerancji)
+
+[0.1.96] - 2026-04-21
+- fix(ux): 4 problemy HIGH z audytu UX
+  - PageHeader: nowy prop hideBack, ukryta strzalka na Kasa/Napiwki (dostepne z BottomNavBar)
+  - Cash ExpenseModal/VoucherModal: loading state na submit (ochrona przed podwojnym kliknieciem)
+  - ShiftClose: "Zatwierdz i drukuj" -> "Zamknij zmiane" z IconCheck (bez mylacego drukuj)
+  - Cash: przycisk Rozlicz size sm -> md (wiekszy touch target)
+
+[0.1.95] - 2026-04-21
+- fix(ux): 3 problemy CRITICAL z audytu UX
+  - POS: notyfikacja bledu przy nieudanej finalizacji transakcji (bylo: tylko console.error)
+  - Historia: "Cofnij transakcje" porownuje z filtered[0] zamiast transactions[0] (filtr pracowal blednie)
+  - DeviceGate: przycisk "Sprawdz status" size lg + fullWidth (bylo: domyslny SM)
+
+[0.1.94] - 2026-04-21
+- docs: aktualizacja dokumentacji technicznej i CLAUDE.md
+  - technical.md: routing (wallet/more/stats), usuniety KnowledgeBase/PaymentModal
+  - technical.md: mappery DB, native touch CSS, Wake Lock, autofocus
+  - technical.md: POS/Cash/ShiftClose flow zaktualizowane (modalne Kasa, brak metod platnosci)
+  - technical.md: 61 testow, useWakeLock, BottomNavBar, DeviceGate z nr wersji
+  - CLAUDE.md: struktura (mappers, useWakeLock, cash.ts, commission.ts, BottomNavBar)
+- feat: nr wersji na ekranie rejestracji urzadzenia (DeviceGate)
+
 [0.1.93] - 2026-04-21
 - feat: Screen Wake Lock - ekran nie gasnie podczas pracy z aplikacja
 - feat: autofocus na pierwszym inpucie we wszystkich 11 modalach (data-autofocus)

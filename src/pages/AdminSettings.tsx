@@ -126,14 +126,6 @@ export default function AdminSettingsPage(): React.JSX.Element {
         <Stack gap="sm" py="sm">
           <SectionLabel>Kasa</SectionLabel>
           <NumberInput
-            label="Tolerancja kasowa (zł)"
-            description="Różnica do tej kwoty traktowana jako OK przy zamknięciu"
-            min={0}
-            suffix=" zł"
-            size="md"
-            {...form.getInputProps("cashTolerance")}
-          />
-          <NumberInput
             label="Cel miesięczny (liczba usług)"
             description="Target wyświetlany na Dashboard"
             min={1}

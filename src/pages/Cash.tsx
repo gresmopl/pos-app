@@ -250,7 +250,7 @@ export default function CashPage() {
   return (
     <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
       <Container size="lg">
-        <PageHeader title="Kasa" />
+        <PageHeader title="Kasa" hideBack />
 
         <Divider />
 
@@ -383,7 +383,7 @@ export default function CashPage() {
                     </div>
                     <Button
                       variant="light"
-                      size="sm"
+                      size="md"
                       onClick={() => {
                         setSettleTarget(exp);
                         setSettleCost("");
@@ -536,14 +536,19 @@ function TerminalCheckModal({
             style={{
               borderRadius: "var(--mantine-radius-md)",
               textAlign: "center",
-              backgroundColor: "var(--mantine-color-green-light)",
-              border: "2px solid var(--mantine-color-green-filled)",
+              backgroundColor:
+                cashInDrawer < 0
+                  ? "var(--mantine-color-red-light)"
+                  : "var(--mantine-color-green-light)",
+              border: `2px solid ${cashInDrawer < 0 ? "var(--mantine-color-red-filled)" : "var(--mantine-color-green-filled)"}`,
             }}
           >
             <Text fz="xs" c="dimmed">
-              Gotówka w kasie powinna wynosić
+              {cashInDrawer < 0
+                ? "Kwota terminala wydaje się za wysoka"
+                : "Gotówka w kasie powinna wynosić"}
             </Text>
-            <Text fw={700} fz={32} c="green">
+            <Text fw={700} fz={32} c={cashInDrawer < 0 ? "red" : "green"}>
               {cashInDrawer.toLocaleString("pl-PL")} zł
             </Text>
           </Box>
@@ -586,10 +591,19 @@ function ExpenseModal({
     },
   });
 
-  const handleSubmit = () => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
     if (form.validate().hasErrors) return;
-    onTake(form.values.employee, Number(form.values.amount), form.values.desc);
-    form.reset();
+    setSubmitting(true);
+    try {
+      await onTake(form.values.employee, Number(form.values.amount), form.values.desc);
+      form.reset();
+    } catch (err) {
+      console.error("[Cash] ExpenseModal submit failed:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -643,6 +657,7 @@ function ExpenseModal({
           size="lg"
           color="red"
           onClick={handleSubmit}
+          loading={submitting}
           leftSection={<IconCash size={20} />}
         >
           Pobierz z kasy
@@ -762,15 +777,24 @@ function VoucherModal({
   const [value, setValue] = useState<number | string>("");
   const [error, setError] = useState<string | null>(null);
 
-  const handleSale = () => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSale = async () => {
     const amount = Number(value);
     if (!amount || amount <= 0) {
       setError("Podaj kwotę bonu");
       return;
     }
     setError(null);
-    onSale(amount);
-    setValue("");
+    setSubmitting(true);
+    try {
+      await onSale(amount);
+      setValue("");
+    } catch (err) {
+      console.error("[Cash] VoucherModal submit failed:", err);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleClose = () => {
@@ -815,6 +839,7 @@ function VoucherModal({
           size="lg"
           color="green"
           onClick={handleSale}
+          loading={submitting}
           leftSection={<IconGift size={20} />}
         >
           Sprzedaj bon - {Number(value) || 0} zł
