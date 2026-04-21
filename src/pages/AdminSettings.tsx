@@ -11,13 +11,13 @@ import {
   Divider,
   TextInput,
   NumberInput,
-  Textarea,
   Button,
   Skeleton,
 } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 
 function SectionLabel({ children }: { children: string }): React.JSX.Element {
   return (
@@ -34,25 +34,15 @@ export default function AdminSettingsPage(): React.JSX.Element {
   const form = useForm({
     initialValues: {
       name: "",
-      address: "",
-      phone: "",
-      nip: "",
       cashTolerance: 10 as number | string,
       monthTarget: 600 as number | string,
-      voucherExpiryMonths: 12 as number | string,
-      voucherMinAmount: 1 as number | string,
-      voucherCodePrefix: "BON-",
       defaultCommissionService: 40 as number | string,
       defaultCommissionProduct: 20 as number | string,
-      receiptFooter: "",
     },
     validate: {
       name: (v) => (v.trim() ? null : "Nazwa jest wymagana"),
       cashTolerance: (v) => (Number(v) >= 0 ? null : "Wartość >= 0"),
       monthTarget: (v) => (Number(v) > 0 ? null : "Wartość > 0"),
-      voucherExpiryMonths: (v) => (Number(v) > 0 ? null : "Wartość > 0"),
-      voucherMinAmount: (v) => (Number(v) > 0 ? null : "Wartość > 0"),
-      voucherCodePrefix: (v) => (v.trim() ? null : "Prefiks wymagany"),
       defaultCommissionService: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
       defaultCommissionProduct: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
     },
@@ -62,17 +52,10 @@ export default function AdminSettingsPage(): React.JSX.Element {
     if (!salon) return;
     form.setValues({
       name: salon.name,
-      address: salon.address,
-      phone: salon.phone,
-      nip: salon.nip,
       cashTolerance: salon.cashTolerance,
       monthTarget: salon.monthTarget,
-      voucherExpiryMonths: salon.voucherExpiryMonths,
-      voucherMinAmount: salon.voucherMinAmount,
-      voucherCodePrefix: salon.voucherCodePrefix,
       defaultCommissionService: salon.defaultCommissionService,
       defaultCommissionProduct: salon.defaultCommissionProduct,
-      receiptFooter: salon.receiptFooter,
     });
     form.resetDirty();
   }, [salon]);
@@ -84,17 +67,10 @@ export default function AdminSettingsPage(): React.JSX.Element {
       const v = form.values;
       await db.salon.update({
         name: v.name,
-        address: v.address,
-        phone: v.phone,
-        nip: v.nip,
         cashTolerance: Number(v.cashTolerance),
         monthTarget: Number(v.monthTarget),
-        voucherExpiryMonths: Number(v.voucherExpiryMonths),
-        voucherMinAmount: Number(v.voucherMinAmount),
-        voucherCodePrefix: v.voucherCodePrefix,
         defaultCommissionService: Number(v.defaultCommissionService),
         defaultCommissionProduct: Number(v.defaultCommissionProduct),
-        receiptFooter: v.receiptFooter,
       });
       form.resetDirty();
       notifications.show({
@@ -136,25 +112,12 @@ export default function AdminSettingsPage(): React.JSX.Element {
         {/* === DANE SALONU === */}
         <Stack gap="sm" py="sm">
           <SectionLabel>Dane salonu</SectionLabel>
-          <TextInput label="Nazwa salonu" placeholder="FORMEN" {...form.getInputProps("name")} />
           <TextInput
-            label="Adres"
-            placeholder="ul. Przykładowa 1, 00-001 Warszawa"
-            {...form.getInputProps("address")}
+            label="Nazwa salonu"
+            placeholder="FORMEN"
+            size="md"
+            {...form.getInputProps("name")}
           />
-          <Group grow>
-            <TextInput
-              label="Telefon"
-              placeholder="+48 123 456 789"
-              {...form.getInputProps("phone")}
-            />
-            <TextInput
-              label="NIP"
-              placeholder="1234567890"
-              maxLength={13}
-              {...form.getInputProps("nip")}
-            />
-          </Group>
         </Stack>
 
         <Divider />
@@ -167,39 +130,15 @@ export default function AdminSettingsPage(): React.JSX.Element {
             description="Różnica do tej kwoty traktowana jako OK przy zamknięciu"
             min={0}
             suffix=" zł"
+            size="md"
             {...form.getInputProps("cashTolerance")}
           />
           <NumberInput
             label="Cel miesięczny (liczba usług)"
             description="Target wyświetlany na Dashboard"
             min={1}
+            size="md"
             {...form.getInputProps("monthTarget")}
-          />
-        </Stack>
-
-        <Divider />
-
-        {/* === BONY === */}
-        <Stack gap="sm" py="sm">
-          <SectionLabel>Bony podarunkowe</SectionLabel>
-          <Group grow>
-            <NumberInput
-              label="Ważność (miesiące)"
-              min={1}
-              {...form.getInputProps("voucherExpiryMonths")}
-            />
-            <NumberInput
-              label="Min. kwota (zł)"
-              min={1}
-              suffix=" zł"
-              {...form.getInputProps("voucherMinAmount")}
-            />
-          </Group>
-          <TextInput
-            label="Prefiks kodu"
-            placeholder="BON-"
-            maxLength={10}
-            {...form.getInputProps("voucherCodePrefix")}
           />
         </Stack>
 
@@ -217,6 +156,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
               min={0}
               max={100}
               suffix="%"
+              size="md"
               {...form.getInputProps("defaultCommissionService")}
             />
             <NumberInput
@@ -224,24 +164,10 @@ export default function AdminSettingsPage(): React.JSX.Element {
               min={0}
               max={100}
               suffix="%"
+              size="md"
               {...form.getInputProps("defaultCommissionProduct")}
             />
           </Group>
-        </Stack>
-
-        <Divider />
-
-        {/* === WYDRUKI === */}
-        <Stack gap="sm" py="sm">
-          <SectionLabel>Wydruki</SectionLabel>
-          <Textarea
-            label="Stopka kwitu"
-            placeholder="Dziękujemy za wizytę!"
-            autosize
-            minRows={2}
-            maxRows={4}
-            {...form.getInputProps("receiptFooter")}
-          />
         </Stack>
       </Container>
 
@@ -249,7 +175,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
       <Box
         style={{
           position: "fixed",
-          bottom: 60,
+          bottom: BOTTOM_NAV_HEIGHT,
           left: 0,
           right: 0,
           zIndex: 100,

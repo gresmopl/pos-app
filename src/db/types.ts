@@ -76,19 +76,12 @@ export interface RegisterDeviceInput {
 
 export interface UpdateSalonInput {
   name?: string;
-  address?: string;
-  phone?: string;
-  nip?: string;
   adminPinHash?: string;
   operationsPinHash?: string;
   cashTolerance?: number;
   monthTarget?: number;
-  voucherExpiryMonths?: number;
-  voucherMinAmount?: number;
-  voucherCodePrefix?: string;
   defaultCommissionService?: number;
   defaultCommissionProduct?: number;
-  receiptFooter?: string;
 }
 
 export interface DbClient {

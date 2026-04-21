@@ -14,7 +14,7 @@ import {
   UnstyledButton,
   NumberInput,
 } from "@mantine/core";
-import { IconCash } from "@tabler/icons-react";
+import { IconCash, IconChevronRight } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
@@ -134,31 +134,29 @@ export default function WalletPage(): React.JSX.Element {
         <PageHeader title="Napiwki" />
         <Divider />
 
-        <Text fz="xs" c="dimmed" ta="center" py="sm">
-          Kliknij pracownika aby wypłacić
-        </Text>
-
-        <Stack gap={0}>
+        <Stack gap={0} mt="sm">
           {employees.map((emp, index) => (
             <div key={emp.id}>
-              <UnstyledButton w="100%" py="sm" px="xs" onClick={() => setSelectedId(emp.id)}>
-                <Group justify="space-between" wrap="nowrap">
-                  <Group gap="md" wrap="nowrap">
-                    <Avatar size={44} radius="xl" color="green" variant="light">
-                      {emp.avatar}
-                    </Avatar>
-                    <Text fw={600} fz="md">
+              <UnstyledButton
+                w="100%"
+                py="sm"
+                px="xs"
+                onClick={() => setSelectedId(emp.id)}
+                style={{ borderRadius: "var(--mantine-radius-md)" }}
+              >
+                <Group wrap="nowrap">
+                  <Avatar size={40} radius="xl" color="green" variant="light">
+                    {emp.avatar}
+                  </Avatar>
+                  <Box style={{ flex: 1 }}>
+                    <Text fz="sm" fw={500}>
                       {emp.name}
                     </Text>
-                  </Group>
-                  <Text
-                    fw={700}
-                    fz="lg"
-                    c={emp.tipBalance > 0 ? "green" : "dimmed"}
-                    style={{ whiteSpace: "nowrap" }}
-                  >
-                    {emp.tipBalance.toLocaleString("pl-PL")} zł
-                  </Text>
+                    <Text fz="xs" c={emp.tipBalance > 0 ? "green" : "dimmed"} fw={600}>
+                      {emp.tipBalance.toLocaleString("pl-PL")} zł
+                    </Text>
+                  </Box>
+                  <IconChevronRight size={16} stroke={1.5} color="var(--mantine-color-dimmed)" />
                 </Group>
               </UnstyledButton>
               {index < employees.length - 1 && <Divider />}

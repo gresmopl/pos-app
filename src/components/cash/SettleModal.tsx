@@ -52,6 +52,7 @@ export function SettleModal({
           <NumberInput
             label="Kwota z paragonu"
             placeholder="0"
+            data-autofocus
             value={settleCost}
             onChange={setSettleCost}
             min={0}
@@ -77,7 +78,7 @@ export function SettleModal({
             </Box>
           )}
 
-          <Button fullWidth size="lg" onClick={onSettle}>
+          <Button fullWidth size="lg" color="green" onClick={onSettle}>
             Rozlicz
           </Button>
         </Stack>

@@ -13,17 +13,24 @@ import type {
 import type { DbConfig } from "../config";
 import type {
   Employee,
-  DailyStats,
   Service,
   Product,
   Transaction,
+  DailyStats,
   TransactionItem,
   CashMovement,
   Voucher,
-  SalonSettings,
   DeviceRegistration,
   DailyReportSummary,
 } from "@/lib/types";
+import {
+  mapEmployee,
+  mapService,
+  mapProduct,
+  mapTransaction,
+  mapCashMovement,
+  mapSalon,
+} from "../mappers";
 
 export function createSupabaseClient(config: DbConfig): DbClient {
   const { supabaseUrl, supabaseAnonKey } = config;
@@ -39,44 +46,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
   // Hardcoded salon ID for dev (single salon)
   const SALON_ID = "a0000000-0000-0000-0000-000000000001";
 
-  function mapEmployee(row: Record<string, unknown>): Employee {
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      avatar: (row.avatar_url as string) || (row.name as string).slice(0, 2).toUpperCase(),
-      role: row.role as "admin" | "barber",
-      todayRevenue: 0, // calculated separately
-      todayServices: 0,
-      tipBalance: Number(row.tip_balance) || 0,
-      commissionServicePercent: Number(row.commission_service_percent) || 0,
-      commissionProductPercent: Number(row.commission_product_percent) || 0,
-      retentionPercent: row.retention_percent != null ? Number(row.retention_percent) : null,
-      isActive: row.is_active as boolean,
-    };
-  }
-
-  function mapService(row: Record<string, unknown>): Service {
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      price: Number(row.price),
-      priceFrom: (row.price_from as boolean) || false,
-      description: (row.description as string) || undefined,
-      displayOrder: Number(row.display_order) || 0,
-      isActive: row.is_active as boolean,
-    };
-  }
-
-  function mapProduct(row: Record<string, unknown>): Product {
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      price: Number(row.price),
-      description: (row.description as string) || undefined,
-      isActive: row.is_active as boolean,
-    };
-  }
-
   const DIRECTION_MAP: Record<CashMovement["type"], "in" | "out"> = {
     tip_withdrawal: "out",
     expense_take: "out",
@@ -89,37 +58,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
     shift_close: "out",
     float: "in",
   };
-
-  function mapCashMovement(row: Record<string, unknown>, employeeName: string): CashMovement {
-    return {
-      id: row.id as string,
-      type: row.reason as CashMovement["type"],
-      employeeName,
-      amount: Number(row.amount),
-      description: (row.description as string) || "",
-      timestamp: row.created_at as string,
-      status: (row.status as CashMovement["status"]) || undefined,
-      finalCost: row.final_cost != null ? Number(row.final_cost) : undefined,
-    };
-  }
-
-  function mapTransaction(
-    row: Record<string, unknown>,
-    items: TransactionItem[],
-    employeeName: string
-  ): Transaction {
-    return {
-      id: row.id as string,
-      employeeId: (row.employee_id as string) || "",
-      employeeName,
-      clientName: (row.client_name as string) || undefined,
-      items,
-      totalAmount: Number(row.total_amount),
-      tipAmount: Number(row.tip_amount) || 0,
-      discountAmount: Number(row.discount_value) || 0,
-      timestamp: row.date as string,
-    };
-  }
 
   async function fetchTransactions(filter?: {
     employeeId?: string;
@@ -176,26 +114,6 @@ export function createSupabaseClient(config: DbConfig): DbClient {
     });
   }
 
-  function mapSalon(row: Record<string, unknown>): SalonSettings {
-    return {
-      id: row.id as string,
-      name: row.name as string,
-      address: (row.address as string) || "",
-      phone: (row.phone as string) || "",
-      nip: (row.nip as string) || "",
-      adminPinHash: (row.admin_pin_hash as string) || "",
-      operationsPinHash: (row.operations_pin_hash as string) || "",
-      cashTolerance: Number(row.cash_tolerance) || 10,
-      monthTarget: Number(row.month_target) || 600,
-      voucherExpiryMonths: Number(row.voucher_expiry_months) || 12,
-      voucherMinAmount: Number(row.voucher_min_amount) || 1,
-      voucherCodePrefix: (row.voucher_code_prefix as string) || "BON-",
-      defaultCommissionService: Number(row.default_commission_service) || 40,
-      defaultCommissionProduct: Number(row.default_commission_product) || 20,
-      receiptFooter: (row.receipt_footer as string) || "",
-    };
-  }
-
   function mapDevice(row: Record<string, unknown>): DeviceRegistration {
     const emp = row.employee as Record<string, unknown> | null;
     return {
@@ -226,25 +144,15 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       async update(input: UpdateSalonInput) {
         const dbInput: Record<string, unknown> = {};
         if (input.name !== undefined) dbInput.name = input.name;
-        if (input.address !== undefined) dbInput.address = input.address;
-        if (input.phone !== undefined) dbInput.phone = input.phone;
-        if (input.nip !== undefined) dbInput.nip = input.nip;
         if (input.adminPinHash !== undefined) dbInput.admin_pin_hash = input.adminPinHash;
         if (input.operationsPinHash !== undefined)
           dbInput.operations_pin_hash = input.operationsPinHash;
         if (input.cashTolerance !== undefined) dbInput.cash_tolerance = input.cashTolerance;
         if (input.monthTarget !== undefined) dbInput.month_target = input.monthTarget;
-        if (input.voucherExpiryMonths !== undefined)
-          dbInput.voucher_expiry_months = input.voucherExpiryMonths;
-        if (input.voucherMinAmount !== undefined)
-          dbInput.voucher_min_amount = input.voucherMinAmount;
-        if (input.voucherCodePrefix !== undefined)
-          dbInput.voucher_code_prefix = input.voucherCodePrefix;
         if (input.defaultCommissionService !== undefined)
           dbInput.default_commission_service = input.defaultCommissionService;
         if (input.defaultCommissionProduct !== undefined)
           dbInput.default_commission_product = input.defaultCommissionProduct;
-        if (input.receiptFooter !== undefined) dbInput.receipt_footer = input.receiptFooter;
 
         const { data, error } = await supabase
           .from("salon")
@@ -372,12 +280,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       },
 
       async getById(id: string) {
-        const { data, error } = await supabase
-          .from("employee")
-          .select("*")
-          .eq("id", id)
-          .eq("is_active", true)
-          .single();
+        const { data, error } = await supabase.from("employee").select("*").eq("id", id).single();
 
         if (error || !data) return undefined;
         return mapEmployee(data);
@@ -393,6 +296,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             role: input.role || "barber",
             commission_service_percent: input.commissionServicePercent,
             commission_product_percent: input.commissionProductPercent,
+            retention_percent: input.retentionPercent ?? null,
           })
           .select()
           .single();
@@ -410,6 +314,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             role: input.role || "barber",
             commission_service_percent: input.commissionServicePercent,
             commission_product_percent: input.commissionProductPercent,
+            retention_percent: input.retentionPercent ?? null,
           })
           .eq("id", id)
           .select()
@@ -434,7 +339,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         const now = new Date();
         const today = now.toISOString().split("T")[0];
         const year = now.getFullYear();
-        const month = now.getMonth(); // 0-based
+        const month = now.getMonth();
 
         const yesterday = new Date(now);
         yesterday.setDate(yesterday.getDate() - 1);
@@ -452,7 +357,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             .eq("salon_id", SALON_ID)
             .eq("status", "completed");
 
-        const [todayR, yesterdayR, monthR, yearR, lastYearR] = await Promise.all([
+        const [todayR, yesterdayR, monthR, yearR, lastYearR, salonR] = await Promise.all([
           baseQuery().gte("date", `${today}T00:00:00`).lte("date", `${today}T23:59:59`),
           baseQuery()
             .gte("date", `${yesterdayStr}T00:00:00`)
@@ -462,9 +367,11 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           baseQuery()
             .gte("date", `${lastYearStart}T00:00:00`)
             .lte("date", `${lastYearEnd}T23:59:59`),
+          supabase.from("salon").select("month_target").eq("id", SALON_ID).single(),
         ]);
 
-        // All-time daily record: fetch dates and count per day
+        const monthTarget = Number(salonR.data?.month_target) || 600;
+
         const { data: txDates } = await supabase
           .from("transaction")
           .select("date")
@@ -487,7 +394,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           todayServices: todayR.count || 0,
           yesterdayServices: yesterdayR.count || 0,
           monthServices: monthR.count || 0,
-          monthTarget: 600,
+          monthTarget,
           yearServices: yearR.count || 0,
           lastYearServices: lastYearR.count || 0,
           allTimeRecord,
@@ -513,7 +420,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           .select("*")
           .eq("salon_id", SALON_ID)
           .eq("is_active", true)
-          .order("category")
+          .order("display_order")
           .order("name");
 
         if (error) throw error;

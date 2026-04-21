@@ -177,7 +177,7 @@ export default function AdminEmployeesPage() {
             <IconPencil size={20} />
           </ActionIcon>
         )}
-        <Switch checked={emp.isActive} onChange={() => toggleActive(emp.id)} size="sm" />
+        <Switch checked={emp.isActive} onChange={() => toggleActive(emp.id)} size="md" />
       </Group>
     </Group>
   );
@@ -249,12 +249,15 @@ export default function AdminEmployeesPage() {
           <TextInput
             label="Imię / pseudonim"
             placeholder="np. Oliwia"
+            size="md"
+            data-autofocus
             {...editForm.getInputProps("name")}
           />
           <TextInput
             label="Symbol (2-3 litery)"
             placeholder="np. OL"
             maxLength={3}
+            size="md"
             {...editForm.getInputProps("avatar")}
             description="Wyświetlany gdy brak zdjęcia"
           />
@@ -278,6 +281,7 @@ export default function AdminEmployeesPage() {
             min={0}
             max={100}
             suffix="%"
+            size="md"
             {...editForm.getInputProps("commissionService")}
           />
           <NumberInput
@@ -286,6 +290,7 @@ export default function AdminEmployeesPage() {
             min={0}
             max={100}
             suffix="%"
+            size="md"
             {...editForm.getInputProps("commissionProduct")}
           />
           <NumberInput
@@ -295,13 +300,14 @@ export default function AdminEmployeesPage() {
             min={0}
             max={100}
             suffix="%"
+            size="md"
             {...editForm.getInputProps("retentionPercent")}
           />
           <Group justify="flex-end">
-            <Button variant="subtle" onClick={() => setEditModal(false)}>
+            <Button variant="subtle" size="lg" onClick={() => setEditModal(false)}>
               Anuluj
             </Button>
-            <Button onClick={saveEmployee} loading={saving}>
+            <Button size="lg" onClick={saveEmployee} loading={saving}>
               Zapisz
             </Button>
           </Group>

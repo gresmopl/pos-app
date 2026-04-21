@@ -7,6 +7,7 @@ import { IconPlus, IconDiscount2, IconCheck, IconChevronRight } from "@tabler/ic
 import { pluralize } from "@/lib/constants";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useCart } from "@/hooks/useCart";
+import { useDeviceRole } from "@/contexts/DeviceContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { CartItemList } from "@/components/pos/CartItemList";
@@ -22,7 +23,8 @@ export default function POSPage() {
   const { data: services = [] } = useServices();
   const { data: products = [] } = useProducts();
 
-  const employeeId = searchParams.get("employee");
+  const { lockedEmployeeId } = useDeviceRole();
+  const employeeId = lockedEmployeeId ?? searchParams.get("employee");
   const employee = employees.find((e) => e.id === employeeId);
 
   const {

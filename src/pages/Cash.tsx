@@ -26,6 +26,7 @@ import {
   IconChevronRight,
   IconReceipt,
 } from "@tabler/icons-react";
+import { pluralize } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MovementHistory } from "@/components/cash/MovementHistory";
 import { SettleModal } from "@/components/cash/SettleModal";
@@ -97,16 +98,26 @@ export default function CashPage() {
 
   useEffect(() => {
     async function load(): Promise<void> {
-      const [since, lastFloat] = await Promise.all([
-        db.dailyReports.getLastClosedAt(),
-        db.dailyReports.getLastFloat(),
-      ]);
-      const [txs, mvs] = await Promise.all([
-        db.transactions.getSince(since),
-        db.cashMovements.getSince(since),
-      ]);
-      setTransactions(txs);
-      setMovements(mvs);
+      let since: string | null = null;
+      let lastFloat = 0;
+      try {
+        [since, lastFloat] = await Promise.all([
+          db.dailyReports.getLastClosedAt(),
+          db.dailyReports.getLastFloat(),
+        ]);
+      } catch (err) {
+        console.error("[Cash] dailyReports load failed, using defaults:", err);
+      }
+      try {
+        const [txs, mvs] = await Promise.all([
+          db.transactions.getSince(since),
+          db.cashMovements.getSince(since),
+        ]);
+        setTransactions(txs);
+        setMovements(mvs);
+      } catch (err) {
+        console.error("[Cash] transactions/movements load failed:", err);
+      }
       setOpeningBalance(lastFloat);
       setLoading(false);
     }
@@ -115,6 +126,14 @@ export default function CashPage() {
 
   const systemCash = calcSystemCash(transactions);
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
+
+  const [terminalCheck, setTerminalCheck] = useState<{
+    timestamp: Date;
+    cashAmount: number;
+    txCountAtCheck: number;
+  } | null>(null);
+
+  const txSinceCheck = terminalCheck ? transactions.length - terminalCheck.txCountAtCheck : 0;
 
   const [activeModal, setActiveModal] = useState<
     "terminal" | "expense" | "deposit" | "voucher" | null
@@ -242,19 +261,49 @@ export default function CashPage() {
           my="md"
           style={{
             borderRadius: "var(--mantine-radius-lg)",
-            backgroundColor: "var(--mantine-color-green-light)",
+            backgroundColor: terminalCheck
+              ? "var(--mantine-color-green-light)"
+              : "var(--mantine-color-gray-light)",
             textAlign: "center",
           }}
         >
-          <Text fz="xs" c="dimmed" tt="uppercase" lts={1}>
-            W kasie powinno być
-          </Text>
-          <Text fw={700} fz={48} c="green" lh={1.1} mt={4}>
-            {loading ? "..." : `${expectedCash.toLocaleString("pl-PL")} zł`}
-          </Text>
-          <Text fz="sm" c="dimmed" mt={6}>
-            Utarg dziś: {systemCash.toLocaleString("pl-PL")} zł
-          </Text>
+          {terminalCheck ? (
+            <>
+              <Text fz="xs" c="dimmed" tt="uppercase" lts={1}>
+                Gotówka w kasie
+              </Text>
+              <Text fw={700} fz={48} c="green" lh={1.1} mt={4}>
+                {terminalCheck.cashAmount.toLocaleString("pl-PL")} zł
+              </Text>
+              <Text fz="xs" c="dimmed" mt={6}>
+                stan na{" "}
+                {terminalCheck.timestamp.toLocaleTimeString("pl-PL", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}{" "}
+                (po raporcie terminala)
+              </Text>
+              {txSinceCheck > 0 && (
+                <Text fz="xs" c="yellow" fw={500} mt={2}>
+                  +{txSinceCheck}{" "}
+                  {pluralize(txSinceCheck, "transakcja", "transakcje", "transakcji")} od ostatniego
+                  raportu
+                </Text>
+              )}
+            </>
+          ) : (
+            <>
+              <Text fz="xs" c="dimmed" tt="uppercase" lts={1}>
+                Sprzedaż w tej zmianie
+              </Text>
+              <Text fw={700} fz={48} lh={1.1} mt={4}>
+                {loading ? "..." : `${systemCash.toLocaleString("pl-PL")} zł`}
+              </Text>
+              <Text fz="xs" c="dimmed" mt={6}>
+                Wpisz raport z terminala, aby zobaczyć stan gotówki
+              </Text>
+            </>
+          )}
         </Box>
 
         {successMsg && (
@@ -294,14 +343,14 @@ export default function CashPage() {
           <ActionButton
             icon={<IconShoppingCart size={22} color="var(--mantine-color-yellow-filled)" />}
             iconBg="var(--mantine-color-yellow-light)"
-            title="Wyjąłem na zakupy"
+            title="Pobranie na zakupy"
             subtitle="Kawa, środki czystości itp."
             onClick={() => setActiveModal("expense")}
           />
           <ActionButton
             icon={<IconCash size={22} color="var(--mantine-color-green-filled)" />}
             iconBg="var(--mantine-color-green-light)"
-            title="Dołożyłem drobne"
+            title="Wpłata drobnych"
             subtitle="Wpłata z własnych pieniędzy"
             onClick={() => setActiveModal("deposit")}
           />
@@ -361,6 +410,13 @@ export default function CashPage() {
         opened={activeModal === "terminal"}
         onClose={() => setActiveModal(null)}
         expectedCash={expectedCash}
+        onConfirm={(cashAmount) => {
+          setTerminalCheck({
+            timestamp: new Date(),
+            cashAmount,
+            txCountAtCheck: transactions.length,
+          });
+        }}
       />
 
       {/* ===== EXPENSE MODAL ===== */}
@@ -407,19 +463,22 @@ function TerminalCheckModal({
   opened,
   onClose,
   expectedCash,
+  onConfirm,
 }: {
   opened: boolean;
   onClose: () => void;
   expectedCash: number;
+  onConfirm: (cashAmount: number) => void;
 }) {
   const [terminalAmount, setTerminalAmount] = useState<number | string>("");
   const [checked, setChecked] = useState(false);
 
   const amount = Number(terminalAmount) || 0;
-  const difference = amount - expectedCash;
+  const cashInDrawer = expectedCash - amount;
 
   const handleCheck = () => {
     setChecked(true);
+    onConfirm(cashInDrawer);
   };
 
   const handleClose = () => {
@@ -448,7 +507,7 @@ function TerminalCheckModal({
           }}
         >
           <Text fz="xs" c="dimmed">
-            System mówi, że w kasie powinno być
+            Utarg dziś (system)
           </Text>
           <Text fw={700} fz="xl">
             {expectedCash.toLocaleString("pl-PL")} zł
@@ -456,8 +515,10 @@ function TerminalCheckModal({
         </Box>
 
         <NumberInput
-          label="Suma z raportu terminala"
+          label="Suma z raportu terminala (karty)"
+          description="Kwota płatności kartą z raportu terminala"
           placeholder="0"
+          data-autofocus
           value={terminalAmount}
           onChange={setTerminalAmount}
           min={0}
@@ -467,7 +528,7 @@ function TerminalCheckModal({
 
         {!checked ? (
           <Button fullWidth size="lg" onClick={handleCheck} disabled={!Number(terminalAmount)}>
-            Sprawdź
+            Oblicz gotówkę
           </Button>
         ) : (
           <Box
@@ -475,39 +536,21 @@ function TerminalCheckModal({
             style={{
               borderRadius: "var(--mantine-radius-md)",
               textAlign: "center",
-              backgroundColor:
-                difference === 0
-                  ? "var(--mantine-color-green-light)"
-                  : "var(--mantine-color-yellow-light)",
-              border: `2px solid ${
-                difference === 0
-                  ? "var(--mantine-color-green-filled)"
-                  : "var(--mantine-color-yellow-filled)"
-              }`,
+              backgroundColor: "var(--mantine-color-green-light)",
+              border: "2px solid var(--mantine-color-green-filled)",
             }}
           >
-            {difference === 0 ? (
-              <>
-                <Text fw={700} fz="lg" c="green">
-                  Wszystko się zgadza!
-                </Text>
-              </>
-            ) : (
-              <>
-                <Text fz="sm" c="dimmed">
-                  Różnica
-                </Text>
-                <Text fw={700} fz={32} c={difference > 0 ? "green" : "red"}>
-                  {difference > 0 ? "+" : ""}
-                  {difference.toLocaleString("pl-PL")} zł
-                </Text>
-              </>
-            )}
+            <Text fz="xs" c="dimmed">
+              Gotówka w kasie powinna wynosić
+            </Text>
+            <Text fw={700} fz={32} c="green">
+              {cashInDrawer.toLocaleString("pl-PL")} zł
+            </Text>
           </Box>
         )}
 
         {checked && (
-          <Button fullWidth variant="light" onClick={handleClose}>
+          <Button fullWidth size="lg" variant="light" onClick={handleClose}>
             Zamknij
           </Button>
         )}
@@ -560,7 +603,7 @@ function ExpenseModal({
       onClose={handleClose}
       title={
         <Text fw={700} fz="lg">
-          Wyjąłem na zakupy
+          Pobranie na zakupy
         </Text>
       }
       size="sm"
@@ -584,16 +627,24 @@ function ExpenseModal({
           min={0}
           suffix=" zł"
           size="md"
+          data-autofocus
           {...form.getInputProps("amount")}
         />
 
         <TextInput
           label="Cel (opcjonalnie)"
           placeholder="np. Środki czystości"
+          size="md"
           {...form.getInputProps("desc")}
         />
 
-        <Button fullWidth size="lg" onClick={handleSubmit} leftSection={<IconCash size={20} />}>
+        <Button
+          fullWidth
+          size="lg"
+          color="red"
+          onClick={handleSubmit}
+          leftSection={<IconCash size={20} />}
+        >
           Pobierz z kasy
         </Button>
       </Stack>
@@ -653,15 +704,15 @@ function DepositModal({
       onClose={handleClose}
       title={
         <Text fw={700} fz="lg">
-          Dołożyłem drobne
+          Wpłata drobnych
         </Text>
       }
       size="sm"
     >
       <Stack gap="md">
         <Text fz="sm" c="dimmed">
-          Wrzuciłeś do kasetki własne pieniądze lub dałeś klientowi resztę z własnych. Kwota doliczy
-          się do Twojego Portfela.
+          Wpłata własnych pieniędzy do kasetki lub pokrycie reszty dla klienta. Kwota doliczy się do
+          Portfela pracownika.
         </Text>
 
         <Select
@@ -678,6 +729,7 @@ function DepositModal({
           min={0}
           suffix=" zł"
           size="md"
+          data-autofocus
           {...form.getInputProps("amount")}
         />
 
@@ -746,6 +798,7 @@ function VoucherModal({
         <NumberInput
           label="Kwota bonu"
           placeholder="0"
+          data-autofocus
           value={value}
           onChange={(v) => {
             setValue(v);

@@ -44,19 +44,12 @@ export function createMockClient(): DbClient {
   const mockSalon: SalonSettings = {
     id: "a0000000-0000-0000-0000-000000000001",
     name: "FORMEN DEV",
-    address: "ul. Testowa 1, 00-001 Warszawa",
-    phone: "+48 123 456 789",
-    nip: "1234567890",
     adminPinHash: "placeholder_admin_1234",
     operationsPinHash: "placeholder_operations_1234",
     cashTolerance: 10,
     monthTarget: 600,
-    voucherExpiryMonths: 12,
-    voucherMinAmount: 1,
-    voucherCodePrefix: "BON-",
     defaultCommissionService: 40,
     defaultCommissionProduct: 20,
-    receiptFooter: "Dziękujemy za wizytę w FORMEN!",
   };
 
   return {

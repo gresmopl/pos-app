@@ -1,10 +1,20 @@
+import { useState } from "react";
 import { useNavigate } from "react-router";
-import { Container, Stack, Text, UnstyledButton, Group, Badge, Divider, Box } from "@mantine/core";
+import {
+  Container,
+  Stack,
+  Text,
+  UnstyledButton,
+  Group,
+  Badge,
+  Divider,
+  Box,
+  Modal,
+  Button,
+} from "@mantine/core";
 import {
   IconHistory,
-  IconScissors,
   IconChartBar,
-  IconUsers,
   IconLock,
   IconDoorExit,
   IconChevronRight,
@@ -22,18 +32,16 @@ interface MenuItem {
 
 const DAILY_ITEMS: MenuItem[] = [
   { icon: IconHistory, label: "Historia sprzedaży", sub: "Wszystkie transakcje", path: "/history" },
-  { icon: IconScissors, label: "Cennik", sub: "Usługi i produkty", path: "/admin/pricing" },
   {
     icon: IconCalendarEvent,
     label: "Zamknięcie zmiany",
     sub: "Raport i koperta",
     path: "/shift-close",
   },
+  { icon: IconChartBar, label: "Statystyki", sub: "Miesiąc, rok, rekord", path: "/stats" },
 ];
 
 const ADMIN_ITEMS: MenuItem[] = [
-  { icon: IconChartBar, label: "Statystyki", sub: "Miesiąc, rok, rekord", path: "/" },
-  { icon: IconUsers, label: "Pracownicy", sub: "Prowizje, retencja", path: "/admin/employees" },
   { icon: IconLock, label: "Panel admina", sub: "Wymaga PIN", path: "/admin" },
 ];
 
@@ -85,6 +93,7 @@ export default function MorePage(): React.JSX.Element {
   const navigate = useNavigate();
   const { isAdmin } = useDeviceRole();
   const { device } = useDevice();
+  const [logoutModal, setLogoutModal] = useState(false);
 
   const deviceLabel = device
     ? (DEVICE_TYPE_LABEL[device.deviceType] ?? device.deviceType)
@@ -130,14 +139,7 @@ export default function MorePage(): React.JSX.Element {
 
       <Divider my="sm" />
 
-      <UnstyledButton
-        onClick={() => {
-          localStorage.removeItem("formen_device_id");
-          window.location.href = "/";
-        }}
-        py="sm"
-        px="xs"
-      >
+      <UnstyledButton onClick={() => setLogoutModal(true)} py="sm" px="xs">
         <Group gap="xs">
           <IconDoorExit size={20} stroke={1.5} color="var(--mantine-color-red-filled)" />
           <Text fz="sm" c="red" fw={500}>
@@ -145,6 +147,39 @@ export default function MorePage(): React.JSX.Element {
           </Text>
         </Group>
       </UnstyledButton>
+
+      <Modal
+        opened={logoutModal}
+        onClose={() => setLogoutModal(false)}
+        title={
+          <Text fw={700} fz="lg">
+            Wylogować urządzenie?
+          </Text>
+        }
+        size="sm"
+      >
+        <Stack gap="md">
+          <Text fz="sm">
+            Urządzenie zostanie wyrejestrowane. Aby ponownie korzystać z aplikacji, trzeba będzie je
+            zarejestrować od nowa.
+          </Text>
+          <Group justify="flex-end">
+            <Button variant="subtle" size="lg" onClick={() => setLogoutModal(false)}>
+              Anuluj
+            </Button>
+            <Button
+              color="red"
+              size="lg"
+              onClick={() => {
+                localStorage.removeItem("formen_device_id");
+                window.location.href = "/";
+              }}
+            >
+              Wyloguj
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Container>
   );
 }

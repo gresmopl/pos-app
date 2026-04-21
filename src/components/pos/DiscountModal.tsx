@@ -63,6 +63,7 @@ export function DiscountModal({
         />
         <NumberInput
           label={type === "percent" ? "Procent rabatu" : "Kwota rabatu (zł)"}
+          data-autofocus
           value={value}
           onChange={setValue}
           min={0}
@@ -70,10 +71,12 @@ export function DiscountModal({
           suffix={type === "percent" ? "%" : " zł"}
         />
         <Group justify="space-between">
-          <Button variant="subtle" color="red" onClick={handleClear}>
+          <Button variant="subtle" color="red" size="lg" onClick={handleClear}>
             Usuń rabat
           </Button>
-          <Button onClick={handleApply}>Zastosuj</Button>
+          <Button size="lg" onClick={handleApply}>
+            Zastosuj
+          </Button>
         </Group>
       </Stack>
     </Modal>

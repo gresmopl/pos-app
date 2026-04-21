@@ -40,6 +40,7 @@ export function PinModal({
             type="number"
             inputMode="numeric"
             mask
+            data-autofocus
             value={pin}
             onChange={(val) => onPinChange(val)}
             error={error}
@@ -51,10 +52,10 @@ export function PinModal({
           )}
         </Stack>
         <Group justify="flex-end">
-          <Button variant="subtle" onClick={onClose}>
+          <Button variant="subtle" size="lg" onClick={onClose}>
             Anuluj
           </Button>
-          <Button disabled={pin.length < 4} onClick={onSubmit}>
+          <Button size="lg" disabled={pin.length < 4} onClick={onSubmit}>
             Potwierdź
           </Button>
         </Group>

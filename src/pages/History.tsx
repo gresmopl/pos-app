@@ -29,6 +29,7 @@ import {
 } from "@tabler/icons-react";
 import { MOCK_OPERATIONS_PIN } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 
 function startOfDay(date: Date): string {
@@ -113,7 +114,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <Box mih="100vh" pb={100}>
+    <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 40}>
       <Container size="lg">
         <PageHeader title="Historia transakcji" />
 
@@ -129,7 +130,7 @@ export default function HistoryPage() {
             onChange={(val) => setDateFrom(val ? new Date(val) : null)}
             maxDate={dateTo ?? undefined}
             leftSection={<IconCalendar size={16} />}
-            size="sm"
+            size="md"
             clearable
           />
           <DatePickerInput
@@ -141,7 +142,7 @@ export default function HistoryPage() {
             minDate={dateFrom ?? undefined}
             maxDate={new Date()}
             leftSection={<IconCalendar size={16} />}
-            size="sm"
+            size="md"
             clearable
           />
         </Group>
@@ -153,7 +154,7 @@ export default function HistoryPage() {
             leftSection={<IconSearch size={16} />}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
-            size="sm"
+            size="md"
           />
         </Box>
 
@@ -207,7 +208,7 @@ export default function HistoryPage() {
               {(filter !== "all" || searchQuery) && (
                 <Button
                   variant="subtle"
-                  size="xs"
+                  size="sm"
                   onClick={() => {
                     setFilter("all");
                     setSearchQuery("");
@@ -310,7 +311,7 @@ export default function HistoryPage() {
                               <Button
                                 variant="subtle"
                                 color="red"
-                                size="sm"
+                                size="md"
                                 leftSection={<IconArrowBackUp size={16} />}
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -340,7 +341,7 @@ export default function HistoryPage() {
       <Box
         style={{
           position: "fixed",
-          bottom: 60,
+          bottom: BOTTOM_NAV_HEIGHT,
           left: 0,
           right: 0,
           zIndex: 100,
@@ -420,6 +421,7 @@ export default function HistoryPage() {
                 type="number"
                 inputMode="numeric"
                 mask
+                data-autofocus
                 value={undoPin}
                 onChange={(val) => {
                   setUndoPin(val);
@@ -445,7 +447,8 @@ export default function HistoryPage() {
                   if (undoPin === MOCK_OPERATIONS_PIN) {
                     setUndoing(true);
                     try {
-                      await db.transactions.cancel(undoTransactionId!);
+                      if (!undoTransactionId) return;
+                      await db.transactions.cancel(undoTransactionId);
                       setTransactions((prev) => prev.filter((t) => t.id !== undoTransactionId));
                       setUndoSuccess(true);
                     } catch (err) {
