@@ -1,6 +1,9 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.106] - 2026-04-22
+- fix(ux): pływajacy interfejs na mobile - body fixed, scroll w #root, overscroll-behavior na body
+
 [0.1.105] - 2026-04-22
 - feat: zamkniecie zmiany widoczne w historii operacji kasowych
   - ShiftClose tworzy cash_movement typu shift_close z opisem (koperta, drobne, terminal)
