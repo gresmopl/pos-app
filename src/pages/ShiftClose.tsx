@@ -3,7 +3,7 @@ import { useNavigate } from "react-router";
 import { useForm } from "@mantine/form";
 import { db } from "@/db";
 import { useEmployees } from "@/hooks/useDbData";
-import type { Transaction, CashMovement } from "@/lib/types";
+import type { Transaction, CashMovement, TerminalCheck } from "@/lib/types";
 import { calcExpectedCash, calcSystemCash } from "@/lib/cash";
 import {
   Text,
@@ -53,6 +53,7 @@ export default function ShiftClosePage(): React.JSX.Element {
   const { data: employees = [] } = useEmployees();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [movements, setMovements] = useState<CashMovement[]>([]);
+  const [terminalChecks, setTerminalChecks] = useState<TerminalCheck[]>([]);
   const [openingBalance, setOpeningBalance] = useState(0);
 
   useEffect(() => {
@@ -68,12 +69,14 @@ export default function ShiftClosePage(): React.JSX.Element {
         console.error("[ShiftClose] dailyReports load failed, using defaults:", err);
       }
       try {
-        const [txs, mvs] = await Promise.all([
+        const [txs, mvs, tcs] = await Promise.all([
           db.transactions.getSince(since),
           db.cashMovements.getSince(since),
+          db.terminalChecks.getSince(since),
         ]);
         setTransactions(txs);
         setMovements(mvs);
+        setTerminalChecks(tcs);
       } catch (err) {
         console.error("[ShiftClose] transactions/movements load failed:", err);
       }
@@ -92,11 +95,13 @@ export default function ShiftClosePage(): React.JSX.Element {
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
 
   // === FORM VALUES ===
+  const previousTerminalTotal = terminalChecks.reduce((sum, tc) => sum + tc.terminalAmount, 0);
   const terminalVal = Number(form.values.terminalAmount) || 0;
+  const totalTerminal = previousTerminalTotal + terminalVal;
   const floatVal = Number(form.values.floatAmount) || 0;
   const envelopeVal = Number(form.values.envelopeAmount) || 0;
   const actualCash = floatVal + envelopeVal;
-  const expectedCashOnly = expectedCash - terminalVal;
+  const expectedCashOnly = expectedCash - totalTerminal;
   const difference = actualCash - expectedCashOnly;
 
   const closingName = form.values.closingEmployee
@@ -111,7 +116,7 @@ export default function ShiftClosePage(): React.JSX.Element {
         closingEmployeeId: form.values.closingEmployee,
         expectedCash,
         actualCash,
-        terminalAmount: terminalVal,
+        terminalAmount: totalTerminal,
         expectedVouchers: 0,
         actualVouchersValue: 0,
         floatAmount: floatVal,
@@ -177,11 +182,11 @@ export default function ShiftClosePage(): React.JSX.Element {
                   {expectedCash.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
-              {terminalVal > 0 && (
+              {totalTerminal > 0 && (
                 <Group justify="space-between" mb={4}>
                   <Text fz="xs">Terminal (karty/blik):</Text>
                   <Text fz="xs" fw={600}>
-                    {terminalVal.toLocaleString("pl-PL")} zł
+                    {totalTerminal.toLocaleString("pl-PL")} zł
                   </Text>
                 </Group>
               )}
@@ -277,7 +282,7 @@ export default function ShiftClosePage(): React.JSX.Element {
                   {expectedCash.toLocaleString("pl-PL")} zł
                 </Text>
               </div>
-              {terminalVal > 0 && (
+              {totalTerminal > 0 && (
                 <div>
                   <Text fz="sm" fw={700}>
                     Oczekiwana gotówka w kasie:
@@ -296,9 +301,26 @@ export default function ShiftClosePage(): React.JSX.Element {
                 Raport terminala
               </Text>
 
+              {previousTerminalTotal > 0 && (
+                <Box
+                  p="sm"
+                  style={{
+                    borderRadius: "var(--mantine-radius-md)",
+                    backgroundColor: "var(--mantine-color-blue-light)",
+                  }}
+                >
+                  <Text fz="xs" c="dimmed">
+                    Wcześniejsze raporty terminala (zsumowane)
+                  </Text>
+                  <Text fw={700} fz="md" c="blue">
+                    {previousTerminalTotal.toLocaleString("pl-PL")} zł
+                  </Text>
+                </Box>
+              )}
+
               <NumberInput
-                label="Kwota z terminala"
-                description="Suma płatności kartą/blik z raportu terminala"
+                label="Kwota z bieżącego raportu terminala"
+                description="Kwota od ostatniego sprawdzenia (terminal raportuje przyrostowo)"
                 placeholder="0"
                 min={0}
                 suffix=" zł"
@@ -411,12 +433,12 @@ export default function ShiftClosePage(): React.JSX.Element {
               {floatVal.toLocaleString("pl-PL")} zł
             </Text>
             .
-            {terminalVal > 0 && (
+            {totalTerminal > 0 && (
               <>
                 {" "}
                 Terminal:{" "}
                 <Text span fw={700}>
-                  {terminalVal.toLocaleString("pl-PL")} zł
+                  {totalTerminal.toLocaleString("pl-PL")} zł
                 </Text>
                 .
               </>

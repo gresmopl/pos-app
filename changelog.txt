@@ -1,6 +1,14 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.104] - 2026-04-22
+- fix(critical): kumulatywne obliczanie terminala - suma WSZYSTKICH raportow
+  - terminal raportuje przyrostowo (od ostatniego sprawdzenia), system musi sumowac
+  - Cash.tsx TerminalCheckModal: expectedCash pomniejszany o previousTerminalTotal
+  - ShiftClose.tsx: ladowanie terminal checks z DB, totalTerminal = suma + biezacy
+  - etykieta "Stan kasy (system)" zamiast "Utarg dzis (system)"
+  - raport zamkniecia zapisuje pelna sume terminala (nie tylko biezacy wpis)
+
 [0.1.103] - 2026-04-22
 - feat: sekcja pracownikow na stronie Statystyki
   - avatar z inicjalami, badge retencji (ikona + ranga + procent), uslugi w miesiacu
