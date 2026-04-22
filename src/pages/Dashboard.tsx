@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
-import { useEmployees } from "@/hooks/useDbData";
+import { useEmployees, useSalonSettings } from "@/hooks/useDbData";
 import {
   Text,
   Group,
@@ -17,7 +17,7 @@ import {
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
 import { IconSun, IconMoon, IconScissors, IconChevronRight } from "@tabler/icons-react";
-import { pluralize, getRetentionRank } from "@/lib/constants";
+import { pluralize, getRetentionRank, type RetentionThresholds } from "@/lib/constants";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 
@@ -41,7 +41,16 @@ export default function Dashboard() {
   }, [isMobile]);
 
   const { data: employees = [], loading: empLoading } = useEmployees();
+  const { data: salon } = useSalonSettings();
   const { lockedEmployeeId } = useDeviceRole();
+
+  const thresholds: RetentionThresholds | undefined = salon
+    ? {
+        top: salon.retentionThresholdTop,
+        high: salon.retentionThresholdHigh,
+        mid: salon.retentionThresholdMid,
+      }
+    : undefined;
 
   const visibleEmployees = lockedEmployeeId
     ? employees.filter((e) => e.id === lockedEmployeeId)
@@ -96,7 +105,7 @@ export default function Dashboard() {
             </Stack>
           )}
           {visibleEmployees.map((employee) => {
-            const rank = getRetentionRank(employee.retentionPercent);
+            const rank = getRetentionRank(employee.retentionPercent, thresholds);
             return (
               <UnstyledButton
                 key={employee.id}

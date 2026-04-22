@@ -44,6 +44,9 @@ CREATE TABLE salon (
   voucher_code_prefix VARCHAR(10) NOT NULL DEFAULT 'BON-',
   default_commission_service NUMERIC(5,2) NOT NULL DEFAULT 40,
   default_commission_product NUMERIC(5,2) NOT NULL DEFAULT 20,
+  retention_threshold_top NUMERIC(5,2) NOT NULL DEFAULT 95,
+  retention_threshold_high NUMERIC(5,2) NOT NULL DEFAULT 85,
+  retention_threshold_mid NUMERIC(5,2) NOT NULL DEFAULT 75,
   receipt_footer TEXT NOT NULL DEFAULT 'Dziękujemy za wizytę!',
   is_active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -226,6 +229,22 @@ CREATE TABLE tip_withdrawal (
 CREATE INDEX idx_tip_withdrawal_employee ON tip_withdrawal(employee_id);
 
 -- ============================================
+-- TERMINAL CHECK (cash verification during shift)
+-- ============================================
+CREATE TABLE terminal_check (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  salon_id UUID NOT NULL REFERENCES salon(id),
+  terminal_amount NUMERIC(10,2) NOT NULL,
+  expected_cash NUMERIC(10,2) NOT NULL,
+  calculated_cash NUMERIC(10,2) NOT NULL,
+  tx_count INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX idx_terminal_check_salon ON terminal_check(salon_id);
+CREATE INDEX idx_terminal_check_created ON terminal_check(salon_id, created_at);
+
+-- ============================================
 -- DAILY REPORT (shift close)
 -- ============================================
 CREATE TABLE daily_report (
@@ -235,6 +254,7 @@ CREATE TABLE daily_report (
   closing_employee_id UUID NOT NULL REFERENCES employee(id),
   expected_cash NUMERIC(10,2) NOT NULL DEFAULT 0,
   actual_cash NUMERIC(10,2) NOT NULL DEFAULT 0,
+  terminal_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
   actual_vouchers_value NUMERIC(10,2) NOT NULL DEFAULT 0,
   float_amount NUMERIC(10,2) NOT NULL DEFAULT 0,
   deposit_amount NUMERIC(10,2) NOT NULL DEFAULT 0,

@@ -1,4 +1,16 @@
-import { Container, Text, SimpleGrid, Stack, Group, Progress, Box } from "@mantine/core";
+import { useState, useEffect, useMemo } from "react";
+import {
+  Container,
+  Text,
+  SimpleGrid,
+  Stack,
+  Group,
+  Progress,
+  Box,
+  Avatar,
+  Badge,
+  Divider,
+} from "@mantine/core";
 import {
   IconSun,
   IconCalendar,
@@ -7,12 +19,46 @@ import {
   IconArrowUpRight,
   IconArrowDownRight,
 } from "@tabler/icons-react";
-import { useDailyStats } from "@/hooks/useDbData";
+import { useDailyStats, useEmployees, useSalonSettings } from "@/hooks/useDbData";
+import { db } from "@/db";
+import type { Transaction } from "@/lib/types";
+import { getRetentionRank, pluralize, type RetentionThresholds } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 
 export default function Stats(): React.JSX.Element {
   const { data: stats, loading } = useDailyStats();
+  const { data: employees = [] } = useEmployees();
+  const { data: salon } = useSalonSettings();
+
+  const [monthTx, setMonthTx] = useState<Transaction[]>([]);
+
+  useEffect(() => {
+    const monthStart = new Date();
+    monthStart.setDate(1);
+    monthStart.setHours(0, 0, 0, 0);
+    db.transactions
+      .getSince(monthStart.toISOString())
+      .then(setMonthTx)
+      .catch((err) => console.error("[Stats] month transactions load failed:", err));
+  }, []);
+
+  const thresholds: RetentionThresholds | undefined = salon
+    ? {
+        top: salon.retentionThresholdTop,
+        high: salon.retentionThresholdHigh,
+        mid: salon.retentionThresholdMid,
+      }
+    : undefined;
+
+  const monthServicesByEmployee = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const tx of monthTx) {
+      const count = tx.items.filter((i) => i.type === "service").length;
+      map.set(tx.employeeId, (map.get(tx.employeeId) ?? 0) + count);
+    }
+    return map;
+  }, [monthTx]);
 
   const diff = (stats?.todayServices ?? 0) - (stats?.yesterdayServices ?? 0);
   const yearDiff =
@@ -153,6 +199,57 @@ export default function Stats(): React.JSX.Element {
             </Text>
           </Box>
         </SimpleGrid>
+      )}
+
+      {/* === PRACOWNICY === */}
+      {employees.length > 0 && (
+        <>
+          <Divider my="sm" />
+          <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="sm">
+            Pracownicy
+          </Text>
+          <Stack gap="sm" mb="md">
+            {employees.map((emp) => {
+              const rank = getRetentionRank(emp.retentionPercent, thresholds);
+              const monthServices = monthServicesByEmployee.get(emp.id) ?? 0;
+              return (
+                <Box
+                  key={emp.id}
+                  p="md"
+                  style={{
+                    border: "1px solid var(--mantine-color-default-border)",
+                    borderRadius: "var(--mantine-radius-md)",
+                  }}
+                >
+                  <Group justify="space-between" wrap="nowrap">
+                    <Group gap="md" wrap="nowrap">
+                      <Avatar size={42} radius="xl" color="green" variant="light">
+                        {emp.avatar}
+                      </Avatar>
+                      <div>
+                        <Text fw={600} fz="sm">
+                          {emp.name}
+                        </Text>
+                        <Badge size="sm" variant="light" color={rank.color}>
+                          {rank.icon} {rank.label}
+                          {emp.retentionPercent !== null && ` ${emp.retentionPercent}%`}
+                        </Badge>
+                      </div>
+                    </Group>
+                    <div style={{ textAlign: "right" }}>
+                      <Text fw={700} fz="lg">
+                        {monthServices}
+                      </Text>
+                      <Text fz="xs" c="dimmed">
+                        {pluralize(monthServices, "usługa", "usługi", "usług")} /mies.
+                      </Text>
+                    </div>
+                  </Group>
+                </Box>
+              );
+            })}
+          </Stack>
+        </>
       )}
     </Container>
   );

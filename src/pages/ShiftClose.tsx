@@ -29,11 +29,13 @@ export default function ShiftClosePage(): React.JSX.Element {
   const form = useForm({
     initialValues: {
       closingEmployee: (lockedEmployeeId ?? "") as string,
+      terminalAmount: "" as number | string,
       floatAmount: "" as number | string,
       envelopeAmount: "" as number | string,
     },
     validate: {
       closingEmployee: (v) => (v ? null : "Wybierz pracownika"),
+      terminalAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
       floatAmount: (v) => (Number(v) < 0 ? "Kwota nie może być ujemna" : null),
       envelopeAmount: (v) =>
         v === "" || v === undefined
@@ -90,10 +92,12 @@ export default function ShiftClosePage(): React.JSX.Element {
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
 
   // === FORM VALUES ===
+  const terminalVal = Number(form.values.terminalAmount) || 0;
   const floatVal = Number(form.values.floatAmount) || 0;
   const envelopeVal = Number(form.values.envelopeAmount) || 0;
   const actualCash = floatVal + envelopeVal;
-  const difference = actualCash - expectedCash;
+  const expectedCashOnly = expectedCash - terminalVal;
+  const difference = actualCash - expectedCashOnly;
 
   const closingName = form.values.closingEmployee
     ? employees.find((e) => e.id === form.values.closingEmployee)?.name
@@ -107,6 +111,7 @@ export default function ShiftClosePage(): React.JSX.Element {
         closingEmployeeId: form.values.closingEmployee,
         expectedCash,
         actualCash,
+        terminalAmount: terminalVal,
         expectedVouchers: 0,
         actualVouchersValue: 0,
         floatAmount: floatVal,
@@ -167,9 +172,23 @@ export default function ShiftClosePage(): React.JSX.Element {
               <Divider mb="sm" variant="dashed" />
 
               <Group justify="space-between" mb={4}>
-                <Text fz="xs">Oczekiwana gotówka:</Text>
+                <Text fz="xs">Łączna sprzedaż:</Text>
                 <Text fz="xs" fw={600}>
                   {expectedCash.toLocaleString("pl-PL")} zł
+                </Text>
+              </Group>
+              {terminalVal > 0 && (
+                <Group justify="space-between" mb={4}>
+                  <Text fz="xs">Terminal (karty/blik):</Text>
+                  <Text fz="xs" fw={600}>
+                    {terminalVal.toLocaleString("pl-PL")} zł
+                  </Text>
+                </Group>
+              )}
+              <Group justify="space-between" mb={4}>
+                <Text fz="xs">Oczekiwana gotówka:</Text>
+                <Text fz="xs" fw={600}>
+                  {expectedCashOnly.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
 
@@ -252,19 +271,44 @@ export default function ShiftClosePage(): React.JSX.Element {
               <Divider />
               <div>
                 <Text fz="sm" fw={700}>
-                  Oczekiwana gotówka/bony w szufladzie:
+                  Łączna sprzedaż (system):
                 </Text>
                 <Text fz="lg" fw={700} c="green" lh={1.2}>
                   {expectedCash.toLocaleString("pl-PL")} zł
                 </Text>
               </div>
+              {terminalVal > 0 && (
+                <div>
+                  <Text fz="sm" fw={700}>
+                    Oczekiwana gotówka w kasie:
+                  </Text>
+                  <Text fz="lg" fw={700} c="blue" lh={1.2}>
+                    {expectedCashOnly.toLocaleString("pl-PL")} zł
+                  </Text>
+                </div>
+              )}
             </Stack>
 
             {/* KROK 3: Inputy fryzjera */}
             <Divider mt="sm" />
             <Stack gap="sm" py="sm">
               <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Wprowadź stan fizyczny
+                Raport terminala
+              </Text>
+
+              <NumberInput
+                label="Kwota z terminala"
+                description="Suma płatności kartą/blik z raportu terminala"
+                placeholder="0"
+                min={0}
+                suffix=" zł"
+                size="lg"
+                {...form.getInputProps("terminalAmount")}
+              />
+
+              <Divider />
+              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+                Stan gotówki w kasie
               </Text>
 
               <NumberInput
@@ -367,6 +411,16 @@ export default function ShiftClosePage(): React.JSX.Element {
               {floatVal.toLocaleString("pl-PL")} zł
             </Text>
             .
+            {terminalVal > 0 && (
+              <>
+                {" "}
+                Terminal:{" "}
+                <Text span fw={700}>
+                  {terminalVal.toLocaleString("pl-PL")} zł
+                </Text>
+                .
+              </>
+            )}
           </Text>
           {difference !== 0 && (
             <Text fz="sm" c={difference > 0 ? "blue" : "red"}>

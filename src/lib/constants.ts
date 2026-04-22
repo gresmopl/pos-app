@@ -11,19 +11,31 @@ export interface RetentionRank {
   color: string;
 }
 
-const RETENTION_RANKS: { min: number; rank: RetentionRank }[] = [
-  { min: 95, rank: { icon: "👑", label: "ARCYMISTRZ", color: "yellow" } },
-  { min: 85, rank: { icon: "💎", label: "MISTRZ", color: "blue" } },
-  { min: 75, rank: { icon: "⭐", label: "SOLIDNY", color: "green" } },
-  { min: 0, rank: { icon: "📈", label: "ROZWÓJ", color: "gray" } },
+export interface RetentionThresholds {
+  top: number;
+  high: number;
+  mid: number;
+}
+
+const DEFAULT_THRESHOLDS: RetentionThresholds = { top: 95, high: 85, mid: 75 };
+
+const RANKS: { key: "top" | "high" | "mid"; rank: RetentionRank }[] = [
+  { key: "top", rank: { icon: "👑", label: "MISTRZ", color: "yellow" } },
+  { key: "high", rank: { icon: "💎", label: "MISTRZ", color: "blue" } },
+  { key: "mid", rank: { icon: "⭐", label: "SOLIDNY", color: "green" } },
 ];
 
-export function getRetentionRank(percent: number | null): RetentionRank {
-  if (percent === null) return RETENTION_RANKS[RETENTION_RANKS.length - 1].rank;
-  for (const { min, rank } of RETENTION_RANKS) {
-    if (percent >= min) return rank;
+const RANK_DEVELOPMENT: RetentionRank = { icon: "📈", label: "ROZWÓJ", color: "gray" };
+
+export function getRetentionRank(
+  percent: number | null,
+  thresholds: RetentionThresholds = DEFAULT_THRESHOLDS
+): RetentionRank {
+  if (percent === null) return RANK_DEVELOPMENT;
+  for (const { key, rank } of RANKS) {
+    if (percent >= thresholds[key]) return rank;
   }
-  return RETENTION_RANKS[RETENTION_RANKS.length - 1].rank;
+  return RANK_DEVELOPMENT;
 }
 
 /**

@@ -243,6 +243,21 @@ export function createRestClient(config: DbConfig): DbClient {
         return r.json();
       },
     },
+    terminalChecks: {
+      async create(input) {
+        const r = await fetch(`${apiUrl}/api/terminal-checks`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        return r.json();
+      },
+      async getSince(since: string | null) {
+        const param = since ? `?since=${encodeURIComponent(since)}` : "";
+        return fetchApi(apiUrl, `/api/terminal-checks${param}`);
+      },
+    },
     vouchers: {
       async getByCode(code: string) {
         const r = await fetch(`${apiUrl}/api/vouchers?code=${encodeURIComponent(code)}`);

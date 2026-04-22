@@ -34,19 +34,19 @@ Kazda decyzja zawiera kontekst, rozpatrywane opcje, wybor i uzasadnienie.
 **Data:** 2026-03
 **Status:** Zaakceptowana
 
-**Kontekst:** Projekt potrzebuje trzech srodowisk: mock (testy), Supabase (development), REST API (produkcja Hetzner VPS). Kazde z nich ma inny sposob komunikacji z baza.
+**Kontekst:** Projekt potrzebuje dwoch srodowisk: Supabase (development), REST API (produkcja Hetzner VPS). Kazde z nich ma inny sposob komunikacji z baza.
 
 **Opcje:**
 
 1. Bezposrednie wywolania Supabase SDK wszedzie, mockowanie w testach
-2. Adapter pattern - wspolny interfejs, trzy implementacje
+2. Adapter pattern - wspolny interfejs, dwie implementacje
 
 **Decyzja:** Adapter pattern (`src/db/adapters/`)
 
 **Uzasadnienie:**
 
 - Zmiana srodowiska przez jedna zmienna env (`VITE_DB_ADAPTER`)
-- Testy nie zaleza od Supabase (adapter mock z danymi in-memory)
+- Testy mockuja modul `@/db` (vi.mock) - nie zaleza od Supabase
 - Migracja na Hetzner VPS REST API nie wymaga zmian w komponentach
 - Dodanie nowego backendu = nowy adapter, bez zmian w UI
 

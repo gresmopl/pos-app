@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useEmployees } from "@/hooks/useDbData";
 import { db } from "@/db";
 import { calcExpectedCash, calcSystemCash } from "@/lib/cash";
-import type { Transaction, CashMovement } from "@/lib/types";
+import type { Transaction, CashMovement, TerminalCheck } from "@/lib/types";
 import {
   Text,
   Group,
@@ -95,6 +95,7 @@ export default function CashPage() {
   const [movements, setMovements] = useState<CashMovement[]>([]);
   const [openingBalance, setOpeningBalance] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [terminalChecks, setTerminalChecks] = useState<TerminalCheck[]>([]);
 
   useEffect(() => {
     async function load(): Promise<void> {
@@ -109,12 +110,14 @@ export default function CashPage() {
         console.error("[Cash] dailyReports load failed, using defaults:", err);
       }
       try {
-        const [txs, mvs] = await Promise.all([
+        const [txs, mvs, tcs] = await Promise.all([
           db.transactions.getSince(since),
           db.cashMovements.getSince(since),
+          db.terminalChecks.getSince(since),
         ]);
         setTransactions(txs);
         setMovements(mvs);
+        setTerminalChecks(tcs);
       } catch (err) {
         console.error("[Cash] transactions/movements load failed:", err);
       }
@@ -127,13 +130,19 @@ export default function CashPage() {
   const systemCash = calcSystemCash(transactions);
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
 
-  const [terminalCheck, setTerminalCheck] = useState<{
-    timestamp: Date;
-    cashAmount: number;
-    txCountAtCheck: number;
-  } | null>(null);
+  const lastCheck = terminalChecks.length > 0 ? terminalChecks[terminalChecks.length - 1] : null;
+  const terminalCheck = lastCheck
+    ? {
+        timestamp: new Date(lastCheck.createdAt),
+        cashAmount: lastCheck.calculatedCash,
+        txCountAtCheck: lastCheck.txCount,
+      }
+    : null;
 
   const txSinceCheck = terminalCheck ? transactions.length - terminalCheck.txCountAtCheck : 0;
+  const cashSinceCheck = terminalCheck
+    ? transactions.slice(terminalCheck.txCountAtCheck).reduce((sum, tx) => sum + tx.totalAmount, 0)
+    : 0;
 
   const [activeModal, setActiveModal] = useState<
     "terminal" | "expense" | "deposit" | "voucher" | null
@@ -286,8 +295,8 @@ export default function CashPage() {
               {txSinceCheck > 0 && (
                 <Text fz="xs" c="yellow" fw={500} mt={2}>
                   +{txSinceCheck}{" "}
-                  {pluralize(txSinceCheck, "transakcja", "transakcje", "transakcji")} od ostatniego
-                  raportu
+                  {pluralize(txSinceCheck, "transakcja", "transakcje", "transakcji")} od sprawdzenia
+                  ({cashSinceCheck.toLocaleString("pl-PL")} zł)
                 </Text>
               )}
             </>
@@ -402,7 +411,7 @@ export default function CashPage() {
         )}
 
         {/* ===== MOVEMENT HISTORY ===== */}
-        <MovementHistory movements={movements} />
+        <MovementHistory movements={movements} terminalChecks={terminalChecks} />
       </Container>
 
       {/* ===== TERMINAL CHECK MODAL ===== */}
@@ -410,12 +419,18 @@ export default function CashPage() {
         opened={activeModal === "terminal"}
         onClose={() => setActiveModal(null)}
         expectedCash={expectedCash}
-        onConfirm={(cashAmount) => {
-          setTerminalCheck({
-            timestamp: new Date(),
-            cashAmount,
-            txCountAtCheck: transactions.length,
-          });
+        onConfirm={async (cashAmount, terminalAmount) => {
+          try {
+            const check = await db.terminalChecks.create({
+              terminalAmount,
+              expectedCash,
+              calculatedCash: cashAmount,
+              txCount: transactions.length,
+            });
+            setTerminalChecks((prev) => [...prev, check]);
+          } catch (err) {
+            console.error("[Cash] terminal check save failed:", err);
+          }
         }}
       />
 
@@ -468,7 +483,7 @@ function TerminalCheckModal({
   opened: boolean;
   onClose: () => void;
   expectedCash: number;
-  onConfirm: (cashAmount: number) => void;
+  onConfirm: (cashAmount: number, terminalAmount: number) => void;
 }) {
   const [terminalAmount, setTerminalAmount] = useState<number | string>("");
   const [checked, setChecked] = useState(false);
@@ -478,7 +493,7 @@ function TerminalCheckModal({
 
   const handleCheck = () => {
     setChecked(true);
-    onConfirm(cashInDrawer);
+    onConfirm(cashInDrawer, amount);
   };
 
   const handleClose = () => {
