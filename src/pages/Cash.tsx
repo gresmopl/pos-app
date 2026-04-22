@@ -132,19 +132,10 @@ export default function CashPage() {
 
   const previousTerminalTotal = terminalChecks.reduce((sum, tc) => sum + tc.terminalAmount, 0);
 
-  const lastCheck = terminalChecks.length > 0 ? terminalChecks[terminalChecks.length - 1] : null;
-  const terminalCheck = lastCheck
-    ? {
-        timestamp: new Date(lastCheck.createdAt),
-        cashAmount: lastCheck.calculatedCash,
-        txCountAtCheck: lastCheck.txCount,
-      }
-    : null;
+  const currentCashInDrawer = expectedCash - previousTerminalTotal;
 
-  const txSinceCheck = terminalCheck ? transactions.length - terminalCheck.txCountAtCheck : 0;
-  const cashSinceCheck = terminalCheck
-    ? transactions.slice(terminalCheck.txCountAtCheck).reduce((sum, tx) => sum + tx.totalAmount, 0)
-    : 0;
+  const lastCheck = terminalChecks.length > 0 ? terminalChecks[terminalChecks.length - 1] : null;
+  const lastCheckTimestamp = lastCheck ? new Date(lastCheck.createdAt) : null;
 
   const [activeModal, setActiveModal] = useState<
     "terminal" | "expense" | "deposit" | "voucher" | null
@@ -272,35 +263,27 @@ export default function CashPage() {
           my="md"
           style={{
             borderRadius: "var(--mantine-radius-lg)",
-            backgroundColor: terminalCheck
+            backgroundColor: lastCheck
               ? "var(--mantine-color-green-light)"
               : "var(--mantine-color-gray-light)",
             textAlign: "center",
           }}
         >
-          {terminalCheck ? (
+          {lastCheck ? (
             <>
               <Text fz="xs" c="dimmed" tt="uppercase" lts={1}>
                 Gotówka w kasie
               </Text>
               <Text fw={700} fz={48} c="green" lh={1.1} mt={4}>
-                {terminalCheck.cashAmount.toLocaleString("pl-PL")} zł
+                {currentCashInDrawer.toLocaleString("pl-PL")} zł
               </Text>
               <Text fz="xs" c="dimmed" mt={6}>
-                stan na{" "}
-                {terminalCheck.timestamp.toLocaleTimeString("pl-PL", {
+                ostatni raport terminala:{" "}
+                {lastCheckTimestamp!.toLocaleTimeString("pl-PL", {
                   hour: "2-digit",
                   minute: "2-digit",
-                })}{" "}
-                (po raporcie terminala)
+                })}
               </Text>
-              {txSinceCheck > 0 && (
-                <Text fz="xs" c="yellow" fw={500} mt={2}>
-                  +{txSinceCheck}{" "}
-                  {pluralize(txSinceCheck, "transakcja", "transakcje", "transakcji")} od sprawdzenia
-                  ({cashSinceCheck.toLocaleString("pl-PL")} zł)
-                </Text>
-              )}
             </>
           ) : (
             <>
