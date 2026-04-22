@@ -1,6 +1,13 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.105] - 2026-04-22
+- feat: zamkniecie zmiany widoczne w historii operacji kasowych
+  - ShiftClose tworzy cash_movement typu shift_close z opisem (koperta, drobne, terminal)
+  - MovementHistory: ikona kłódki, szary kolor dla wpisu zamknięcia zmiany
+- fix: hero Kasa - aktualna gotowka (expectedCash - terminalSum) zamiast zamrozonej wartosci z DB
+- cleanup: usuniecie tymczasowych debug logow
+
 [0.1.104] - 2026-04-22
 - fix(critical): kumulatywne obliczanie terminala - suma WSZYSTKICH raportow
   - terminal raportuje przyrostowo (od ostatniego sprawdzenia), system musi sumowac

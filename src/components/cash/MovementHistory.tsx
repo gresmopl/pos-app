@@ -7,6 +7,7 @@ import {
   IconReceipt,
   IconWallet,
   IconDeviceLandlinePhone,
+  IconLock,
 } from "@tabler/icons-react";
 import type { CashMovement, TerminalCheck } from "@/lib/types";
 
@@ -101,25 +102,30 @@ function TerminalCheckRow({ check }: { check: TerminalCheck }) {
 }
 
 function MovementRow({ movement: m }: { movement: CashMovement }) {
+  const isShiftClose = m.type === "shift_close";
   const isOut = ["tip_withdrawal", "expense_take", "barber_payback"].includes(m.type);
   const isDebt = m.type === "barber_loan";
   const isVoucher = m.type === "voucher_sale";
   const isOwnDeposit = m.type === "own_cash_deposit";
 
-  const bgColor = isDebt
-    ? "var(--mantine-color-yellow-light)"
-    : isOut
-      ? "var(--mantine-color-red-light)"
-      : "var(--mantine-color-green-light)";
+  const bgColor = isShiftClose
+    ? "var(--mantine-color-gray-light)"
+    : isDebt
+      ? "var(--mantine-color-yellow-light)"
+      : isOut
+        ? "var(--mantine-color-red-light)"
+        : "var(--mantine-color-green-light)";
 
-  const iconColor = isDebt
-    ? "var(--mantine-color-yellow-filled)"
-    : isOut
-      ? "var(--mantine-color-red-filled)"
-      : "var(--mantine-color-green-filled)";
+  const iconColor = isShiftClose
+    ? "var(--mantine-color-dimmed)"
+    : isDebt
+      ? "var(--mantine-color-yellow-filled)"
+      : isOut
+        ? "var(--mantine-color-red-filled)"
+        : "var(--mantine-color-green-filled)";
 
-  const amountColor = isDebt ? "yellow" : isOut ? "red" : "green";
-  const amountPrefix = isDebt ? "" : isOut ? "-" : "+";
+  const amountColor = isShiftClose ? "dimmed" : isDebt ? "yellow" : isOut ? "red" : "green";
+  const amountPrefix = isShiftClose ? "" : isDebt ? "" : isOut ? "-" : "+";
 
   return (
     <Group justify="space-between" py="sm" px="xs" wrap="nowrap">
@@ -132,7 +138,9 @@ function MovementRow({ movement: m }: { movement: CashMovement }) {
             flexShrink: 0,
           }}
         >
-          {isDebt ? (
+          {isShiftClose ? (
+            <IconLock size={14} color={iconColor} />
+          ) : isDebt ? (
             <IconReceipt size={14} color={iconColor} />
           ) : isOwnDeposit ? (
             <IconWallet size={14} color={iconColor} />

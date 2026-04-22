@@ -124,6 +124,12 @@ export default function ShiftClosePage(): React.JSX.Element {
         difference,
         voucherDifference: 0,
       });
+      await db.cashMovements.create({
+        type: "shift_close",
+        employeeId: form.values.closingEmployee,
+        amount: envelopeVal,
+        description: `Zamknięcie zmiany (koperta: ${envelopeVal} zł, drobne: ${floatVal} zł${totalTerminal > 0 ? `, terminal: ${totalTerminal} zł` : ""})`,
+      });
       setConfirmModal(false);
       setDone(true);
       if (navigator.vibrate) navigator.vibrate(100);
