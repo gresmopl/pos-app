@@ -130,6 +130,8 @@ export default function CashPage() {
   const systemCash = calcSystemCash(transactions);
   const expectedCash = calcExpectedCash(openingBalance, systemCash, movements);
 
+  const previousTerminalTotal = terminalChecks.reduce((sum, tc) => sum + tc.terminalAmount, 0);
+
   const lastCheck = terminalChecks.length > 0 ? terminalChecks[terminalChecks.length - 1] : null;
   const terminalCheck = lastCheck
     ? {
@@ -419,6 +421,7 @@ export default function CashPage() {
         opened={activeModal === "terminal"}
         onClose={() => setActiveModal(null)}
         expectedCash={expectedCash}
+        previousTerminalTotal={previousTerminalTotal}
         onConfirm={async (cashAmount, terminalAmount) => {
           try {
             const check = await db.terminalChecks.create({
@@ -478,18 +481,21 @@ function TerminalCheckModal({
   opened,
   onClose,
   expectedCash,
+  previousTerminalTotal,
   onConfirm,
 }: {
   opened: boolean;
   onClose: () => void;
   expectedCash: number;
+  previousTerminalTotal: number;
   onConfirm: (cashAmount: number, terminalAmount: number) => void;
 }) {
   const [terminalAmount, setTerminalAmount] = useState<number | string>("");
   const [checked, setChecked] = useState(false);
 
   const amount = Number(terminalAmount) || 0;
-  const cashInDrawer = expectedCash - amount;
+  const adjustedExpected = expectedCash - previousTerminalTotal;
+  const cashInDrawer = adjustedExpected - amount;
 
   const handleCheck = () => {
     setChecked(true);
@@ -522,11 +528,17 @@ function TerminalCheckModal({
           }}
         >
           <Text fz="xs" c="dimmed">
-            Utarg dziś (system)
+            Stan kasy (system)
           </Text>
           <Text fw={700} fz="xl">
-            {expectedCash.toLocaleString("pl-PL")} zł
+            {adjustedExpected.toLocaleString("pl-PL")} zł
           </Text>
+          {previousTerminalTotal > 0 && (
+            <Text fz="xs" c="dimmed" mt={2}>
+              po odjęciu wcześniejszych raportów terminala (
+              {previousTerminalTotal.toLocaleString("pl-PL")} zł)
+            </Text>
+          )}
         </Box>
 
         <NumberInput
