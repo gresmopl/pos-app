@@ -4,6 +4,7 @@ import type {
   CreateTransactionInput,
   CreateCashMovementInput,
   CreateDailyReportInput,
+  CreateTerminalCheckInput,
   SaveServiceInput,
   SaveProductInput,
   SaveEmployeeInput,
@@ -22,6 +23,7 @@ import type {
   Voucher,
   DeviceRegistration,
   DailyReportSummary,
+  TerminalCheck,
 } from "@/lib/types";
 import {
   mapEmployee,
@@ -153,6 +155,12 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           dbInput.default_commission_service = input.defaultCommissionService;
         if (input.defaultCommissionProduct !== undefined)
           dbInput.default_commission_product = input.defaultCommissionProduct;
+        if (input.retentionThresholdTop !== undefined)
+          dbInput.retention_threshold_top = input.retentionThresholdTop;
+        if (input.retentionThresholdHigh !== undefined)
+          dbInput.retention_threshold_high = input.retentionThresholdHigh;
+        if (input.retentionThresholdMid !== undefined)
+          dbInput.retention_threshold_mid = input.retentionThresholdMid;
 
         const { data, error } = await supabase
           .from("salon")
@@ -793,6 +801,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           closing_employee_id: input.closingEmployeeId,
           expected_cash: input.expectedCash,
           actual_cash: input.actualCash,
+          terminal_amount: input.terminalAmount,
           expected_vouchers: input.expectedVouchers,
           actual_vouchers_value: input.actualVouchersValue,
           float_amount: input.floatAmount,
@@ -845,7 +854,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         const { data, error } = await supabase
           .from("daily_report")
           .select(
-            "id, closed_at, expected_cash, actual_cash, difference, float_amount, deposit_amount, employee:closing_employee_id(name)"
+            "id, closed_at, expected_cash, actual_cash, terminal_amount, difference, float_amount, deposit_amount, employee:closing_employee_id(name)"
           )
           .eq("salon_id", SALON_ID)
           .order("closed_at", { ascending: false })
@@ -860,11 +869,58 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             closingEmployeeName: name,
             expectedCash: Number(r.expected_cash),
             actualCash: Number(r.actual_cash),
+            terminalAmount: Number(r.terminal_amount),
             difference: Number(r.difference),
             floatAmount: Number(r.float_amount),
             depositAmount: Number(r.deposit_amount),
           };
         });
+      },
+    },
+
+    terminalChecks: {
+      async create(input: CreateTerminalCheckInput): Promise<TerminalCheck> {
+        const { data, error } = await supabase
+          .from("terminal_check")
+          .insert({
+            salon_id: SALON_ID,
+            terminal_amount: input.terminalAmount,
+            expected_cash: input.expectedCash,
+            calculated_cash: input.calculatedCash,
+            tx_count: input.txCount,
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        return {
+          id: data.id as string,
+          terminalAmount: Number(data.terminal_amount),
+          expectedCash: Number(data.expected_cash),
+          calculatedCash: Number(data.calculated_cash),
+          txCount: Number(data.tx_count),
+          createdAt: data.created_at as string,
+        };
+      },
+
+      async getSince(since: string | null): Promise<TerminalCheck[]> {
+        let query = supabase
+          .from("terminal_check")
+          .select("*")
+          .eq("salon_id", SALON_ID)
+          .order("created_at", { ascending: true });
+        if (since) {
+          query = query.gt("created_at", since);
+        }
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data ?? []).map((r) => ({
+          id: r.id as string,
+          terminalAmount: Number(r.terminal_amount),
+          expectedCash: Number(r.expected_cash),
+          calculatedCash: Number(r.calculated_cash),
+          txCount: Number(r.tx_count),
+          createdAt: r.created_at as string,
+        }));
       },
     },
 

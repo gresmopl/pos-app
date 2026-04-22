@@ -38,6 +38,9 @@ export default function AdminSettingsPage(): React.JSX.Element {
       monthTarget: 600 as number | string,
       defaultCommissionService: 40 as number | string,
       defaultCommissionProduct: 20 as number | string,
+      retentionThresholdTop: 95 as number | string,
+      retentionThresholdHigh: 85 as number | string,
+      retentionThresholdMid: 75 as number | string,
     },
     validate: {
       name: (v) => (v.trim() ? null : "Nazwa jest wymagana"),
@@ -45,6 +48,9 @@ export default function AdminSettingsPage(): React.JSX.Element {
       monthTarget: (v) => (Number(v) > 0 ? null : "Wartość > 0"),
       defaultCommissionService: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
       defaultCommissionProduct: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
+      retentionThresholdTop: (v) => (Number(v) > 0 && Number(v) <= 100 ? null : "1-100%"),
+      retentionThresholdHigh: (v) => (Number(v) > 0 && Number(v) <= 100 ? null : "1-100%"),
+      retentionThresholdMid: (v) => (Number(v) > 0 && Number(v) <= 100 ? null : "1-100%"),
     },
   });
 
@@ -56,6 +62,9 @@ export default function AdminSettingsPage(): React.JSX.Element {
       monthTarget: salon.monthTarget,
       defaultCommissionService: salon.defaultCommissionService,
       defaultCommissionProduct: salon.defaultCommissionProduct,
+      retentionThresholdTop: salon.retentionThresholdTop,
+      retentionThresholdHigh: salon.retentionThresholdHigh,
+      retentionThresholdMid: salon.retentionThresholdMid,
     });
     form.resetDirty();
   }, [salon]);
@@ -71,6 +80,9 @@ export default function AdminSettingsPage(): React.JSX.Element {
         monthTarget: Number(v.monthTarget),
         defaultCommissionService: Number(v.defaultCommissionService),
         defaultCommissionProduct: Number(v.defaultCommissionProduct),
+        retentionThresholdTop: Number(v.retentionThresholdTop),
+        retentionThresholdHigh: Number(v.retentionThresholdHigh),
+        retentionThresholdMid: Number(v.retentionThresholdMid),
       });
       form.resetDirty();
       notifications.show({
@@ -160,6 +172,43 @@ export default function AdminSettingsPage(): React.JSX.Element {
               {...form.getInputProps("defaultCommissionProduct")}
             />
           </Group>
+        </Stack>
+
+        <Divider />
+
+        {/* === PROGI RETENCJI === */}
+        <Stack gap="sm" py="sm">
+          <SectionLabel>Progi retencji</SectionLabel>
+          <Text fz="xs" c="dimmed">
+            Progi procentowe dla rang retencji pracowników
+          </Text>
+          <NumberInput
+            label="👑 MISTRZ (od %)"
+            min={1}
+            max={100}
+            suffix="%"
+            size="md"
+            {...form.getInputProps("retentionThresholdTop")}
+          />
+          <NumberInput
+            label="💎 MISTRZ (od %)"
+            min={1}
+            max={100}
+            suffix="%"
+            size="md"
+            {...form.getInputProps("retentionThresholdHigh")}
+          />
+          <NumberInput
+            label="⭐ SOLIDNY (od %)"
+            min={1}
+            max={100}
+            suffix="%"
+            size="md"
+            {...form.getInputProps("retentionThresholdMid")}
+          />
+          <Text fz="xs" c="dimmed">
+            Poniżej progu SOLIDNY wyświetla się 📈 ROZWÓJ
+          </Text>
         </Stack>
       </Container>
 

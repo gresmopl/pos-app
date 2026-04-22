@@ -22,9 +22,19 @@ export interface DailyReportSummary {
   closingEmployeeName: string;
   expectedCash: number;
   actualCash: number;
+  terminalAmount: number;
   difference: number;
   floatAmount: number;
   depositAmount: number;
+}
+
+export interface TerminalCheck {
+  id: string;
+  terminalAmount: number;
+  expectedCash: number;
+  calculatedCash: number;
+  txCount: number;
+  createdAt: string;
 }
 
 export interface DailyStats {
@@ -113,6 +123,9 @@ export interface SalonSettings {
   monthTarget: number;
   defaultCommissionService: number;
   defaultCommissionProduct: number;
+  retentionThresholdTop: number;
+  retentionThresholdHigh: number;
+  retentionThresholdMid: number;
 }
 
 export interface DeviceRegistration {

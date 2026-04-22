@@ -1,6 +1,40 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.103] - 2026-04-22
+- feat: sekcja pracownikow na stronie Statystyki
+  - avatar z inicjalami, badge retencji (ikona + ranga + procent), uslugi w miesiacu
+  - transakcje biezacego miesiaca ladowane z getSince(1 dzien miesiaca)
+  - liczba uslug per pracownik liczona na froncie z items.type === "service"
+- fix: zmiana nazwy ARCYMISTRZ na MISTRZ (👑 MISTRZ / 💎 MISTRZ - rozne ikony)
+
+[0.1.102] - 2026-04-22
+- feat: konfigurowalne progi retencji w panelu admina
+  - 3 nowe kolumny w salon: retention_threshold_top/high/mid (domyslnie 95/85/75)
+  - sekcja "Progi retencji" w Ustawienia z emoji i nazwami rang
+  - getRetentionRank() dynamicznie pobiera progi z SalonSettings
+  - Dashboard przekazuje progi z bazy do kalkulacji rang
+
+[0.1.101] - 2026-04-22
+- fix(ux): sprawdzenia terminala widoczne w historii operacji kasowych
+  - MovementHistory: chronologiczna lista laczona (operacje + sprawdzenia terminala)
+  - niebieska ikona terminala, kwota terminala + obliczona gotowka
+- fix(ux): hero w Kasie pokazuje kwote sprzedazy od ostatniego sprawdzenia
+  - "+2 transakcje od sprawdzenia (150 zl)" zamiast samej liczby transakcji
+
+[0.1.100] - 2026-04-22
+- feat: trwaly zapis sprawdzen terminala w bazie danych
+  - nowa tabela terminal_check (terminal_amount, expected_cash, calculated_cash, tx_count)
+  - Cash.tsx: zapis kazdego sprawdzenia do DB (nie ginie po odswiezeniu)
+  - ladowanie historii sprawdzen przy starcie strony Kasa
+- feat: kwota z terminala przy zamknieciu zmiany
+  - nowe pole "Kwota z terminala" na formularzu zamkniecia zmiany
+  - poprawka roznicy kasowej: difference = actualCash - (expectedCash - terminalAmount)
+  - kolumna terminal_amount w tabeli daily_report
+  - raport kasowy zawiera: laczna sprzedaz, terminal, oczekiwana gotowka
+- typy: TerminalCheck, CreateTerminalCheckInput, terminalAmount w DailyReportSummary
+- adaptery: terminalChecks.create/getSince w supabase i rest
+
 [0.1.99] - 2026-04-21
 - docs: usuniecie pozostalych referencji do mock adaptera z dokumentacji
   - CLAUDE.md: usuniety src/data/ ze struktury

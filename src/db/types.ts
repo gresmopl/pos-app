@@ -11,6 +11,7 @@ import type {
   SalonSettings,
   DeviceRegistration,
   DailyReportSummary,
+  TerminalCheck,
 } from "@/lib/types";
 
 export interface SaveEmployeeInput {
@@ -49,12 +50,20 @@ export interface CreateDailyReportInput {
   closingEmployeeId: string;
   expectedCash: number;
   actualCash: number;
+  terminalAmount: number;
   expectedVouchers: number;
   actualVouchersValue: number;
   floatAmount: number;
   depositAmount: number;
   difference: number;
   voucherDifference: number;
+}
+
+export interface CreateTerminalCheckInput {
+  terminalAmount: number;
+  expectedCash: number;
+  calculatedCash: number;
+  txCount: number;
 }
 
 export interface CreateTransactionInput {
@@ -82,6 +91,9 @@ export interface UpdateSalonInput {
   monthTarget?: number;
   defaultCommissionService?: number;
   defaultCommissionProduct?: number;
+  retentionThresholdTop?: number;
+  retentionThresholdHigh?: number;
+  retentionThresholdMid?: number;
 }
 
 export interface DbClient {
@@ -146,5 +158,9 @@ export interface DbClient {
     getLastClosedAt(): Promise<string | null>;
     getLastFloat(): Promise<number>;
     getRecent(limit: number): Promise<DailyReportSummary[]>;
+  };
+  terminalChecks: {
+    create(input: CreateTerminalCheckInput): Promise<TerminalCheck>;
+    getSince(since: string | null): Promise<TerminalCheck[]>;
   };
 }

@@ -99,5 +99,11 @@ export function mapSalon(row: Record<string, unknown>): SalonSettings {
       row.default_commission_service != null ? Number(row.default_commission_service) : 40,
     defaultCommissionProduct:
       row.default_commission_product != null ? Number(row.default_commission_product) : 20,
+    retentionThresholdTop:
+      row.retention_threshold_top != null ? Number(row.retention_threshold_top) : 95,
+    retentionThresholdHigh:
+      row.retention_threshold_high != null ? Number(row.retention_threshold_high) : 85,
+    retentionThresholdMid:
+      row.retention_threshold_mid != null ? Number(row.retention_threshold_mid) : 75,
   };
 }
