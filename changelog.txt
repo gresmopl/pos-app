@@ -1,6 +1,17 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.110] - 2026-04-23
+- refactor(design-system): 7 poprawek spojnosci design systemu
+  - SectionLabel wyekstrahowany jako shared component (eliminacja ~30 duplikacji w 14 plikach)
+  - hardcoded hex kolory w Stats.tsx zastapione tokenami Mantine (yellow, blue, violet)
+  - ujednolicenie Button size="lg" w modalach (History undo cancel)
+  - shadow token w theme (var(--mantine-shadow-md)) zamiast hardcoded rgba
+  - ujednolicenie icon sizes: 16px dla secondary buttons
+  - PAGE_BOTTOM_PADDING helper (eliminacja powtarzanego BOTTOM_NAV_HEIGHT + 16)
+  - hardcoded font sizes (fz={22}, fontSize: 24) zastapione tokenami (fz="xl", var(--mantine-font-size-xl))
+  - letter spacing lts={0.5} ujednolicone do lts={1}
+
 [0.1.109] - 2026-04-23
 - fix(ux): audyt UX copy - 14 poprawek tekstow w calej aplikacji
   - bledy: konkretne komunikaty z instrukcja naprawy (AdminDevices, AdminEmployees, AdminSettings, AdminPricing)

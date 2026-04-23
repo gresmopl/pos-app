@@ -64,3 +64,4 @@ export function BottomNavBar(): React.JSX.Element {
 }
 
 export const BOTTOM_NAV_HEIGHT = 60;
+export const PAGE_BOTTOM_PADDING = BOTTOM_NAV_HEIGHT + 16;

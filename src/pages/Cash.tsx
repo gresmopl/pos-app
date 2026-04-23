@@ -31,7 +31,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { MovementHistory } from "@/components/cash/MovementHistory";
 import { SettleModal } from "@/components/cash/SettleModal";
 import { useDeviceRole } from "@/contexts/DeviceContext";
-import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
+import { BOTTOM_NAV_HEIGHT, PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 
 function ActionButton({
   icon,
@@ -250,7 +250,7 @@ export default function CashPage() {
   }, [settleTarget, settleCost, showSuccess]);
 
   return (
-    <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
+    <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
       <Container size="lg">
         <PageHeader title="Kasa" hideBack />
 

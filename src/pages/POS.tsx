@@ -6,10 +6,11 @@ import { Text, Group, Stack, Box, Avatar, Divider, Container, Badge, Button } fr
 import { notifications } from "@mantine/notifications";
 import { IconPlus, IconDiscount2, IconCheck, IconChevronRight } from "@tabler/icons-react";
 import { pluralize } from "@/lib/constants";
-import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
+import { BOTTOM_NAV_HEIGHT, PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 import { useCart } from "@/hooks/useCart";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { CartItemList } from "@/components/pos/CartItemList";
 import { TipSelector } from "@/components/pos/TipSelector";
@@ -99,7 +100,7 @@ export default function POSPage() {
 
   if (successData) {
     return (
-      <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
+      <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
         <Stack align="center" justify="center" gap="lg" py={80} px="md">
           <Box
             p="xl"
@@ -180,9 +181,7 @@ export default function POSPage() {
 
         {/* Total */}
         <Box py="md">
-          <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-            Do zapłaty
-          </Text>
+          <SectionLabel>Do zapłaty</SectionLabel>
           <Text fw={700} fz={40}>
             {total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł
           </Text>
@@ -221,7 +220,7 @@ export default function POSPage() {
           <Button
             variant="light"
             size="md"
-            leftSection={<IconPlus size={18} />}
+            leftSection={<IconPlus size={16} />}
             onClick={() => setAddModalOpen(true)}
           >
             Dodaj
@@ -229,7 +228,7 @@ export default function POSPage() {
           <Button
             variant="light"
             size="md"
-            leftSection={<IconDiscount2 size={18} />}
+            leftSection={<IconDiscount2 size={16} />}
             onClick={() => setDiscountModalOpen(true)}
           >
             Rabat
@@ -249,7 +248,7 @@ export default function POSPage() {
             backgroundColor: "var(--mantine-color-green-filled)",
             color: "white",
             cursor: "pointer",
-            boxShadow: "0 -4px 12px rgba(0,0,0,0.1)",
+            boxShadow: "var(--mantine-shadow-md)",
           }}
           p="md"
           onClick={() => setConfirmModalOpen(true)}

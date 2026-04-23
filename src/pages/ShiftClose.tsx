@@ -19,6 +19,7 @@ import {
 } from "@mantine/core";
 import { IconPrinter, IconCheck } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 
@@ -276,9 +277,7 @@ export default function ShiftClosePage(): React.JSX.Element {
             {/* KROK 2: Podglad systemowy */}
             <Divider />
             <Stack gap="xs" pt="sm">
-              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Podgląd systemowy
-              </Text>
+              <SectionLabel>Podgląd systemowy</SectionLabel>
               <Divider />
               <div>
                 <Text fz="sm" fw={700}>
@@ -303,9 +302,7 @@ export default function ShiftClosePage(): React.JSX.Element {
             {/* KROK 3: Inputy fryzjera */}
             <Divider mt="sm" />
             <Stack gap="sm" py="sm">
-              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Rozliczenie terminala
-              </Text>
+              <SectionLabel>Rozliczenie terminala</SectionLabel>
 
               {previousTerminalTotal > 0 && (
                 <Box
@@ -335,9 +332,7 @@ export default function ShiftClosePage(): React.JSX.Element {
               />
 
               <Divider />
-              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Stan gotówki w kasie
-              </Text>
+              <SectionLabel>Stan gotówki w kasie</SectionLabel>
 
               <NumberInput
                 label="Drobne na jutro"

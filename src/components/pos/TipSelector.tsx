@@ -1,4 +1,5 @@
 import { Text, Group, Box, NumberInput, Button } from "@mantine/core";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 
 interface TipSelectorProps {
   tipAmount: number;
@@ -8,9 +9,7 @@ interface TipSelectorProps {
 export function TipSelector({ tipAmount, onTipChange }: TipSelectorProps) {
   return (
     <Box py="md">
-      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="xs">
-        Napiwek
-      </Text>
+      <SectionLabel>Napiwek</SectionLabel>
       <Group gap="sm" align="flex-end">
         <NumberInput
           placeholder="0"

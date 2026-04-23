@@ -30,6 +30,7 @@ import {
 import { MOCK_OPERATIONS_PIN } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 
 function startOfDay(date: Date): string {
@@ -364,27 +365,21 @@ export default function HistoryPage() {
         <Container size="lg">
           <Group justify="space-between">
             <div>
-              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Usługi
-              </Text>
+              <SectionLabel>Usługi</SectionLabel>
               <Text fw={700} fz="xl">
                 {serviceCount}
               </Text>
             </div>
             {productCount > 0 && (
               <div style={{ textAlign: "center" }}>
-                <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                  Produkty
-                </Text>
+                <SectionLabel>Produkty</SectionLabel>
                 <Text fw={700} fz="xl">
                   {productCount}
                 </Text>
               </div>
             )}
             <div style={{ textAlign: "right" }}>
-              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Utarg
-              </Text>
+              <SectionLabel>Utarg</SectionLabel>
               <Text fw={700} fz="xl" c="green">
                 {totalRevenue.toLocaleString("pl-PL")} zł
               </Text>
@@ -457,7 +452,7 @@ export default function HistoryPage() {
               )}
             </Stack>
             <Group justify="flex-end">
-              <Button variant="subtle" onClick={() => setUndoModal(false)}>
+              <Button variant="subtle" size="lg" onClick={() => setUndoModal(false)}>
                 Anuluj
               </Button>
               <Button

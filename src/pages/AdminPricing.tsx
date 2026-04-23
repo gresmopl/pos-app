@@ -23,6 +23,7 @@ import { IconPlus, IconPencil, IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 
 type PricingItem = {
   id: string;
@@ -254,9 +255,9 @@ export default function PricingPage() {
           <>
             <Divider />
             <Box py="sm">
-              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="sm" px="xs">
-                Nieaktywne
-              </Text>
+              <Box mb="sm" px="xs">
+                <SectionLabel>Nieaktywne</SectionLabel>
+              </Box>
               <Stack gap={0}>
                 {inactiveItems.map((item, index) => (
                   <div key={item.id}>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Text, Stack, NumberInput, Select, Button } from "@mantine/core";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 import { useForm } from "@mantine/form";
 import { IconPlus } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
@@ -40,9 +41,7 @@ export function DepositTab({ employeeOptions, onDeposit, lockedEmployeeId }: Dep
 
   return (
     <Stack gap="md" py="md">
-      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-        Wpłata własna do kasy
-      </Text>
+      <SectionLabel>Wpłata własna do kasy</SectionLabel>
       <Text fz="sm">
         Kliknij, gdy wrzuciłeś do kasetki własne pieniądze lub dałeś klientowi resztę z własnych.
         Kwota doliczy się do Twojego Portfela.

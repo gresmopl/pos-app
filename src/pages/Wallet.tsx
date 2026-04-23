@@ -17,7 +17,7 @@ import {
 import { IconCash, IconChevronRight } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDeviceRole } from "@/contexts/DeviceContext";
-import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
+import { BOTTOM_NAV_HEIGHT, PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 import { notifications } from "@mantine/notifications";
 
 export default function WalletPage(): React.JSX.Element {
@@ -84,7 +84,7 @@ export default function WalletPage(): React.JSX.Element {
 
   if (isPersonal && lockedEmployee) {
     return (
-      <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
+      <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
         <Container size="lg">
           <PageHeader title="Napiwki" hideBack />
           <Divider />
@@ -104,7 +104,7 @@ export default function WalletPage(): React.JSX.Element {
 
   if (activeEmployee) {
     return (
-      <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
+      <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
         <Container size="lg">
           <PageHeader
             title={activeEmployee.name}
@@ -129,7 +129,7 @@ export default function WalletPage(): React.JSX.Element {
   }
 
   return (
-    <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
+    <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
       <Container size="lg">
         <PageHeader title="Napiwki" hideBack />
         <Divider />
@@ -232,7 +232,7 @@ function WorkerDetail({
         {/* Amount input + withdraw button */}
         {balance > 0 && (
           <Box mt="md">
-            <Text fz="xs" c="dimmed" tt="uppercase" lts={0.5} ta="left" mb={4}>
+            <Text fz="xs" c="dimmed" tt="uppercase" lts={1} ta="left" mb={4}>
               Kwota do wypłaty
             </Text>
             <NumberInput
@@ -242,7 +242,13 @@ function WorkerDetail({
               max={balance}
               suffix=" zł"
               size="lg"
-              styles={{ input: { textAlign: "center", fontWeight: 700, fontSize: 24 } }}
+              styles={{
+                input: {
+                  textAlign: "center",
+                  fontWeight: 700,
+                  fontSize: "var(--mantine-font-size-xl)",
+                },
+              }}
             />
             <Button
               fullWidth

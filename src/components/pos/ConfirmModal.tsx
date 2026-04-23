@@ -1,6 +1,7 @@
 import { Text, Group, Stack, Box, Modal, Button } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import type { DiscountState } from "@/lib/types";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 
 interface ConfirmModalProps {
   opened: boolean;
@@ -40,9 +41,7 @@ export function ConfirmModal({
     >
       <Stack gap="md">
         <Box ta="center" py="sm">
-          <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-            Do zapłaty
-          </Text>
+          <SectionLabel>Do zapłaty</SectionLabel>
           <Text fw={700} fz={36}>
             {total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł
           </Text>

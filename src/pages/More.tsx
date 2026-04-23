@@ -21,7 +21,7 @@ import {
   IconCalendarEvent,
 } from "@tabler/icons-react";
 import { useDeviceRole, useDevice } from "@/contexts/DeviceContext";
-import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
+import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 
 interface MenuItem {
   icon: typeof IconHistory;
@@ -102,7 +102,7 @@ export default function MorePage(): React.JSX.Element {
   const deviceName = device?.deviceName ?? "Niezarejestrowane";
 
   return (
-    <Container size="lg" pb={BOTTOM_NAV_HEIGHT + 16}>
+    <Container size="lg" pb={PAGE_BOTTOM_PADDING}>
       <Text fz="xl" fw={700} py="md">
         Więcej
       </Text>

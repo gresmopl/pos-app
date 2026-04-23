@@ -24,6 +24,7 @@ import { IconPlus, IconPencil, IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { modals } from "@mantine/modals";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 
 export default function AdminEmployeesPage() {
   const { data: dbEmployees } = useAllEmployees();
@@ -221,9 +222,9 @@ export default function AdminEmployeesPage() {
           <>
             <Divider />
             <Box py="sm">
-              <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="sm" px="xs">
-                Nieaktywni
-              </Text>
+              <Box mb="sm" px="xs">
+                <SectionLabel>Nieaktywni</SectionLabel>
+              </Box>
               <Stack gap={0}>
                 {inactiveEmployees.map((emp, index) => (
                   <div key={emp.id}>

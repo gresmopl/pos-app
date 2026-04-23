@@ -18,14 +18,7 @@ import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
-
-function SectionLabel({ children }: { children: string }): React.JSX.Element {
-  return (
-    <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-      {children}
-    </Text>
-  );
-}
+import { SectionLabel } from "@/components/layout/SectionLabel";
 
 export default function AdminSettingsPage(): React.JSX.Element {
   const { data: salon, loading } = useSalonSettings();

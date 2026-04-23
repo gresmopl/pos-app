@@ -1,4 +1,5 @@
 import { Text, Group, Stack, Divider, NumberInput, TextInput, Select, Button } from "@mantine/core";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 import { useForm } from "@mantine/form";
 import { IconCash, IconReceipt } from "@tabler/icons-react";
 import type { CashMovement } from "./types";
@@ -40,9 +41,7 @@ export function ExpenseTab({
     <Stack gap="md" py="md">
       {pendingExpenses.length > 0 && (
         <>
-          <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-            Do rozliczenia
-          </Text>
+          <SectionLabel>Do rozliczenia</SectionLabel>
           <Stack gap={0}>
             {pendingExpenses.map((exp, index) => (
               <div key={exp.id}>
@@ -72,9 +71,7 @@ export function ExpenseTab({
         </>
       )}
 
-      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-        Pobierz na zakupy
-      </Text>
+      <SectionLabel>Pobierz na zakupy</SectionLabel>
       <Text fz="sm">Pracownik pobiera gotówkę z kasetki na zakupy salonowe.</Text>
 
       <Select

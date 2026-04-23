@@ -24,7 +24,8 @@ import { db } from "@/db";
 import type { Transaction } from "@/lib/types";
 import { getRetentionRank, pluralize, type RetentionThresholds } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
+import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 
 export default function Stats(): React.JSX.Element {
   const { data: stats, loading } = useDailyStats();
@@ -71,7 +72,7 @@ export default function Stats(): React.JSX.Element {
       : 0;
 
   return (
-    <Container size="lg" pb={BOTTOM_NAV_HEIGHT + 16}>
+    <Container size="lg" pb={PAGE_BOTTOM_PADDING}>
       <PageHeader title="Statystyki" backTo="/more" />
 
       {loading && (
@@ -105,7 +106,7 @@ export default function Stats(): React.JSX.Element {
             }}
           >
             <Group gap={6} mb={4}>
-              <IconSun size={18} color="#fbbf24" />
+              <IconSun size={18} color="var(--mantine-color-yellow-filled)" />
               <Text fz="xs" c="dimmed">
                 Dziś
               </Text>
@@ -134,7 +135,7 @@ export default function Stats(): React.JSX.Element {
             }}
           >
             <Group gap={6} mb={4}>
-              <IconCalendar size={18} color="#60a5fa" />
+              <IconCalendar size={18} color="var(--mantine-color-blue-filled)" />
               <Text fz="xs" c="dimmed">
                 Miesiąc
               </Text>
@@ -160,7 +161,7 @@ export default function Stats(): React.JSX.Element {
             }}
           >
             <Group gap={6} mb={4}>
-              <IconChartBar size={18} color="#a78bfa" />
+              <IconChartBar size={18} color="var(--mantine-color-violet-filled)" />
               <Text fz="xs" c="dimmed">
                 Rok
               </Text>
@@ -186,7 +187,7 @@ export default function Stats(): React.JSX.Element {
             }}
           >
             <Group gap={6} mb={4}>
-              <IconTrophy size={18} color="#f59e0b" />
+              <IconTrophy size={18} color="var(--mantine-color-yellow-filled)" />
               <Text fz="xs" c="dimmed">
                 Rekord
               </Text>
@@ -205,9 +206,7 @@ export default function Stats(): React.JSX.Element {
       {employees.length > 0 && (
         <>
           <Divider my="sm" />
-          <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mb="sm">
-            Pracownicy
-          </Text>
+          <SectionLabel>Pracownicy</SectionLabel>
           <Stack gap="sm" mb="md">
             {employees.map((emp) => {
               const rank = getRetentionRank(emp.retentionPercent, thresholds);

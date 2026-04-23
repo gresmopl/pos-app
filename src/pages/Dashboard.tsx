@@ -19,7 +19,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import { IconSun, IconMoon, IconScissors, IconChevronRight } from "@tabler/icons-react";
 import { pluralize, getRetentionRank, type RetentionThresholds } from "@/lib/constants";
 import { useDeviceRole } from "@/contexts/DeviceContext";
-import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
+import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -57,7 +57,7 @@ export default function Dashboard() {
     : employees;
 
   return (
-    <Box mih="100vh" pb={BOTTOM_NAV_HEIGHT + 16}>
+    <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
       <Container size="lg">
         {/* ===== HEADER ===== */}
         <Group justify="space-between" py="md">

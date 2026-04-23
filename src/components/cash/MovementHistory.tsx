@@ -10,6 +10,7 @@ import {
   IconLock,
 } from "@tabler/icons-react";
 import type { CashMovement, TerminalCheck } from "@/lib/types";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 
 type TimelineEntry =
   | { kind: "movement"; data: CashMovement }
@@ -48,9 +49,9 @@ export function MovementHistory({ movements, terminalChecks = [] }: MovementHist
   return (
     <>
       <Divider />
-      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1} mt="sm">
-        Dzisiejsze operacje
-      </Text>
+      <Box mt="sm">
+        <SectionLabel>Dzisiejsze operacje</SectionLabel>
+      </Box>
       <Stack gap={0}>
         {entries.map((entry, index) => (
           <div key={entry.kind === "movement" ? entry.data.id : `tc-${entry.data.id}`}>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Text, Stack, Box, NumberInput, Select, Button } from "@mantine/core";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 import { useForm } from "@mantine/form";
 import { IconCash } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
@@ -51,9 +52,7 @@ export function TipTab({ employeeOptions, onWithdraw, lockedEmployeeId }: TipTab
 
   return (
     <Stack gap="md" py="md">
-      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-        Wypłata z portfela
-      </Text>
+      <SectionLabel>Wypłata z portfela</SectionLabel>
       <Text fz="sm">
         Fryzjer pobiera z kasetki pieniądze należne: napiwki z karty/BLIK oraz własne wpłaty
         drobnych.

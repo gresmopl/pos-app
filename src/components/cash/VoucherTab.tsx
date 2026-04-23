@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Text, Stack, Box, NumberInput, Button, CopyButton } from "@mantine/core";
+import { SectionLabel } from "@/components/layout/SectionLabel";
 import { IconGift, IconCheck, IconCopy } from "@tabler/icons-react";
 
 interface VoucherTabProps {
@@ -59,7 +60,7 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
           <Text fz="xs" c="dimmed">
             Kod bonu
           </Text>
-          <Text fw={700} fz={22} style={{ letterSpacing: 2 }}>
+          <Text fw={700} fz="xl" style={{ letterSpacing: 2 }}>
             {code}
           </Text>
           <Text fz="sm" c="dimmed" mt="xs">
@@ -73,7 +74,7 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
               fullWidth
               variant="light"
               color={copied ? "green" : "gray"}
-              leftSection={copied ? <IconCheck size={18} /> : <IconCopy size={18} />}
+              leftSection={copied ? <IconCheck size={16} /> : <IconCopy size={16} />}
               onClick={copy}
             >
               {copied ? "Skopiowano!" : "Kopiuj kod"}
@@ -89,9 +90,7 @@ export function VoucherTab({ onSale }: VoucherTabProps) {
 
   return (
     <Stack gap="md" py="md">
-      <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-        Sprzedaż bonu podarunkowego
-      </Text>
+      <SectionLabel>Sprzedaż bonu podarunkowego</SectionLabel>
       <Text fz="sm">Bon nie jest przypisany do fryzjera - wpływa do kasy salonu.</Text>
 
       <NumberInput
