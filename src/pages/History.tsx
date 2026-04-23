@@ -54,18 +54,19 @@ export default function HistoryPage() {
   const [dateTo, setDateTo] = useState<Date | null>(new Date());
 
   useEffect(() => {
+    if (!dateFrom || !dateTo) {
+      setTransactions([]);
+      return;
+    }
     async function load() {
-      const since = dateFrom ? startOfDay(dateFrom) : null;
-      const txs = await db.transactions.getSince(since);
-      if (dateTo) {
-        const end = endOfDay(dateTo);
-        setTransactions(txs.filter((t) => t.timestamp <= end));
-      } else {
-        setTransactions(txs);
-      }
+      const txs = await db.transactions.getSince(startOfDay(dateFrom!));
+      const end = endOfDay(dateTo!);
+      setTransactions(txs.filter((t) => t.timestamp <= end));
     }
     load().catch(console.error);
   }, [dateFrom, dateTo]);
+  const PAGE_SIZE = 50;
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
   const [filter, setFilter] = useState("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [undoModal, setUndoModal] = useState(false);
@@ -75,6 +76,10 @@ export default function HistoryPage() {
   const [undoTransactionId, setUndoTransactionId] = useState<string | null>(null);
   const [undoing, setUndoing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+
+  useEffect(() => {
+    setDisplayCount(PAGE_SIZE);
+  }, [dateFrom, dateTo, filter, searchQuery]);
 
   const uniqueEmployees = Array.from(new Set(transactions.map((t) => t.employeeName)));
 
@@ -226,7 +231,7 @@ export default function HistoryPage() {
               )}
             </Stack>
           ) : (
-            filtered.map((transaction, index) => {
+            filtered.slice(0, displayCount).map((transaction, index) => {
               const isExpanded = expandedId === transaction.id;
               const itemsSummary = transaction.items
                 .map((i) => (i.quantity > 1 ? `${i.name} ×${i.quantity}` : i.name))
@@ -341,10 +346,23 @@ export default function HistoryPage() {
                     </Box>
                   </Collapse>
 
-                  {index < filtered.length - 1 && <Divider />}
+                  {index < Math.min(filtered.length, displayCount) - 1 && <Divider />}
                 </div>
               );
             })
+          )}
+          {filtered.length > displayCount && (
+            <>
+              <Divider />
+              <Button
+                variant="subtle"
+                fullWidth
+                mt="sm"
+                onClick={() => setDisplayCount((prev) => prev + PAGE_SIZE)}
+              >
+                Pokaż więcej ({filtered.length - displayCount} pozostałych)
+              </Button>
+            </>
           )}
         </Stack>
       </Container>

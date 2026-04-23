@@ -73,7 +73,6 @@ export function AddItemModal({ opened, onClose, services, products, onAdd }: Add
         leftSection={<IconSearch size={16} />}
         value={search}
         onChange={(e) => setSearch(e.currentTarget.value)}
-        data-autofocus
         mb="md"
       />
       <Stack gap={0}>

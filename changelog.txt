@@ -1,6 +1,10 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.117] - 2026-04-24
+- fix(ux): Dodaj uslugi/produkty - usuniety autofocus na szukaj, bez klawiatury na mobile
+- fix(ux): Historia - paginacja (50 per strona, "Pokaz wiecej"), brak dat = pusta lista
+
 [0.1.116] - 2026-04-23
 - fix(ux): Kasa operacje - usuniety lineClamp, pelny opis widoczny na mobile
 
