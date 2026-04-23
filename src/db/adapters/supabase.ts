@@ -370,13 +370,13 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         const [yearTxR, lastYearTxR, salonR] = await Promise.all([
           supabase
             .from("transaction")
-            .select("date, transaction_item")
+            .select("date, transaction_item(type, quantity)")
             .eq("salon_id", SALON_ID)
             .eq("status", "completed")
             .gte("date", `${yearStart}T00:00:00`),
           supabase
             .from("transaction")
-            .select("date, transaction_item")
+            .select("date, transaction_item(type, quantity)")
             .eq("salon_id", SALON_ID)
             .eq("status", "completed")
             .gte("date", `${lastYearStart}T00:00:00`)

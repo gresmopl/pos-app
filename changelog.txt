@@ -1,6 +1,9 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.114] - 2026-04-23
+- fix: Statystyki kafelki same zera - brak nawiasow w SELECT embeddingu transaction_item(type, quantity)
+
 [0.1.113] - 2026-04-23
 - fix: Dashboard todayServices - brakujaca kolumna quantity w SELECT z transaction_item
 
