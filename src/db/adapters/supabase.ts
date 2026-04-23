@@ -362,53 +362,67 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         const lastYearStart = `${year - 1}-01-01`;
         const lastYearEnd = `${year - 1}-12-31`;
 
-        const baseQuery = () =>
+        const countServices = (items: Record<string, unknown>[]): number =>
+          items
+            .filter((ti) => ti.type === "service")
+            .reduce((sum, ti) => sum + (Number(ti.quantity) || 1), 0);
+
+        const [yearTxR, lastYearTxR, salonR] = await Promise.all([
           supabase
             .from("transaction")
-            .select("*", { count: "exact", head: true })
+            .select("date, transaction_item")
             .eq("salon_id", SALON_ID)
-            .eq("status", "completed");
-
-        const [todayR, yesterdayR, monthR, yearR, lastYearR, salonR] = await Promise.all([
-          baseQuery().gte("date", `${today}T00:00:00`).lte("date", `${today}T23:59:59`),
-          baseQuery()
-            .gte("date", `${yesterdayStr}T00:00:00`)
-            .lte("date", `${yesterdayStr}T23:59:59`),
-          baseQuery().gte("date", `${monthStart}T00:00:00`),
-          baseQuery().gte("date", `${yearStart}T00:00:00`),
-          baseQuery()
+            .eq("status", "completed")
+            .gte("date", `${yearStart}T00:00:00`),
+          supabase
+            .from("transaction")
+            .select("date, transaction_item")
+            .eq("salon_id", SALON_ID)
+            .eq("status", "completed")
             .gte("date", `${lastYearStart}T00:00:00`)
             .lte("date", `${lastYearEnd}T23:59:59`),
           supabase.from("salon").select("month_target").eq("id", SALON_ID).single(),
         ]);
 
         const monthTarget = Number(salonR.data?.month_target) || 600;
+        const yearTx = yearTxR.data || [];
+        const lastYearTx = lastYearTxR.data || [];
 
-        const { data: txDates } = await supabase
-          .from("transaction")
-          .select("date")
-          .eq("salon_id", SALON_ID)
-          .eq("status", "completed");
+        let todayServices = 0;
+        let yesterdayServices = 0;
+        let monthServices = 0;
+        let yearServices = 0;
+        const dayCounts = new Map<string, number>();
+
+        for (const tx of yearTx) {
+          const day = (tx.date as string).split("T")[0];
+          const items = (tx.transaction_item as Record<string, unknown>[]) || [];
+          const svcCount = countServices(items);
+          yearServices += svcCount;
+          dayCounts.set(day, (dayCounts.get(day) || 0) + svcCount);
+          if (day === today) todayServices += svcCount;
+          if (day === yesterdayStr) yesterdayServices += svcCount;
+          if (day >= monthStart) monthServices += svcCount;
+        }
+
+        let lastYearServices = 0;
+        for (const tx of lastYearTx) {
+          const items = (tx.transaction_item as Record<string, unknown>[]) || [];
+          lastYearServices += countServices(items);
+        }
 
         let allTimeRecord = 0;
-        if (txDates && txDates.length > 0) {
-          const dayCounts = new Map<string, number>();
-          for (const row of txDates) {
-            const day = (row.date as string).split("T")[0];
-            dayCounts.set(day, (dayCounts.get(day) || 0) + 1);
-          }
-          for (const count of dayCounts.values()) {
-            if (count > allTimeRecord) allTimeRecord = count;
-          }
+        for (const count of dayCounts.values()) {
+          if (count > allTimeRecord) allTimeRecord = count;
         }
 
         return {
-          todayServices: todayR.count || 0,
-          yesterdayServices: yesterdayR.count || 0,
-          monthServices: monthR.count || 0,
+          todayServices,
+          yesterdayServices,
+          monthServices,
           monthTarget,
-          yearServices: yearR.count || 0,
-          lastYearServices: lastYearR.count || 0,
+          yearServices,
+          lastYearServices,
           allTimeRecord,
         };
       },

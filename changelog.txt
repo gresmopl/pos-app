@@ -1,6 +1,12 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.112] - 2026-04-23
+- fix: Statystyki - liczenie uslug z quantity zamiast COUNT(*) transakcji
+  - stats.getDaily() pobiera items i sumuje quantity (3x Strzyzenie = 3 uslugi)
+  - monthServicesByEmployee w Stats.tsx tez uwzglednia quantity
+  - allTimeRecord (rekord dnia) teraz liczy uslugi, nie transakcje
+
 [0.1.111] - 2026-04-23
 - fix: Dashboard - todayServices liczy quantity zamiast items.length (3x ta sama usluga = 3)
 

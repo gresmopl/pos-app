@@ -55,7 +55,9 @@ export default function Stats(): React.JSX.Element {
   const monthServicesByEmployee = useMemo(() => {
     const map = new Map<string, number>();
     for (const tx of monthTx) {
-      const count = tx.items.filter((i) => i.type === "service").length;
+      const count = tx.items
+        .filter((i) => i.type === "service")
+        .reduce((sum, i) => sum + i.quantity, 0);
       map.set(tx.employeeId, (map.get(tx.employeeId) ?? 0) + count);
     }
     return map;
