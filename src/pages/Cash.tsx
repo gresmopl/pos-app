@@ -344,8 +344,8 @@ export default function CashPage() {
           <ActionButton
             icon={<IconCash size={22} color="var(--mantine-color-green-filled)" />}
             iconBg="var(--mantine-color-green-light)"
-            title="Wpłata drobnych"
-            subtitle="Wpłata z własnych pieniędzy"
+            title="Wpłata własna"
+            subtitle="Wpłata z własnych pieniędzy do kasy"
             onClick={() => setActiveModal("deposit")}
           />
           <ActionButton
@@ -555,7 +555,7 @@ function TerminalCheckModal({
           >
             <Text fz="xs" c="dimmed">
               {cashInDrawer < 0
-                ? "Kwota terminala wydaje się za wysoka"
+                ? "Kwota terminala przekracza sprzedaż. Sprawdź kwotę."
                 : "Gotówka w kasie powinna wynosić"}
             </Text>
             <Text fw={700} fz={32} c={cashInDrawer < 0 ? "red" : "green"}>
@@ -729,7 +729,7 @@ function DepositModal({
       onClose={handleClose}
       title={
         <Text fw={700} fz="lg">
-          Wpłata drobnych
+          Wpłata własna do kasy
         </Text>
       }
       size="sm"

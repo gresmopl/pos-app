@@ -41,7 +41,7 @@ export function DepositTab({ employeeOptions, onDeposit, lockedEmployeeId }: Dep
   return (
     <Stack gap="md" py="md">
       <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-        Wpłata do kasy (moje własne)
+        Wpłata własna do kasy
       </Text>
       <Text fz="sm">
         Kliknij, gdy wrzuciłeś do kasetki własne pieniądze lub dałeś klientowi resztę z własnych.

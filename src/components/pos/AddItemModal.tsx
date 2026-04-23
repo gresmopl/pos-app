@@ -80,7 +80,7 @@ export function AddItemModal({ opened, onClose, services, products, onAdd }: Add
         {tab === "services" &&
           (filteredServices.length === 0 ? (
             <Text fz="sm" c="dimmed" ta="center" py="xl">
-              {search ? "Brak wyników" : "Brak usług"}
+              {search ? "Brak wyników" : "Brak usług. Dodaj w Panelu admina → Cennik."}
             </Text>
           ) : (
             filteredServices.map((service) => (
@@ -110,7 +110,7 @@ export function AddItemModal({ opened, onClose, services, products, onAdd }: Add
         {tab === "products" &&
           (filteredProducts.length === 0 ? (
             <Text fz="sm" c="dimmed" ta="center" py="xl">
-              {search ? "Brak wyników" : "Brak produktów"}
+              {search ? "Brak wyników" : "Brak produktów. Dodaj w Panelu admina → Cennik."}
             </Text>
           ) : (
             filteredProducts.map((product) => (

@@ -22,7 +22,7 @@ export default function NotFound() {
             Strona nie istnieje
           </Text>
           <Text fz="sm" ta="center" c="dimmed">
-            Podany adres nie został znaleziony. Sprawdź URL lub wróć do strony głównej.
+            Podany adres nie został znaleziony. Sprawdź URL lub wróć do ekranu głównego.
           </Text>
           <Button onClick={() => navigate("/")}>Powrót do ekranu głównego</Button>
         </Stack>

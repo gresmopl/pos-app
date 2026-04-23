@@ -92,7 +92,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
       });
     } catch (err) {
       console.error("[AdminSettings] Save failed:", err);
-      notifications.show({ message: "Błąd zapisu", color: "red" });
+      notifications.show({ message: "Nie udało się zapisać. Spróbuj ponownie.", color: "red" });
     } finally {
       setSaving(false);
     }

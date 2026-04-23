@@ -83,7 +83,7 @@ function TerminalCheckRow({ check }: { check: TerminalCheck }) {
         </Box>
         <div style={{ minWidth: 0 }}>
           <Text fw={500} fz="sm">
-            Sprawdzenie terminala
+            Raport terminala
           </Text>
           <Text fz="xs" c="dimmed">
             Gotówka: {check.calculatedCash.toLocaleString("pl-PL")} zł ·{" "}

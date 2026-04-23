@@ -173,7 +173,7 @@ export default function POSPage() {
 
         {/* Client (optional) */}
         <Text fz="sm" c="dimmed" py="md">
-          Klient anonimowy
+          Klient przechodni
         </Text>
 
         <Divider />

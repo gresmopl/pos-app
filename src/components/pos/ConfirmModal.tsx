@@ -99,7 +99,7 @@ export function ConfirmModal({
             onClick={onConfirm}
             loading={loading}
           >
-            Potwierdzam
+            Potwierdź
           </Button>
         </Group>
       </Stack>

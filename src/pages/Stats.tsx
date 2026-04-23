@@ -121,7 +121,7 @@ export default function Stats(): React.JSX.Element {
                   <IconArrowDownRight size={12} style={{ verticalAlign: "middle" }} />
                 )}
                 {diff >= 0 ? "+" : ""}
-                {diff} vs wczoraj
+                {diff} do wczoraj
               </Text>
             </Group>
           </Box>
@@ -146,7 +146,7 @@ export default function Stats(): React.JSX.Element {
               <Stack gap={4} mt={4}>
                 <Progress value={monthProgress} color="green" size="sm" />
                 <Text fz="xs" c="dimmed">
-                  {monthProgress}% celu ({stats.monthTarget})
+                  {monthProgress}% celu miesięcznego
                 </Text>
               </Stack>
             )}
@@ -172,7 +172,7 @@ export default function Stats(): React.JSX.Element {
               {yearDiff !== 0 && (
                 <Text fz="xs" fw={600} c={yearDiff >= 0 ? "green" : "red"}>
                   {yearDiff >= 0 ? "+" : ""}
-                  {yearDiff}% r/r
+                  {yearDiff}% zmiana roczna
                 </Text>
               )}
             </Group>
@@ -195,7 +195,7 @@ export default function Stats(): React.JSX.Element {
               {stats.allTimeRecord}
             </Text>
             <Text fz="xs" c="dimmed">
-              Najlepszy miesiąc
+              Rekord dnia
             </Text>
           </Box>
         </SimpleGrid>

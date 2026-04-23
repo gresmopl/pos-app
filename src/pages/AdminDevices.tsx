@@ -75,7 +75,10 @@ function DeviceCard({
       await db.devices.approve(device.id);
       onAction();
     } catch {
-      notifications.show({ color: "red", message: "Nie udało się zatwierdzić urządzenia" });
+      notifications.show({
+        color: "red",
+        message: "Nie udało się zatwierdzić urządzenia. Spróbuj ponownie.",
+      });
     } finally {
       setLoading(false);
     }
@@ -87,7 +90,10 @@ function DeviceCard({
       await db.devices.block(device.id);
       onAction();
     } catch {
-      notifications.show({ color: "red", message: "Nie udało się zablokować urządzenia" });
+      notifications.show({
+        color: "red",
+        message: "Nie udało się zablokować urządzenia. Spróbuj ponownie.",
+      });
     } finally {
       setLoading(false);
     }

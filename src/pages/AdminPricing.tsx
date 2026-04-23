@@ -133,7 +133,7 @@ export default function PricingPage() {
       });
     } catch (err) {
       console.error("[AdminPricing] Save failed:", err);
-      notifications.show({ message: "Błąd zapisu", color: "red" });
+      notifications.show({ message: "Nie udało się zapisać. Spróbuj ponownie.", color: "red" });
     } finally {
       setSaving(false);
     }
@@ -150,7 +150,10 @@ export default function PricingPage() {
       }
     } catch (err) {
       console.error("[AdminPricing] Toggle failed:", err);
-      notifications.show({ message: "Błąd zmiany statusu", color: "red" });
+      notifications.show({
+        message: "Nie udało się zmienić statusu. Spróbuj ponownie.",
+        color: "red",
+      });
     }
   };
 

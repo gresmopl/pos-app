@@ -1,6 +1,17 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.109] - 2026-04-23
+- fix(ux): audyt UX copy - 14 poprawek tekstow w calej aplikacji
+  - bledy: konkretne komunikaty z instrukcja naprawy (AdminDevices, AdminEmployees, AdminSettings, AdminPricing)
+  - puste stany: wskazowki skad dodac brakujace dane (AddItemModal)
+  - potwierdzenia: "Potwierdz" zamiast "Potwierdzam" (ConfirmModal, ShiftClose)
+  - terminologia: "ekran glowny" zamiast "strona glowna" (ErrorBoundary, NotFound)
+  - statystyki: czytelniejsze etykiety (Stats)
+  - POS: "Klient przechodni" zamiast "Klient anonimowy"
+  - Kasa: "Wplata wlasna do kasy" zamiast "Wplata do kasy (moje wlasne)"
+  - ShiftClose: uproszczony opis drobnych
+
 [0.1.108] - 2026-04-23
 - fix: Historia - wyswietlanie quantity i ceny lacznej pozycji transakcji, ilosc w podsumowaniu
 - fix: manko/nadwyzka widoczne w opisie zamkniecia zmiany na liscie operacji kasowych

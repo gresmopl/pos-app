@@ -50,7 +50,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 Coś poszło nie tak
               </Text>
               <Text fz="sm" ta="center" c="dimmed">
-                Wystąpił nieoczekiwany błąd. Spróbuj wrócić do strony głównej.
+                Wystąpił nieoczekiwany błąd. Spróbuj wrócić do ekranu głównego.
               </Text>
               {this.state.error && (
                 <Text fz="xs" c="dimmed" ta="center" style={{ fontFamily: "monospace" }}>

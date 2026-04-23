@@ -110,7 +110,7 @@ export default function AdminEmployeesPage() {
       });
     } catch (err) {
       console.error("[AdminEmployees] Save failed:", err);
-      notifications.show({ message: "Błąd zapisu", color: "red" });
+      notifications.show({ message: "Nie udało się zapisać. Spróbuj ponownie.", color: "red" });
     } finally {
       setSaving(false);
     }
@@ -122,7 +122,10 @@ export default function AdminEmployeesPage() {
       setEmployees((prev) => prev.map((e) => (e.id === id ? { ...e, isActive: newActive } : e)));
     } catch (err) {
       console.error("[AdminEmployees] Toggle failed:", err);
-      notifications.show({ message: "Błąd zmiany statusu", color: "red" });
+      notifications.show({
+        message: "Nie udało się zmienić statusu. Spróbuj ponownie.",
+        color: "red",
+      });
     }
   };
 

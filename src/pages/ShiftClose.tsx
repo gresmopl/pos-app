@@ -341,7 +341,7 @@ export default function ShiftClosePage(): React.JSX.Element {
 
               <NumberInput
                 label="Drobne na jutro"
-                description="Pogotowie kasowe zostawiane w szufladzie na start kolejnego dnia"
+                description="Drobne zostawione w kasie na jutro"
                 placeholder="0"
                 min={0}
                 suffix=" zł"
@@ -462,7 +462,7 @@ export default function ShiftClosePage(): React.JSX.Element {
               Anuluj
             </Button>
             <Button color="green" size="lg" onClick={handleConfirm} loading={isSubmitting}>
-              Potwierdzam
+              Potwierdź
             </Button>
           </Group>
         </Stack>
