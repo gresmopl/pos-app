@@ -280,7 +280,10 @@ export function createSupabaseClient(config: DbConfig): DbClient {
               const serviceItems = (
                 (tx.transaction_item as Record<string, unknown>[]) || []
               ).filter((ti) => ti.type === "service");
-              emp.todayServices += serviceItems.length;
+              emp.todayServices += serviceItems.reduce(
+                (sum, ti) => sum + (Number(ti.quantity) || 1),
+                0
+              );
             }
           }
         }

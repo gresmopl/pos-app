@@ -1,6 +1,9 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.111] - 2026-04-23
+- fix: Dashboard - todayServices liczy quantity zamiast items.length (3x ta sama usluga = 3)
+
 [0.1.110] - 2026-04-23
 - refactor(design-system): 7 poprawek spojnosci design systemu
   - SectionLabel wyekstrahowany jako shared component (eliminacja ~30 duplikacji w 14 plikach)
