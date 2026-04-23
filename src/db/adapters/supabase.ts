@@ -266,7 +266,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         const today = new Date().toISOString().split("T")[0];
         const { data: todayTx } = await supabase
           .from("transaction")
-          .select("employee_id, total_amount, transaction_item(type)")
+          .select("employee_id, total_amount, transaction_item(type, quantity)")
           .eq("salon_id", SALON_ID)
           .eq("status", "completed")
           .gte("date", `${today}T00:00:00`)
