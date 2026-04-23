@@ -154,7 +154,7 @@ function MovementRow({ movement: m }: { movement: CashMovement }) {
           )}
         </Box>
         <div style={{ minWidth: 0 }}>
-          <Text fw={500} fz="sm" lineClamp={2}>
+          <Text fw={500} fz="sm">
             {m.description}
             {m.status === "settled" && " (rozliczono)"}
           </Text>

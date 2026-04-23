@@ -1,6 +1,9 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.116] - 2026-04-23
+- fix(ux): Kasa operacje - usuniety lineClamp, pelny opis widoczny na mobile
+
 [0.1.115] - 2026-04-23
 - fix(ux): Statystyki pracownicy - usuniety podwojony numer (pluralizeWord helper)
 
