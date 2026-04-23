@@ -45,12 +45,16 @@ export function getRetentionRank(
  * @param few - form for 2-4 (e.g. "usługi")
  * @param many - form for 0, 5+ (e.g. "usług")
  */
-export function pluralize(count: number, one: string, few: string, many: string): string {
+export function pluralizeWord(count: number, one: string, few: string, many: string): string {
   const abs = Math.abs(count);
-  if (abs === 1) return `${count} ${one}`;
+  if (abs === 1) return one;
   const lastTwo = abs % 100;
   const lastOne = abs % 10;
-  if (lastTwo >= 10 && lastTwo <= 20) return `${count} ${many}`;
-  if (lastOne >= 2 && lastOne <= 4) return `${count} ${few}`;
-  return `${count} ${many}`;
+  if (lastTwo >= 10 && lastTwo <= 20) return many;
+  if (lastOne >= 2 && lastOne <= 4) return few;
+  return many;
+}
+
+export function pluralize(count: number, one: string, few: string, many: string): string {
+  return `${count} ${pluralizeWord(count, one, few, many)}`;
 }

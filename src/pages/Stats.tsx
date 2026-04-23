@@ -22,7 +22,7 @@ import {
 import { useDailyStats, useEmployees, useSalonSettings } from "@/hooks/useDbData";
 import { db } from "@/db";
 import type { Transaction } from "@/lib/types";
-import { getRetentionRank, pluralize, type RetentionThresholds } from "@/lib/constants";
+import { getRetentionRank, pluralizeWord, type RetentionThresholds } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 import { SectionLabel } from "@/components/layout/SectionLabel";
@@ -242,7 +242,7 @@ export default function Stats(): React.JSX.Element {
                         {monthServices}
                       </Text>
                       <Text fz="xs" c="dimmed">
-                        {pluralize(monthServices, "usługa", "usługi", "usług")} /mies.
+                        {pluralizeWord(monthServices, "usługa", "usługi", "usług")} /mies.
                       </Text>
                     </div>
                   </Group>
