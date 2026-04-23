@@ -57,7 +57,7 @@ export function mapTransaction(
   if (discountType === "amount") {
     discountAmount = discountValue;
   } else if (discountType === "percentage" && discountValue > 0) {
-    const subtotal = items.reduce((sum, item) => sum + item.price, 0);
+    const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
     discountAmount = Math.round(subtotal * (discountValue / 100) * 100) / 100;
   }
 

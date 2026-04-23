@@ -171,8 +171,8 @@ describe("mapProduct", () => {
 
 describe("mapTransaction", () => {
   const items = [
-    { name: "Strzyżenie", price: 60, type: "service" as const },
-    { name: "Broda", price: 30, type: "service" as const },
+    { name: "Strzyżenie", price: 60, quantity: 1, type: "service" as const },
+    { name: "Broda", price: 30, quantity: 1, type: "service" as const },
   ];
 
   function txRow(overrides: Record<string, unknown> = {}): Record<string, unknown> {

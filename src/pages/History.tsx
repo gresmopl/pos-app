@@ -93,7 +93,13 @@ export default function HistoryPage() {
   });
 
   const serviceCount = filtered.reduce(
-    (sum, t) => sum + t.items.filter((i) => i.type === "service").length,
+    (sum, t) =>
+      sum + t.items.filter((i) => i.type === "service").reduce((s, i) => s + i.quantity, 0),
+    0
+  );
+  const productCount = filtered.reduce(
+    (sum, t) =>
+      sum + t.items.filter((i) => i.type === "product").reduce((s, i) => s + i.quantity, 0),
     0
   );
   const totalRevenue = filtered.reduce((sum, t) => sum + t.totalAmount, 0);
@@ -221,7 +227,9 @@ export default function HistoryPage() {
           ) : (
             filtered.map((transaction, index) => {
               const isExpanded = expandedId === transaction.id;
-              const itemsSummary = transaction.items.map((i) => i.name).join(", ");
+              const itemsSummary = transaction.items
+                .map((i) => (i.quantity > 1 ? `${i.name} ×${i.quantity}` : i.name))
+                .join(", ");
 
               return (
                 <div key={transaction.id}>
@@ -270,9 +278,12 @@ export default function HistoryPage() {
                       <Stack gap={4}>
                         {transaction.items.map((item, i) => (
                           <Group key={i} justify="space-between">
-                            <Text fz="sm">{item.name}</Text>
+                            <Text fz="sm">
+                              {item.name}
+                              {item.quantity > 1 && ` ×${item.quantity}`}
+                            </Text>
                             <Text fz="sm" c="dimmed">
-                              {item.price.toLocaleString("pl-PL")} zł
+                              {(item.price * item.quantity).toLocaleString("pl-PL")} zł
                             </Text>
                           </Group>
                         ))}
@@ -354,12 +365,22 @@ export default function HistoryPage() {
           <Group justify="space-between">
             <div>
               <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Wykonane usługi
+                Usługi
               </Text>
               <Text fw={700} fz="xl">
                 {serviceCount}
               </Text>
             </div>
+            {productCount > 0 && (
+              <div style={{ textAlign: "center" }}>
+                <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
+                  Produkty
+                </Text>
+                <Text fw={700} fz="xl">
+                  {productCount}
+                </Text>
+              </div>
+            )}
             <div style={{ textAlign: "right" }}>
               <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
                 Utarg

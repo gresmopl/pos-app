@@ -278,7 +278,7 @@ export default function CashPage() {
                 {currentCashInDrawer.toLocaleString("pl-PL")} zł
               </Text>
               <Text fz="xs" c="dimmed" mt={6}>
-                ostatni raport terminala:{" "}
+                ostatni raport z terminala:{" "}
                 {lastCheckTimestamp!.toLocaleTimeString("pl-PL", {
                   hour: "2-digit",
                   minute: "2-digit",
@@ -294,7 +294,7 @@ export default function CashPage() {
                 {loading ? "..." : `${systemCash.toLocaleString("pl-PL")} zł`}
               </Text>
               <Text fz="xs" c="dimmed" mt={6}>
-                Wpisz raport z terminala, aby zobaczyć stan gotówki
+                Zrób raport na terminalu i wpisz kwotę
               </Text>
             </>
           )}
@@ -325,7 +325,7 @@ export default function CashPage() {
           icon={<IconSearch size={22} color="var(--mantine-color-blue-filled)" />}
           iconBg="var(--mantine-color-blue-light)"
           title="Sprawdź z terminalem"
-          subtitle="Wpisz kwotę z raportu i zobacz różnicę"
+          subtitle="Zrób raport na terminalu i wpisz kwotę"
           onClick={() => setActiveModal("terminal")}
         />
 
@@ -518,15 +518,15 @@ function TerminalCheckModal({
           </Text>
           {previousTerminalTotal > 0 && (
             <Text fz="xs" c="dimmed" mt={2}>
-              po odjęciu wcześniejszych raportów terminala (
+              po odjęciu wcześniejszych raportów z terminala (
               {previousTerminalTotal.toLocaleString("pl-PL")} zł)
             </Text>
           )}
         </Box>
 
         <NumberInput
-          label="Suma z raportu terminala (karty)"
-          description="Kwota płatności kartą z raportu terminala"
+          label="Kwota z raportu terminala (karty)"
+          description="Administracja → Raporty na terminalu"
           placeholder="0"
           data-autofocus
           value={terminalAmount}

@@ -104,6 +104,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       ).map((ti) => ({
         name: ti.name as string,
         price: Number(ti.price_at_sale),
+        quantity: Number(ti.quantity) || 1,
         type: ti.type as TransactionItem["type"],
       }));
 
@@ -653,6 +654,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           items: input.items.map((i) => ({
             name: i.name,
             price: i.price,
+            quantity: i.quantity,
             type: i.type,
           })),
           totalAmount: input.totalAmount,

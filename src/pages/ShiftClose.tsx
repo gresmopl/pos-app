@@ -128,7 +128,7 @@ export default function ShiftClosePage(): React.JSX.Element {
         type: "shift_close",
         employeeId: form.values.closingEmployee,
         amount: envelopeVal,
-        description: `Zamknięcie zmiany (koperta: ${envelopeVal} zł, drobne: ${floatVal} zł${totalTerminal > 0 ? `, terminal: ${totalTerminal} zł` : ""})`,
+        description: `Zamknięcie zmiany (koperta: ${envelopeVal} zł, drobne: ${floatVal} zł${totalTerminal > 0 ? `, terminal: ${totalTerminal} zł` : ""}) · ${difference === 0 ? "OK" : difference > 0 ? `nadwyżka ${difference.toLocaleString("pl-PL")} zł` : `manko ${Math.abs(difference).toLocaleString("pl-PL")} zł`}`,
       });
       setConfirmModal(false);
       setDone(true);
@@ -304,7 +304,7 @@ export default function ShiftClosePage(): React.JSX.Element {
             <Divider mt="sm" />
             <Stack gap="sm" py="sm">
               <Text fz="xs" c="var(--mantine-color-text)" tt="uppercase" lts={1}>
-                Raport terminala
+                Rozliczenie terminala
               </Text>
 
               {previousTerminalTotal > 0 && (
@@ -316,7 +316,7 @@ export default function ShiftClosePage(): React.JSX.Element {
                   }}
                 >
                   <Text fz="xs" c="dimmed">
-                    Wcześniejsze raporty terminala (zsumowane)
+                    Wcześniejsze raporty z terminala (zsumowane)
                   </Text>
                   <Text fw={700} fz="md" c="blue">
                     {previousTerminalTotal.toLocaleString("pl-PL")} zł
@@ -325,8 +325,8 @@ export default function ShiftClosePage(): React.JSX.Element {
               )}
 
               <NumberInput
-                label="Kwota z bieżącego raportu terminala"
-                description="Kwota od ostatniego sprawdzenia (terminal raportuje przyrostowo)"
+                label="Kwota z bieżącego rozliczenia terminala"
+                description="Administracja → Rozliczenie dnia na terminalu"
                 placeholder="0"
                 min={0}
                 suffix=" zł"

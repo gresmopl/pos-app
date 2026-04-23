@@ -1,6 +1,14 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.108] - 2026-04-23
+- fix: Historia - wyswietlanie quantity i ceny lacznej pozycji transakcji, ilosc w podsumowaniu
+- fix: manko/nadwyzka widoczne w opisie zamkniecia zmiany na liscie operacji kasowych
+- fix: rabat procentowy w mapperze uwzglednia quantity
+
+[0.1.107] - 2026-04-23
+- fix(ux): terminologia terminala - raport (Kasa) vs rozliczenie dnia (Zamkniecie zmiany), opisy zgodne z menu terminala
+
 [0.1.106] - 2026-04-22
 - fix(ux): pływajacy interfejs na mobile - body fixed, scroll w #root, overscroll-behavior na body
 

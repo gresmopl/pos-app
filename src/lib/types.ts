@@ -68,6 +68,7 @@ export interface Product {
 export interface TransactionItem {
   name: string;
   price: number;
+  quantity: number;
   type: "service" | "product" | "voucher_sale";
 }
 
