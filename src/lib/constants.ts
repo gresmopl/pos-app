@@ -5,7 +5,13 @@ export const MOCK_OPERATIONS_PIN = "1234";
 // Voucher expiry (months from sale date)
 export const VOUCHER_EXPIRY_MONTHS = 12;
 
+// Limit zdrowego rozsadku dla napiwku (zabezpieczenie przed bledem typu klikanie "+20" wielokrotnie)
+export const MAX_TIP = 1000;
+
+export type RetentionTier = "top" | "high" | "mid" | "dev";
+
 export interface RetentionRank {
+  tier: RetentionTier;
   icon: string;
   label: string;
   color: string;
@@ -20,12 +26,17 @@ export interface RetentionThresholds {
 const DEFAULT_THRESHOLDS: RetentionThresholds = { top: 95, high: 85, mid: 75 };
 
 const RANKS: { key: "top" | "high" | "mid"; rank: RetentionRank }[] = [
-  { key: "top", rank: { icon: "👑", label: "MISTRZ", color: "yellow" } },
-  { key: "high", rank: { icon: "💎", label: "MISTRZ", color: "blue" } },
-  { key: "mid", rank: { icon: "⭐", label: "SOLIDNY", color: "green" } },
+  { key: "top", rank: { tier: "top", icon: "👑", label: "MISTRZ", color: "yellow" } },
+  { key: "high", rank: { tier: "high", icon: "💎", label: "MISTRZ", color: "blue" } },
+  { key: "mid", rank: { tier: "mid", icon: "⭐", label: "SOLIDNY", color: "green" } },
 ];
 
-const RANK_DEVELOPMENT: RetentionRank = { icon: "📈", label: "ROZWÓJ", color: "gray" };
+const RANK_DEVELOPMENT: RetentionRank = {
+  tier: "dev",
+  icon: "📈",
+  label: "ROZWÓJ",
+  color: "gray",
+};
 
 export function getRetentionRank(
   percent: number | null,

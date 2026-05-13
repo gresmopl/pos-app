@@ -1,22 +1,34 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import { useEmployees, useServices, useProducts } from "@/hooks/useDbData";
 import { db } from "@/db";
-import { Text, Group, Stack, Box, Avatar, Divider, Container, Badge, Button } from "@mantine/core";
+import {
+  Text,
+  Group,
+  Box,
+  Avatar,
+  Divider,
+  Container,
+  Badge,
+  Button,
+  Modal,
+  NumberInput,
+} from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { IconPlus, IconDiscount2, IconCheck, IconChevronRight } from "@tabler/icons-react";
+import { IconPlus, IconDiscount2, IconChevronRight, IconCoin } from "@tabler/icons-react";
 import { pluralize } from "@/lib/constants";
-import { BOTTOM_NAV_HEIGHT, PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
+import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useCart } from "@/hooks/useCart";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionLabel } from "@/components/layout/SectionLabel";
 import { PageSkeleton } from "@/components/PageSkeleton";
 import { CartItemList } from "@/components/pos/CartItemList";
-import { TipSelector } from "@/components/pos/TipSelector";
+import { TipModal } from "@/components/pos/TipModal";
 import { AddItemModal } from "@/components/pos/AddItemModal";
 import { DiscountModal } from "@/components/pos/DiscountModal";
 import { ConfirmModal } from "@/components/pos/ConfirmModal";
+import type { CartItem } from "@/lib/types";
 
 export default function POSPage() {
   const navigate = useNavigate();
@@ -37,22 +49,47 @@ export default function POSPage() {
     discountAmount,
     total,
     itemCount,
+    hasService,
     setTipAmount,
     setDiscount,
     addToCart,
     updateQuantity,
+    updatePrice,
     removeFromCart,
     resetCart,
   } = useCart();
 
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [discountModalOpen, setDiscountModalOpen] = useState(false);
+  const [tipModalOpen, setTipModalOpen] = useState(false);
+  const [priceEditItem, setPriceEditItem] = useState<CartItem | null>(null);
+  const [priceEditValue, setPriceEditValue] = useState<number | string>("");
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [finalizing, setFinalizing] = useState(false);
-  const [successData, setSuccessData] = useState<{
-    total: number;
-    employeeName: string;
-  } | null>(null);
+
+  // UI cleanup: jesli useCart zerwal tip/discount (bo koszyk stracil usluge lub sie oproznił),
+  // zamknij otwarte modale — w przeciwnym razie zostalyby otwarte z nieaktualnym stanem.
+  useEffect(() => {
+    if (!hasService) setTipModalOpen(false);
+  }, [hasService]);
+
+  useEffect(() => {
+    if (cart.length === 0) setDiscountModalOpen(false);
+  }, [cart.length]);
+
+  const openPriceEdit = (item: CartItem) => {
+    setPriceEditItem(item);
+    setPriceEditValue(item.price);
+  };
+
+  const applyPriceEdit = () => {
+    if (!priceEditItem) return;
+    const parsed = Number(priceEditValue);
+    if (!Number.isFinite(parsed) || parsed < 0.01) return;
+    updatePrice(priceEditItem.cartId, parsed);
+    setPriceEditItem(null);
+    setPriceEditValue("");
+  };
 
   const finalize = async () => {
     if (finalizing) return;
@@ -66,12 +103,9 @@ export default function POSPage() {
         discountAmount,
         totalAmount: total,
       });
-      const savedTotal = total;
-      const savedName = employee?.name ?? "";
       setConfirmModalOpen(false);
       resetCart();
       if (navigator.vibrate) navigator.vibrate(100);
-      setSuccessData({ total: savedTotal, employeeName: savedName });
     } catch (err) {
       console.error("[POS] Failed to save transaction:", err);
       notifications.show({
@@ -98,61 +132,6 @@ export default function POSPage() {
     );
   }
 
-  if (successData) {
-    return (
-      <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
-        <Stack align="center" justify="center" gap="lg" py={80} px="md">
-          <Box
-            p="xl"
-            style={{
-              borderRadius: "50%",
-              backgroundColor: "var(--mantine-color-green-filled)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <IconCheck size={56} color="white" stroke={3} />
-          </Box>
-          <Text fw={700} fz={24}>
-            Sprzedaż zapisana
-          </Text>
-          <Text fw={700} fz={48} c="green" lh={1}>
-            {successData.total.toLocaleString("pl-PL", { minimumFractionDigits: 2 })} zł
-          </Text>
-          <Box
-            p="md"
-            style={{
-              borderRadius: "var(--mantine-radius-md)",
-              backgroundColor: "var(--mantine-color-gray-light)",
-            }}
-          >
-            <Text fz="sm" c="dimmed">
-              Pracownik:{" "}
-              <Text span fw={600}>
-                {successData.employeeName}
-              </Text>
-            </Text>
-          </Box>
-          <Button
-            fullWidth
-            size="lg"
-            maw={400}
-            variant="light"
-            color="green"
-            onClick={() => setSuccessData(null)}
-            mt="xl"
-          >
-            Następny klient
-          </Button>
-          <Button fullWidth size="lg" maw={400} variant="subtle" onClick={() => navigate("/")}>
-            Wróć do ekranu głównego
-          </Button>
-        </Stack>
-      </Box>
-    );
-  }
-
   return (
     <Box mih="100vh" pb={100}>
       <Container size="lg">
@@ -172,14 +151,12 @@ export default function POSPage() {
 
         <Divider />
 
-        {/* Client (optional) */}
         <Text fz="sm" c="dimmed" py="md">
           Klient przechodni
         </Text>
 
         <Divider />
 
-        {/* Total */}
         <Box py="md">
           <SectionLabel>Do zapłaty</SectionLabel>
           <Text fw={700} fz={40}>
@@ -194,27 +171,35 @@ export default function POSPage() {
               onClick={() => setDiscountModalOpen(true)}
             >
               Rabat: -{discountAmount.toLocaleString("pl-PL")} zł
-              {discount.type === "percent" && ` (${discount.value}%)`}
+            </Badge>
+          )}
+          {tipAmount > 0 && (
+            <Badge
+              size="sm"
+              variant="light"
+              color="green"
+              ml={discount ? "xs" : 0}
+              style={{ cursor: hasService ? "pointer" : "default" }}
+              onClick={() => {
+                if (hasService) setTipModalOpen(true);
+              }}
+            >
+              Napiwek: +{tipAmount.toLocaleString("pl-PL")} zł
             </Badge>
           )}
         </Box>
 
         <Divider />
 
-        {/* Cart */}
         <Box py="md">
-          <CartItemList items={cart} onUpdateQuantity={updateQuantity} onRemove={removeFromCart} />
+          <CartItemList
+            items={cart}
+            onUpdateQuantity={updateQuantity}
+            onEditPrice={openPriceEdit}
+            onRemove={removeFromCart}
+          />
         </Box>
 
-        {/* Tip */}
-        {cart.length > 0 && (
-          <>
-            <Divider />
-            <TipSelector tipAmount={tipAmount} onTipChange={setTipAmount} />
-          </>
-        )}
-
-        {/* Action buttons */}
         <Divider />
         <Group py="md" gap="md">
           <Button
@@ -226,17 +211,26 @@ export default function POSPage() {
             Dodaj
           </Button>
           <Button
-            variant="light"
+            variant={discount ? "filled" : "light"}
             size="md"
             leftSection={<IconDiscount2 size={16} />}
             onClick={() => setDiscountModalOpen(true)}
+            disabled={cart.length === 0}
           >
             Rabat
+          </Button>
+          <Button
+            variant={tipAmount > 0 ? "filled" : "light"}
+            size="md"
+            leftSection={<IconCoin size={16} />}
+            onClick={() => setTipModalOpen(true)}
+            disabled={!hasService}
+          >
+            Napiwek
           </Button>
         </Group>
       </Container>
 
-      {/* Floating cart bar */}
       {cart.length > 0 && (
         <Box
           style={{
@@ -274,7 +268,6 @@ export default function POSPage() {
         </Box>
       )}
 
-      {/* Modals */}
       <AddItemModal
         opened={addModalOpen}
         onClose={() => setAddModalOpen(false)}
@@ -292,6 +285,45 @@ export default function POSPage() {
         subtotal={subtotal}
         onApply={setDiscount}
       />
+      <TipModal
+        opened={tipModalOpen}
+        onClose={() => setTipModalOpen(false)}
+        tipAmount={tipAmount}
+        onApply={setTipAmount}
+      />
+      <Modal
+        opened={!!priceEditItem}
+        onClose={() => {
+          setPriceEditItem(null);
+          setPriceEditValue("");
+        }}
+        title={
+          <Text fw={700} fz="lg">
+            Cena produktu
+          </Text>
+        }
+        size="sm"
+      >
+        {priceEditItem && (
+          <Box>
+            <NumberInput
+              label="Cena szt."
+              data-autofocus
+              value={priceEditValue}
+              onChange={setPriceEditValue}
+              min={0.01}
+              decimalScale={2}
+              suffix=" zł"
+              size="lg"
+              inputMode="decimal"
+              onFocus={(event) => event.currentTarget.select()}
+            />
+            <Button fullWidth size="lg" mt="md" onClick={applyPriceEdit}>
+              Zastosuj
+            </Button>
+          </Box>
+        )}
+      </Modal>
       <ConfirmModal
         opened={confirmModalOpen}
         onClose={() => setConfirmModalOpen(false)}

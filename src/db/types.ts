@@ -21,6 +21,8 @@ export interface SaveEmployeeInput {
   commissionServicePercent: number;
   commissionProductPercent: number;
   retentionPercent?: number | null;
+  displayOrder?: number;
+  showRetentionBadge?: boolean;
 }
 
 export interface SaveServiceInput {
@@ -96,6 +98,24 @@ export interface UpdateSalonInput {
   retentionThresholdMid?: number;
 }
 
+/**
+ * Kontrakt adaptera bazy danych.
+ *
+ * Wszystkie metody zwracaja **domain shape** (camelCase, JS types, domain encje
+ * z `@/lib/types`) — NIE surowe wiersze SQL/JSON. Konwersja ze storage format
+ * jest *implementation detail* adaptera:
+ *
+ * - `adapters/supabase.ts` — uzywa `src/db/mappers.ts` (snake_case -> camelCase)
+ * - `adapters/rest.ts` — zaklada ze backend Hetzner zwraca juz domain shape;
+ *   uzywa `r.json() as Promise<T>` (type assertion, nie runtime validation)
+ *
+ * **Konsekwencja dla developera**: zmiana w schema DB (nowa kolumna `display_order`)
+ * wymaga AKTUALIZACJI W DWOCH MIEJSCACH:
+ *  1. `src/db/mappers.ts` (mapowanie snake_case -> camelCase dla Supabase)
+ *  2. Backend REST na Hetzner (endpoint MUSI zwracac `displayOrder`, nie `display_order`)
+ *
+ * Patrz ADR-014 w docs/decisions.md.
+ */
 export interface DbClient {
   salon: {
     get(): Promise<SalonSettings>;

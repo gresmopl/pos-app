@@ -97,7 +97,7 @@ src/
   globals.css           Globalne style, animacje, @media print, native touch CSS
 
   pages/                Strony (lazy-loaded przez React.lazy)
-    Dashboard.tsx       Ekran glowny: lista pracownikow z badge retencji
+    Dashboard.tsx       Ekran glowny: lista pracownikow z ikona retencji na avatarze (zawsze) i opcjonalnym badge tekstowym (showRetentionBadge)
     POS.tsx             Sprzedaz: koszyk, rabaty, napiwki, floating cart bar
     History.tsx         Historia transakcji (filtr dat od/do z kalendarzem)
     Cash.tsx            Ruchy kasowe: terminal check, zakupy, wplaty, bony (modalne)
@@ -119,10 +119,10 @@ src/
       PinModal.tsx      Reusable modal PIN (4 cyfry, data-autofocus)
       BottomNavBar.tsx  Staly dolny pasek: Sprzedaz, Kasa, Napiwki, Wiecej
     pos/
-      CartItemList.tsx  Lista pozycji w koszyku (+/- ilosc)
-      TipSelector.tsx   Wybor napiwku (kwota)
+      CartItemList.tsx  Lista pozycji w koszyku (+/- ilosc, edycja ceny dla produktow)
+      TipModal.tsx      Modal napiwku (przyciski +1/+5/+10/+20, dodaja do aktualnej kwoty)
       AddItemModal.tsx  Dodawanie uslug/produktow do koszyka (data-autofocus)
-      DiscountModal.tsx Rabat procentowy lub kwotowy (data-autofocus)
+      DiscountModal.tsx Rabat kwotowy (przyciski +1/+5/+10/+20, data-autofocus, clamp do subtotal)
       ConfirmModal.tsx  Potwierdzenie przed finalizacja
     cash/
       TipTab.tsx        Portfel - wyplata z tipBalance (async z DB)
@@ -342,7 +342,7 @@ Dashboard (klik pracownika)
   -> Floating cart bar (zielony pasek z kwota)
   -> Potwierdzenie (ConfirmModal)
   -> db.transactions.create() (transaction + items + tip_balance)
-  -> Haptic feedback + success screen (kwota + pracownik)
+  -> Haptic feedback + reset koszyka (bez success screen - od v0.1.118)
 ```
 
 Wszystkie platnosci traktowane jako gotowka (bez wyboru metody). Adapter tworzy: transaction row, transaction_item rows, aktualizuje tip_balance jesli napiwek > 0.

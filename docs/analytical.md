@@ -246,8 +246,8 @@ Etap 2 - Rozliczenie:
 | items[]          | TransactionItem[]       | Pozycje (usluga/produkt)                        |
 | totalAmount      | number                  | Suma brutto                                     |
 | tipAmount        | number                  | Napiwek                                         |
-| discountType     | "percentage" / "amount" | Typ rabatu                                      |
-| discountValue    | number                  | Wartosc rabatu                                  |
+| discountType     | "amount"               | Typ rabatu dla nowych transakcji; "percentage" tylko legacy |
+| discountValue    | number                  | Wartosc rabatu kwotowego                       |
 | paymentMethod    | string                  | Metoda platnosci (cash/card/blik/voucher/split) |
 | paymentBreakdown | PaymentBreakdownItem[]  | Rozbicie per metoda z kwotami                   |
 | status           | string                  | completed / cancelled                           |
@@ -306,6 +306,9 @@ Oczekiwane bony = Suma platnosci "voucher" z paymentBreakdown
 | role                       | admin / barber             |
 | commission_service_percent | % prowizji od uslug        |
 | commission_product_percent | % prowizji od kosmetykow   |
+| retention_percent          | Retencja klientow w %       |
+| display_order              | Reczna kolejnosc wyswietlania |
+| show_retention_badge       | Czy pokazywac tekstowy badge retencji |
 | tip_balance                | Wirtualny portfel napiwkow |
 | is_active                  | Aktywny / nieaktywny       |
 

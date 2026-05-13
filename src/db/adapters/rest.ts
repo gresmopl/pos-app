@@ -3,6 +3,11 @@ import type { DbConfig } from "../config";
 
 // Production: REST API adapter for Hetzner VPS (Node.js + PostgreSQL)
 // Usage: VITE_DB_ADAPTER=rest in .env.production
+//
+// KONTRAKT: backend MUSI zwracac domain shape (camelCase, types per @/lib/types).
+// `as Promise<T>` ponizej to TYPE ASSERTION, nie runtime validation - jesli backend
+// zwroci np. `display_order` zamiast `displayOrder`, TypeScript nie zlapie tego,
+// aplikacja dostanie `undefined` w UI. Patrz ADR-014 i docs/decisions.md.
 
 async function fetchApi<T>(apiUrl: string, endpoint: string): Promise<T> {
   const response = await fetch(`${apiUrl}${endpoint}`);

@@ -125,6 +125,31 @@ describe("mapEmployee", () => {
     const result = mapEmployee(employeeRow({ retention_percent: 0 }));
     expect(result.retentionPercent).toBe(0);
   });
+
+  it("mapuje displayOrder z display_order", () => {
+    const result = mapEmployee(employeeRow({ display_order: 5 }));
+    expect(result.displayOrder).toBe(5);
+  });
+
+  it("domyslnie displayOrder=0 gdy brak display_order w bazie", () => {
+    const result = mapEmployee(employeeRow());
+    expect(result.displayOrder).toBe(0);
+  });
+
+  it("mapuje showRetentionBadge=false gdy false w bazie", () => {
+    const result = mapEmployee(employeeRow({ show_retention_badge: false }));
+    expect(result.showRetentionBadge).toBe(false);
+  });
+
+  it("domyslnie showRetentionBadge=true gdy brak w bazie (legacy rows)", () => {
+    const result = mapEmployee(employeeRow());
+    expect(result.showRetentionBadge).toBe(true);
+  });
+
+  it("showRetentionBadge=true gdy true w bazie", () => {
+    const result = mapEmployee(employeeRow({ show_retention_badge: true }));
+    expect(result.showRetentionBadge).toBe(true);
+  });
 });
 
 describe("mapService", () => {

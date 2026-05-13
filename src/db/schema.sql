@@ -66,6 +66,8 @@ CREATE TABLE employee (
   commission_service_percent NUMERIC(5,2) NOT NULL DEFAULT 0,
   commission_product_percent NUMERIC(5,2) NOT NULL DEFAULT 0,
   retention_percent NUMERIC(5,2),
+  display_order INT NOT NULL DEFAULT 0,
+  show_retention_badge BOOLEAN NOT NULL DEFAULT true,
   tip_balance NUMERIC(10,2) NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),

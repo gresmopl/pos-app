@@ -25,7 +25,7 @@
 
 - [x] **Wspolny PageHeader** - komponent uzywany w 6 stronach (backTo + rightSection)
 - [x] **Wspolny PinModal** - reusable komponent gotowy na Phase 2
-- [x] **Plik stalych** - CASH_TOLERANCE, VOUCHER_EXPIRY_MONTHS, PAYMENT_METHODS
+- [x] **Plik stalych** - VOUCHER_EXPIRY_MONTHS, PAYMENT_METHODS, MAX_TIP, pluralize()
 - [x] **Wyeliminowane dead code** - nieuzywane importy, zmienne, funkcje
 
 ### Do dopracowania w Fazie 1 - ZROBIONE
@@ -97,7 +97,7 @@
   - Widoki: personal = tylko swoje dane, station = wszystko, admin = panel szefa
 - [x] Ustawienia salonu w panelu admina (/admin/settings)
   - Dane salonu (nazwa, adres, telefon, NIP)
-  - Kasa (tolerancja kasowa, cel miesieczny)
+  - Kasa (brak tolerancji kasowej - kazda roznica widoczna, cel miesieczny)
   - Bony (waznosc, min. kwota, prefiks kodu)
   - Prowizje (domyslne stawki dla nowych pracownikow)
   - Platnosci (wlaczanie/wylaczanie metod)
@@ -159,6 +159,22 @@ Technologia: Gemini Flash (tekst + vision, ~0.30 zl/mln tokenow) + Web Speech AP
 - [ ] **Glosowe zamkniecie zmiany** - zamiast formularza: "policzylem 2450 gotowki, 3 bony po 100, drobne 200" - AI wypelnia formularz
 - [ ] **Predykcje i planowanie** - "jutro sobota, przewiduje 18 klientow, rekomenduje 4 fryzjerow", "olejek sprzedaje sie 3x szybciej - zamowic?"
 - [ ] **OCR paragonu zakupowego** - zdjecie paragonu z zakupow salonowych, AI odczytuje sklep/kwote/pozycje, wypelnia rozliczenie
+
+## Weryfikacja po zmianach v0.1.118
+
+Niezaadresowane obawy z review zmian codexa (2026-05-13):
+
+- [ ] **Uruchomic `npm test`** - sprawdzic czy testy mapperow nie pekly po dodaniu `displayOrder` i `showRetentionBadge` do typu `Employee` (40 testow / 4 pliki)
+- [x] **Logika napiwku** - zweryfikowane: napiwek jest atrybutem transakcji (`transaction.tip_amount`), nie pozycji. Jeden `employee_id` per transakcja - regula "pierwsza usluga" nie ma odzwierciedlenia w storage. Codex nie tknal logiki adaptera. UI egzekwuje wymog uslugi w koszyku (`disabled={!hasService}` + useEffect reset). Server-side guard swiadomie pominiety - 2026-05-13
+- [ ] **`npm run build`** - sprawdzic czy production bundle wstaje (dev server moze wybaczyc rzeczy ktore bundler zauwazy)
+- [x] **Edge case: cena produktu = 0 zl** - zmieniono `min={0.01}` w modalu POS + guard w `applyPriceEdit` (odrzuca puste pole i wartosci < 0.01). Produkt za darmo nie do zapisania - 2026-05-13
+- [x] **Edge case: badge bez `retentionPercent`** - zweryfikowane: `getRetentionRank(null)` zwraca `RANK_DEVELOPMENT` (gray, "ROZWOJ"), `RetentionAvatarIcon` ma fallback na `IconTrendingUp`. Pracownik bez retencji ma ikone wykresu na szarym tle - dziala - 2026-05-13
+- [ ] **Migracja PROD (Hetzner)** - po merge do `main` wykonac na produkcji:
+      ```sql
+      ALTER TABLE employee ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
+      ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT NULL DEFAULT true;
+      ```
+      (DEV/Supabase juz zmigrowane 2026-05-13)
 
 ## Przyszle usprawnienia
 

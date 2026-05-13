@@ -1,14 +1,20 @@
 import { Text, Group, Stack, ActionIcon, Divider } from "@mantine/core";
-import { IconTrash } from "@tabler/icons-react";
+import { IconPencil, IconTrash } from "@tabler/icons-react";
 import type { CartItem } from "@/lib/types";
 
 interface CartItemListProps {
   items: CartItem[];
   onUpdateQuantity: (cartId: string, delta: number) => void;
+  onEditPrice: (item: CartItem) => void;
   onRemove: (cartId: string) => void;
 }
 
-export function CartItemList({ items, onUpdateQuantity, onRemove }: CartItemListProps) {
+export function CartItemList({
+  items,
+  onUpdateQuantity,
+  onEditPrice,
+  onRemove,
+}: CartItemListProps) {
   if (items.length === 0) {
     return (
       <Text fz="sm" ta="center" py="xl">
@@ -60,6 +66,17 @@ export function CartItemList({ items, onUpdateQuantity, onRemove }: CartItemList
               <Text fw={600} fz="md" w={70} ta="right">
                 {(item.price * item.quantity).toLocaleString("pl-PL")} zł
               </Text>
+              {item.type === "product" && (
+                <ActionIcon
+                  variant="light"
+                  color="green"
+                  size="lg"
+                  onClick={() => onEditPrice(item)}
+                  aria-label={`Zmień cenę produktu ${item.name}`}
+                >
+                  <IconPencil size={16} />
+                </ActionIcon>
+              )}
               <ActionIcon
                 variant="subtle"
                 color="red"

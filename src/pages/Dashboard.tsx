@@ -16,10 +16,39 @@ import {
   Button,
 } from "@mantine/core";
 import { useMediaQuery } from "@mantine/hooks";
-import { IconSun, IconMoon, IconScissors, IconChevronRight } from "@tabler/icons-react";
-import { pluralize, getRetentionRank, type RetentionThresholds } from "@/lib/constants";
+import {
+  IconSun,
+  IconMoon,
+  IconScissors,
+  IconChevronRight,
+  IconDiamond,
+  IconCrown,
+  IconStar,
+  IconTrendingUp,
+} from "@tabler/icons-react";
+import {
+  pluralize,
+  getRetentionRank,
+  type RetentionRank,
+  type RetentionThresholds,
+} from "@/lib/constants";
+import { sortEmployees } from "@/lib/employees";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
+
+function RetentionAvatarIcon({ rank }: { rank: RetentionRank }) {
+  const iconProps = { size: 10, stroke: 2.4 };
+  switch (rank.tier) {
+    case "top":
+      return <IconCrown {...iconProps} />;
+    case "high":
+      return <IconDiamond {...iconProps} />;
+    case "mid":
+      return <IconStar {...iconProps} />;
+    case "dev":
+      return <IconTrendingUp {...iconProps} />;
+  }
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -52,9 +81,9 @@ export default function Dashboard() {
       }
     : undefined;
 
-  const visibleEmployees = lockedEmployeeId
-    ? employees.filter((e) => e.id === lockedEmployeeId)
-    : employees;
+  const visibleEmployees = sortEmployees(
+    lockedEmployeeId ? employees.filter((e) => e.id === lockedEmployeeId) : employees
+  );
 
   return (
     <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
@@ -121,9 +150,29 @@ export default function Dashboard() {
               >
                 <Group justify="space-between" wrap="nowrap">
                   <Group gap="md" wrap="nowrap">
-                    <Avatar size={48} radius="xl" color="green" variant="light">
-                      {employee.avatar}
-                    </Avatar>
+                    <Box pos="relative" style={{ flexShrink: 0 }}>
+                      <Avatar size={48} radius="xl" color="green" variant="light">
+                        {employee.avatar}
+                      </Avatar>
+                      <Box
+                        pos="absolute"
+                        right={-2}
+                        bottom={-2}
+                        w={18}
+                        h={18}
+                        style={{
+                          borderRadius: "50%",
+                          backgroundColor: `var(--mantine-color-${rank.color}-filled)`,
+                          color: "white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          border: "2px solid var(--mantine-color-body)",
+                        }}
+                      >
+                        <RetentionAvatarIcon rank={rank} />
+                      </Box>
+                    </Box>
                     <div>
                       <Group gap={6}>
                         <Text fw={600} fz="md">
@@ -133,9 +182,11 @@ export default function Dashboard() {
                           {pluralize(employee.todayServices, "usługa", "usługi", "usług")}
                         </Text>
                       </Group>
-                      <Badge size="sm" variant="light" color={rank.color}>
-                        {rank.icon} {rank.label}
-                      </Badge>
+                      {employee.showRetentionBadge && (
+                        <Badge size="sm" variant="light" color={rank.color}>
+                          {rank.icon} {rank.label}
+                        </Badge>
+                      )}
                     </div>
                   </Group>
                   <IconChevronRight size={20} color="var(--mantine-color-dimmed)" />

@@ -13,6 +13,8 @@ export interface Employee {
   commissionServicePercent: number;
   commissionProductPercent: number;
   retentionPercent: number | null;
+  displayOrder: number;
+  showRetentionBadge: boolean;
   isActive: boolean;
 }
 

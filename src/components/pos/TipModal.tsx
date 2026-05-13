@@ -1,44 +1,36 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Text, Group, Stack, Modal, NumberInput, Button, SimpleGrid } from "@mantine/core";
-import type { DiscountState } from "@/lib/types";
+import { MAX_TIP } from "@/lib/constants";
 
-interface DiscountModalProps {
+interface TipModalProps {
   opened: boolean;
   onClose: () => void;
-  discount: DiscountState | null;
-  subtotal: number;
-  onApply: (discount: DiscountState | null) => void;
+  tipAmount: number;
+  onApply: (amount: number) => void;
 }
 
-export function DiscountModal({
-  opened,
-  onClose,
-  discount,
-  subtotal,
-  onApply,
-}: DiscountModalProps) {
-  const [value, setValue] = useState<number | string>(discount?.value || 0);
+export function TipModal({ opened, onClose, tipAmount, onApply }: TipModalProps) {
+  const [value, setValue] = useState<number | string>(tipAmount || 0);
   const quickAmounts = [1, 5, 10, 20];
 
   useEffect(() => {
     if (opened) {
-      setValue(discount?.value || 0);
+      setValue(tipAmount || 0);
     }
-  }, [opened, discount]);
+  }, [opened, tipAmount]);
 
   const handleApply = () => {
-    const val = Number(value);
-    onApply(val > 0 ? { type: "amount", value: val } : null);
+    onApply(Math.min(MAX_TIP, Math.max(0, Number(value) || 0)));
     onClose();
   };
 
   const handleClear = () => {
-    onApply(null);
+    onApply(0);
     onClose();
   };
 
   const incrementValue = (amount: number) => {
-    setValue((current) => Math.min((Number(current) || 0) + amount, subtotal));
+    setValue((current) => Math.min(MAX_TIP, (Number(current) || 0) + amount));
   };
 
   return (
@@ -47,19 +39,19 @@ export function DiscountModal({
       onClose={onClose}
       title={
         <Text fw={700} fz="lg">
-          Rabat
+          Napiwek
         </Text>
       }
       size="sm"
     >
       <Stack gap="md">
         <NumberInput
-          label="Kwota rabatu (zł)"
+          label="Kwota napiwku (zł)"
           data-autofocus
           value={value}
           onChange={setValue}
           min={0}
-          max={subtotal}
+          max={MAX_TIP}
           decimalScale={2}
           suffix=" zł"
           inputMode="decimal"
@@ -68,13 +60,13 @@ export function DiscountModal({
         <SimpleGrid cols={4} spacing="xs">
           {quickAmounts.map((amount) => (
             <Button key={amount} variant="light" size="md" onClick={() => incrementValue(amount)}>
-              -{amount}
+              +{amount}
             </Button>
           ))}
         </SimpleGrid>
         <Group justify="space-between">
           <Button variant="subtle" color="red" size="lg" onClick={handleClear}>
-            Usuń rabat
+            Usuń napiwek
           </Button>
           <Button size="lg" onClick={handleApply}>
             Zastosuj

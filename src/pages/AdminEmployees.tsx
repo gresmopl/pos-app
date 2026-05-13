@@ -3,6 +3,7 @@ import { useForm } from "@mantine/form";
 import { useAllEmployees } from "@/hooks/useDbData";
 import { db } from "@/db";
 import type { Employee } from "@/lib/types";
+import { sortEmployees } from "@/lib/employees";
 import {
   Text,
   Group,
@@ -45,6 +46,8 @@ export default function AdminEmployeesPage() {
       commissionService: 0 as number | string,
       commissionProduct: 0 as number | string,
       retentionPercent: 0 as number | string,
+      displayOrder: 0 as number | string,
+      showRetentionBadge: true,
     },
     validate: {
       name: (v) => (v.trim() ? null : "Imię jest wymagane"),
@@ -52,11 +55,12 @@ export default function AdminEmployeesPage() {
       commissionProduct: (v) => (Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%"),
       retentionPercent: (v) =>
         v === "" || v === undefined ? null : Number(v) >= 0 && Number(v) <= 100 ? null : "0-100%",
+      displayOrder: (v) => (Number(v) >= 0 ? null : "Podaj liczbę 0 lub większą"),
     },
   });
 
-  const activeEmployees = employees.filter((e) => e.isActive);
-  const inactiveEmployees = employees.filter((e) => !e.isActive);
+  const activeEmployees = sortEmployees(employees.filter((e) => e.isActive));
+  const inactiveEmployees = sortEmployees(employees.filter((e) => !e.isActive));
 
   const openAdd = () => {
     setEditEmployee(null);
@@ -73,6 +77,8 @@ export default function AdminEmployeesPage() {
       commissionService: emp.commissionServicePercent,
       commissionProduct: emp.commissionProductPercent,
       retentionPercent: emp.retentionPercent ?? 0,
+      displayOrder: emp.displayOrder,
+      showRetentionBadge: emp.showRetentionBadge,
     });
     editForm.clearErrors();
     setEditModal(true);
@@ -82,8 +88,16 @@ export default function AdminEmployeesPage() {
 
   const saveEmployee = async () => {
     if (editForm.validate().hasErrors) return;
-    const { name, avatar, role, commissionService, commissionProduct, retentionPercent } =
-      editForm.values;
+    const {
+      name,
+      avatar,
+      role,
+      commissionService,
+      commissionProduct,
+      retentionPercent,
+      displayOrder,
+      showRetentionBadge,
+    } = editForm.values;
     const input = {
       name,
       avatarUrl: avatar.trim() || undefined,
@@ -92,6 +106,8 @@ export default function AdminEmployeesPage() {
       commissionProductPercent: Number(commissionProduct),
       retentionPercent:
         retentionPercent === "" || retentionPercent === undefined ? null : Number(retentionPercent),
+      displayOrder: Number(displayOrder) || 0,
+      showRetentionBadge,
     };
 
     setSaving(true);
@@ -286,6 +302,7 @@ export default function AdminEmployeesPage() {
             max={100}
             suffix="%"
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
             {...editForm.getInputProps("commissionService")}
           />
           <NumberInput
@@ -295,6 +312,7 @@ export default function AdminEmployeesPage() {
             max={100}
             suffix="%"
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
             {...editForm.getInputProps("commissionProduct")}
           />
           <NumberInput
@@ -305,7 +323,24 @@ export default function AdminEmployeesPage() {
             max={100}
             suffix="%"
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
             {...editForm.getInputProps("retentionPercent")}
+          />
+          <NumberInput
+            label="Kolejność na sprzedaży"
+            description="Niższa liczba pokazuje pracownika wyżej na ekranie sprzedaży"
+            placeholder="0"
+            min={0}
+            size="md"
+            onFocus={(event) => event.currentTarget.select()}
+            {...editForm.getInputProps("displayOrder")}
+          />
+          <Switch
+            label="Pokazuj oznaczenie retencji/rozwoju"
+            checked={editForm.values.showRetentionBadge}
+            onChange={(event) =>
+              editForm.setFieldValue("showRetentionBadge", event.currentTarget.checked)
+            }
           />
           <Group justify="flex-end">
             <Button variant="subtle" size="lg" onClick={() => setEditModal(false)}>

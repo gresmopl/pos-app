@@ -315,9 +315,11 @@ export default function PricingPage() {
           <NumberInput
             label="Cena (zł)"
             placeholder="0"
-            min={0}
+            min={0.01}
+            decimalScale={2}
             suffix=" zł"
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
             {...editForm.getInputProps("price")}
           />
           <Textarea
@@ -340,6 +342,7 @@ export default function PricingPage() {
               placeholder="0"
               min={0}
               size="md"
+              onFocus={(event) => event.currentTarget.select()}
               {...editForm.getInputProps("displayOrder")}
             />
           )}

@@ -244,6 +244,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           .from("employee")
           .select("*")
           .eq("salon_id", SALON_ID)
+          .order("display_order", { ascending: true })
           .order("name");
 
         if (error) throw error;
@@ -256,6 +257,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           .select("*")
           .eq("salon_id", SALON_ID)
           .eq("is_active", true)
+          .order("display_order", { ascending: true })
           .order("name");
 
         if (error) throw error;
@@ -309,6 +311,8 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             commission_service_percent: input.commissionServicePercent,
             commission_product_percent: input.commissionProductPercent,
             retention_percent: input.retentionPercent ?? null,
+            display_order: input.displayOrder ?? 0,
+            show_retention_badge: input.showRetentionBadge ?? true,
           })
           .select()
           .single();
@@ -327,6 +331,8 @@ export function createSupabaseClient(config: DbConfig): DbClient {
             commission_service_percent: input.commissionServicePercent,
             commission_product_percent: input.commissionProductPercent,
             retention_percent: input.retentionPercent ?? null,
+            display_order: input.displayOrder ?? 0,
+            show_retention_badge: input.showRetentionBadge ?? true,
           })
           .eq("id", id)
           .select()

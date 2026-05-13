@@ -135,6 +135,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
             description="Target wyświetlany na Dashboard"
             min={1}
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
             {...form.getInputProps("monthTarget")}
           />
         </Stack>
@@ -154,6 +155,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
               max={100}
               suffix="%"
               size="md"
+              onFocus={(event) => event.currentTarget.select()}
               {...form.getInputProps("defaultCommissionService")}
             />
             <NumberInput
@@ -162,6 +164,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
               max={100}
               suffix="%"
               size="md"
+              onFocus={(event) => event.currentTarget.select()}
               {...form.getInputProps("defaultCommissionProduct")}
             />
           </Group>
@@ -181,6 +184,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
             max={100}
             suffix="%"
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
             {...form.getInputProps("retentionThresholdTop")}
           />
           <NumberInput
@@ -189,6 +193,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
             max={100}
             suffix="%"
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
             {...form.getInputProps("retentionThresholdHigh")}
           />
           <NumberInput
@@ -197,6 +202,7 @@ export default function AdminSettingsPage(): React.JSX.Element {
             max={100}
             suffix="%"
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
             {...form.getInputProps("retentionThresholdMid")}
           />
           <Text fz="xs" c="dimmed">

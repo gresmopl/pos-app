@@ -328,6 +328,7 @@ export default function ShiftClosePage(): React.JSX.Element {
                 min={0}
                 suffix=" zł"
                 size="lg"
+                onFocus={(event) => event.currentTarget.select()}
                 {...form.getInputProps("terminalAmount")}
               />
 
@@ -341,6 +342,7 @@ export default function ShiftClosePage(): React.JSX.Element {
                 min={0}
                 suffix=" zł"
                 size="lg"
+                onFocus={(event) => event.currentTarget.select()}
                 {...form.getInputProps("floatAmount")}
               />
 
@@ -351,6 +353,7 @@ export default function ShiftClosePage(): React.JSX.Element {
                 min={0}
                 suffix=" zł"
                 size="lg"
+                onFocus={(event) => event.currentTarget.select()}
                 {...form.getInputProps("envelopeAmount")}
               />
             </Stack>

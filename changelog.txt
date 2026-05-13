@@ -1,6 +1,36 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.118] - 2026-05-13
+- feat(pos): Rabat tylko kwotowy (usuniety procentowy), przyciski +1/+5/+10/+20 dodaja do aktualnej kwoty (clamp do subtotal)
+- feat(pos): Napiwek jako modal analogiczny do rabatu - przycisk obok Dodaj/Rabat, disabled gdy brak uslugi, przyciski +1/+5/+10/+20, badge "Napiwek: +X zl" przy "Do zaplaty"
+- feat(pos): Edycja ceny jednostkowej produktu w koszyku (przycisk olowka, decimalScale=2, min=0.01), tylko produkty - uslugi bez edycji
+- feat(employees): Kolejnosc wyswietlania (displayOrder/display_order) - sortowanie w POS i Dashboard, niezalezne od sortowania uslug/produktow
+- feat(employees): Przelacznik widocznosci tekstowego badge retencji (showRetentionBadge) - ikona na avatarze zawsze widoczna (korona/diament/gwiazda/wykres wg poziomu)
+- fix(ux): Usuniety ekran "Sprzedaz zapisana" po zapisie transakcji - zostaje tylko ConfirmModal przed zapisem
+- fix(ux): NumberInput zaznacza wartosc na focus we wszystkich formularzach (problem 0 + wpisane 1 = 10): POS, Kasa, Zamkniecie zmiany, Portfel, Cennik, Ustawienia, Pracownicy
+- fix(ux): Kasa - terminologia: "Stan kasy" (zamiast "Sprawdz z terminalem"), "Gotowka i platnosc karta" (zamiast "Stan kasy (system)" / "Sprzedaz w tej zmianie")
+- feat(pos): Rabat - przyciski quick-entry zmienione z "+N" na "-N" (czytelniej, bo rabat to odjecie od kwoty)
+- feat(pos): Rabat - przycisk disabled gdy koszyk pusty, variant="filled" gdy rabat aktywny, auto-reset przy oprozieniu koszyka (symetria z Napiwkiem)
+- fix(pos): Edycja ceny produktu - uproszczona do jednej drogi (przycisk olowka), usunieta klikalna zielona cena
+- fix(pricing): AdminPricing - cena uslugi/produktu min=0.01 z decimalScale=2 (spojnosc z POS edit modal, eliminuje produkty za 0 zl)
+- fix(employees): sortowanie pracownikow uzywa localeCompare("pl") dla poprawnej kolejnosci polskich znakow (L, A, Z) w POS/Dashboard/AdminEmployees
+- test: 5 nowych testow mapEmployee (displayOrder + default 0, showRetentionBadge + default true dla legacy rows)
+- test: 3 nowe testy useCart.updatePrice (aktualizacja ceny, clamp ujemnych do 0, izolacja innych pozycji)
+- feat(pos): limit napiwku MAX_TIP=1000 zl (constants.ts) - zabezpieczenie przed bledem typu wielokrotne klikanie "+20", clamp w incrementValue i handleApply + max w NumberInput
+- refactor(pos): DiscountModal useEffect uproszczony - usuniety martwy kod `discount?.type === "amount"` (po ADR-011 rabat tylko kwotowy, percent nie pojawi sie w state)
+- refactor(retention): RetentionRank ma teraz pole `tier: "top" | "high" | "mid" | "dev"` - RetentionAvatarIcon w Dashboard uzywa switch po tier zamiast pattern-matchingu na label+color (eliminacja stringly-typed branching)
+- refactor(employees): wspolny helper `sortEmployees` w src/lib/employees.ts - eliminacja duplikacji w Dashboard i AdminEmployees
+- docs(db): kontrakt seamu DbClient udokumentowany inline (src/db/types.ts) + uwaga przy type assertion w rest.ts; ADR-014 fixuje decyzje "domain shape jako kontrakt adaptera, nie mapping jako contract" - nie re-litigowac
+- test(db): 3 nowe testy REST adapter contract (src/db/adapters/__tests__/rest-contract.test.ts) - fixuje shape jaki backend Hetzner MUSI zwracac (employees, services, error handling); jesli typy w @/lib/types sie zmienia, test fails i zwraca uwage na aktualizacje backendu
+- refactor(cart): invariants napiwku i rabatu przeniesione z POS.tsx do useCart - hook automatycznie zeruje tipAmount gdy ostatnia usluga znika z koszyka i zeruje discount gdy koszyk staje sie pusty; POS.tsx zostaje tylko z UI cleanup (zamykanie modali); useCart exportuje teraz `hasService`
+- test(cart): 4 nowe testy useCart invariantow (tip zerowany przy braku uslugi, tip nieruszony gdy zostaje inna usluga, discount zerowany przy pustym koszyku)
+- cleanup(cash): usuniete 4 dead-code pliki w src/components/cash/ (DepositTab, ExpenseTab, TipTab, VoucherTab) - importy usuniete przy poprzednim refaktorze Cash.tsx, pliki zostaly bez uzytku; usuniety src/components/cash/types.ts (tylko re-export CashMovement) - SettleModal importuje teraz bezposrednio z @/lib/types
+- refactor(cash): VoucherModal w Cash.tsx zmigrowany z useState+manual-error na useForm+validate - spojnosc z ExpenseModal/DepositModal (wszystkie cash modale uzywaja teraz @mantine/form)
+- refactor(cash): wyciagniete 4 inline modale z Cash.tsx (855 -> 458 linii) do osobnych plikow w src/components/cash/: TerminalCheckModal (119), ExpenseModal (116), DepositModal (101), VoucherModal (79); usuniete teraz nieuzywane importy (Modal, NumberInput, TextInput, Select, useForm) z Cash.tsx
+- db: nowe kolumny employee.display_order INT NOT NULL DEFAULT 0, employee.show_retention_badge BOOLEAN NOT NULL DEFAULT true
+- refactor: rename pliku TipSelector.tsx -> TipModal.tsx (zgodnie z nazwa eksportu)
+
 [0.1.117] - 2026-04-24
 - fix(ux): Dodaj uslugi/produkty - usuniety autofocus na szukaj, bez klawiatury na mobile
 - fix(ux): Historia - paginacja (50 per strona, "Pokaz wiecej"), brak dat = pusta lista

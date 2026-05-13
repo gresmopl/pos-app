@@ -17,7 +17,7 @@ import {
 import { IconCash, IconChevronRight } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { useDeviceRole } from "@/contexts/DeviceContext";
-import { BOTTOM_NAV_HEIGHT, PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
+import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 import { notifications } from "@mantine/notifications";
 
 export default function WalletPage(): React.JSX.Element {
@@ -242,6 +242,7 @@ function WorkerDetail({
               max={balance}
               suffix=" zł"
               size="lg"
+              onFocus={(event) => event.currentTarget.select()}
               styles={{
                 input: {
                   textAlign: "center",

@@ -20,6 +20,8 @@ export function mapEmployee(row: Record<string, unknown>): Employee {
     commissionServicePercent: Number(row.commission_service_percent) || 0,
     commissionProductPercent: Number(row.commission_product_percent) || 0,
     retentionPercent: row.retention_percent != null ? Number(row.retention_percent) : null,
+    displayOrder: Number(row.display_order) || 0,
+    showRetentionBadge: row.show_retention_badge !== false,
     isActive: row.is_active as boolean,
   };
 }

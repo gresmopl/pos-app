@@ -51,7 +51,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 - DeviceContext (src/contexts/) - jedyny globalny context (UUID, status urzadzenia, useDeviceRole)
 - Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts. 40 testow / 4 pliki
 
-## Decyzje szefa (potwierdzone 2026-04-10 i 2026-04-13)
+## Decyzje szefa (potwierdzone 2026-04-10, 2026-04-13, 2026-05-13)
 
 1. Prowizja od split payment - od pelnej kwoty (niezaleznie od metody)
 2. Prowizja od rabatu - od kwoty PO rabacie
@@ -60,7 +60,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 5. Cofniecie transakcji - bez limitu czasowego, ostatnia tx az do zamkniecia zmiany
 6. Transparentnosc - pracownik widzi kwoty systemowe na ekranie zamkniecia
 7. Tolerancja roznic kasowych: brak - pokazuj KAZDA roznice (v2.1)
-8. BEZ presetow napiwkow i bonow - tylko pola na kwote
+8. BEZ presetow PELNYCH kwot dla napiwkow/bonow - tylko pole na kwote. Rabat i napiwek maja przyciski INKREMENTALNE +1/+5/+10/+20 (dodaja do aktualnej kwoty, nie ustawiaja pelnej wartosci) - aktualizacja z 2026-05-13
 9. BEZ magazynu kosmetykow
 10. BEZ powiadomien - szef sam sprawdza (bez emaila/PDF po zamknieciu zmiany)
 11. Napiwki gotowkowe "do reki" - system NIE sledzi
@@ -70,6 +70,9 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 15. Stare bony (papierowe sprzed systemu) - nie wystepuja, bez migracji
 16. Bony papierowe przy zamknieciu zmiany liczone razem z gotowka (bez osobnego pola)
 17. Wplata do kasy - JEDEN typ dla wszystkich (bez rozroznienia szef/pracownik); kwota zasila kasetke + Portfel pracownika (obsluguje tez sytuacje "fryzjer wydal reszte z wlasnych")
+18. Rabat w POS - tylko kwotowy (procentowy usuniety) - decyzja z 2026-05-13, patrz ADR-011
+19. Edytowalna cena jednostkowa - tylko dla produktow w koszyku, uslugi bez edycji - decyzja z 2026-05-13, patrz ADR-012
+20. Kolejnosc pracownikow konfigurowalna (display_order) + opcjonalny badge tekstowy retencji (show_retention_badge); ikona statusu na avatarze zawsze widoczna - decyzja z 2026-05-13, patrz ADR-013
 
 ## Bezpieczenstwo
 

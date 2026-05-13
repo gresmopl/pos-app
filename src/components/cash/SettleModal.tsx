@@ -1,5 +1,5 @@
 import { Text, Stack, Box, Modal, NumberInput, Button } from "@mantine/core";
-import type { CashMovement } from "./types";
+import type { CashMovement } from "@/lib/types";
 
 interface SettleModalProps {
   opened: boolean;
@@ -59,6 +59,7 @@ export function SettleModal({
             max={target.amount}
             suffix=" zł"
             size="md"
+            onFocus={(event) => event.currentTarget.select()}
           />
 
           {Number(settleCost) > 0 && (
