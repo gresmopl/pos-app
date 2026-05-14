@@ -299,12 +299,12 @@ Kazda decyzja zawiera kontekst, rozpatrywane opcje, wybor i uzasadnienie.
 
 **Mapowanie ikon (Dashboard `RetentionAvatarIcon`):**
 
-| Poziom               | Ikona            |
-| -------------------- | ---------------- |
-| MISTRZ (yellow)      | `IconCrown`      |
-| MISTRZ (blue)        | `IconDiamond`    |
-| SOLIDNY              | `IconStar`       |
-| inne (rozwoj/start)  | `IconTrendingUp` |
+| Poziom              | Ikona            |
+| ------------------- | ---------------- |
+| MISTRZ (yellow)     | `IconCrown`      |
+| MISTRZ (blue)       | `IconDiamond`    |
+| SOLIDNY             | `IconStar`       |
+| inne (rozwoj/start) | `IconTrendingUp` |
 
 ---
 
@@ -332,7 +332,7 @@ Eksploracja architektoniczna (2026-05-13) wykazala friction: TypeScript wymusza 
 
 - Backend Hetzner jest pod kontrola tego samego zespolu - kontrakt mozna utrzymac przez code review na endpointach (`POST /api/employees` musi serializowac `displayOrder`, nie `display_order`)
 - Wprowadzenie zod/runtime walidacji to znaczny narzut bundle size i utrzymania dla aplikacji ktora i tak crashnie przy braku pola
-- ADR-002 (adapter pattern) zaklada ze adaptery mogac roznic sie w implementacji - mapping to *implementation detail*, nie *contract*
+- ADR-002 (adapter pattern) zaklada ze adaptery mogac roznic sie w implementacji - mapping to _implementation detail_, nie _contract_
 - TypeScript wymusza shape na callsites - jesli backend zwroci niewlasciwy shape, UI dostanie `undefined` w polu, ktore latwo zlokalizowac
 
 **Konsekwencje:**
@@ -424,3 +424,113 @@ Hetzner CX22 (Ubuntu 24.04, ~€4.51/mc)
 - Drugi salon w produkcji → rozwazyc Litestream dla mniejszego RPO, lub osobny VPS per salon
 - Reklamacje precyzji finansowej → migracja REAL → INTEGER w groszach
 - Salon ma SLA wymagajacy aktywnego fallbacku → rozwazyc Strategia C z analizy dual-hostingu (active-active sync)
+
+---
+
+## ADR-016: Monorepo z pnpm workspaces dla wszystkich produktow FORMEN
+
+**Data:** 2026-05-14
+**Status:** Zaakceptowana
+
+**Kontekst:** W planie sa kolejne produkty FORMEN obok obecnego POS:
+
+- **POS web** (obecny `pos-app`) - SPA dla pracownikow salonu
+- **POS API** (planowany per ADR-015) - Node.js + Express + SQLite
+- **CRM** (planowany wkrotce) - admin web app do edycji danych (klienci, pracownicy, uslugi)
+- **Marketing/landing** (planowany wkrotce) - statyczna strona produktowa
+
+CRM **dzieli dane z POS** (te same tabele: `employee`, `service`, `client`, ...) - czyli ten sam backend API serwuje POS i CRM. Marketing jest niezalezna (statyczna strona, SEO).
+
+Bez ustalonej architektury powstaje pytanie: osobne repa per produkt czy monorepo?
+
+**Rozwazone opcje:**
+
+1. **Osobne repa per produkt** (`formen-pos-web`, `formen-pos-api`, `formen-crm`, `formen-marketing`)
+   - Plusy: pelna niezaleznosc, czysta granica, niezalezne deploye
+   - Minusy: 4 git pulle przy cross-stack zmianach, brak shared types bez publishing npm packagy, duplikacja UI/theme, ~4 CI do utrzymania
+
+2. **Monorepo bez tooling** (jeden folder, jeden `package.json`)
+   - Plusy: trywialne setup
+   - Minusy: niejasne granice miedzy projektami, kazda apka ma swoje deps w jednym `node_modules`, brak izolacji
+
+3. **Monorepo z npm workspaces**
+   - Plusy: standard z Node 16+, zero dodatkowych narzedzi, izolacja deps per apka
+   - Minusy: troche wolniejsze instalacje niz pnpm, brak hoistingu kontroli
+
+4. **Monorepo z pnpm workspaces**
+   - Plusy: szybkie, oszczedne dysk (symlinks zamiast kopii), swietna izolacja deps, hoisting kontrolowany przez `pnpm-workspace.yaml`
+   - Minusy: dodatkowe narzedzie do zainstalowania (`npm install -g pnpm`)
+
+5. **Monorepo z Turborepo/Nx**
+   - Plusy: cache build/test, pipelines, opinionated workflows
+   - Minusy: overkill dla 4 apek + solo dev, learning curve, dodatkowa zaleznosc
+
+**Decyzja:** Monorepo z **pnpm workspaces**. Marketing pozostaje w monorepo jako `apps/marketing/` (z mozliwoscia wyciagniecia do osobnego repo w przyszlosci).
+
+**Struktura docelowa:**
+
+```
+formen/                            ← repo (rename z pos-app)
+├── apps/
+│   ├── pos-web/                   ← Vite + React (obecny pos-app)
+│   │   └── package.json           "name": "@formen/pos-web"
+│   ├── pos-api/                   ← Node + Express + better-sqlite3 (per ADR-015)
+│   │   └── package.json           "name": "@formen/pos-api"
+│   ├── crm/                       ← (gdy startujemy)
+│   │   └── package.json           "name": "@formen/crm"
+│   └── marketing/                 ← (gdy startujemy)
+│       └── package.json           "name": "@formen/marketing"
+├── packages/
+│   ├── shared-types/              ← Employee, Transaction, CartItem, DiscountState itp.
+│   │   └── package.json           "name": "@formen/shared-types"
+│   └── ui/                        ← Mantine theme + reusable komponenty (gdy potrzeba)
+│       └── package.json           "name": "@formen/ui"
+├── pnpm-workspace.yaml            ← lista workspaces
+├── package.json                   ← root, shared devDeps (eslint, prettier, tsconfig)
+├── docs/                          ← dokumentacja wspolna
+├── CLAUDE.md
+└── .github/workflows/             ← CI per apka (lub turbo task)
+```
+
+**Uzasadnienie:**
+
+- **Shared types kluczowe** - POS i CRM operuja na tych samych encjach (Employee, Service, ...). Monorepo eliminuje duplikacje typow przez `@formen/shared-types` importowany lokalnie (pnpm symlink) - zmiana typu propaguje sie natychmiast bez publishing
+- **Atomic cross-stack zmiany** - dodanie pola do `Employee` to JEDEN commit obejmujacy: `pos-api/schema.sql` + `shared-types/Employee` + `pos-web` UI + `crm` UI; w 4 repach to 4 PR-y z ryzykiem zapomnienia o ktoryms
+- **Shared UI (gdy CRM startuje)** - Mantine theme, kolory marki, `<EmployeeAvatar>`, `<MoneyInput>` - zmiana w `@formen/ui` lazy propagacja
+- **pnpm vs npm** - symlinks dla intra-monorepo deps oszczedzaja GB miejsca (jedna kopia `node_modules`), szybsze instalacje, lepsza izolacja (`shamefully-hoist=false` domyslnie)
+- **Bez Turborepo/Nx** - dla 4 apek solo dev cache build nie da znaczacego zysku; gdy projekty urosna do 10+ apek revisit
+- **Marketing w monorepo** - poczatkowo wszystko w jednym miejscu; mozna wyciagnac do osobnego repo gdy zespol marketingowy bedzie niezalezny (rzadko sie zdarza)
+
+**Konsekwencje:**
+
+- Wymaga jednorazowej instalacji pnpm globalnie: `npm install -g pnpm`
+- Commendy `npm install` zostaja zastapione przez `pnpm install`; `pnpm install --filter @formen/pos-web` dla konkretnej apki
+- CI musi uzywac `pnpm` zamiast `npm` (zmiana w `.github/workflows/`)
+- Importy miedzy apkami przez nazwy `@formen/shared-types` (pnpm symlinkuje do `packages/shared-types/`)
+- Wersjonowanie - albo wszystkie apki maja te sama wersje (lockstep), albo niezalezne (kazda swoja); na start lockstep dla prostoty
+- TypeScript: jeden `tsconfig.base.json` w root, kazda apka extends z dostosowaniami
+
+**Plan migracji (lazy - rozszerzaj gdy potrzebujesz):**
+
+| Etap | Co                                                                                     | Kiedy                             |
+| ---- | -------------------------------------------------------------------------------------- | --------------------------------- |
+| 1    | Rename `pos-app` → `formen`, setup pnpm workspaces, move obecny kod do `apps/pos-web/` | Razem z migracja SQLite (ADR-015) |
+| 2    | `apps/pos-api/` (per ADR-015)                                                          | Razem z migracja SQLite           |
+| 3    | `packages/shared-types/` - wyciagniecie `src/lib/types.ts` jako pakiet                 | Gdy CRM startuje (lazy)           |
+| 4    | `packages/ui/` - theme + komponenty                                                    | Gdy CRM zacznie deduplikowac UI   |
+| 5    | `apps/crm/`                                                                            | Gdy zaczynasz CRM                 |
+| 6    | `apps/marketing/`                                                                      | Gdy zaczynasz marketing           |
+
+**Etapy 3-6 robic dopiero gdy potrzebne** - premature extraction (np. wyciaganie `shared-types` zanim CRM istnieje) tworzy boilerplate bez wartosci. Pierwsza apka moze trzymac typy lokalnie.
+
+**Co NIE jest w scope:**
+
+- Turborepo/Nx - dolacz gdy build time stanie sie problemem (raczej nigdy dla 4 apek)
+- Changesets (versioning automation) - dolacz gdy zaczniesz publicznie publikowac paczki npm
+- Wsplny lockfile dla wszystkich apek - pnpm robi to automatycznie
+
+**Trigger do zmiany decyzji:**
+
+- Marketing trafia pod zewnetrzny zespol marketingowy → wyciagnij `apps/marketing/` do osobnego repo
+- Projekt urosnie do 10+ apek → revisit Turborepo dla cache
+- Zechcesz publikowac `@formen/shared-types` jako publiczny npm package → dodaj Changesets
