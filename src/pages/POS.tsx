@@ -106,6 +106,7 @@ export default function POSPage() {
       setConfirmModalOpen(false);
       resetCart();
       if (navigator.vibrate) navigator.vibrate(100);
+      navigate("/");
     } catch (err) {
       console.error("[POS] Failed to save transaction:", err);
       notifications.show({
