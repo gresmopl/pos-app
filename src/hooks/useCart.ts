@@ -27,9 +27,6 @@ export function useCart() {
 
   const discountAmount = useMemo(() => {
     if (!discount) return 0;
-    if (discount.type === "percent") {
-      return Math.round(subtotal * (discount.value / 100) * 100) / 100;
-    }
     return Math.min(discount.value, subtotal);
   }, [discount, subtotal]);
 

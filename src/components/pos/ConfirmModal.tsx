@@ -80,7 +80,6 @@ export function ConfirmModal({
                 <Text fz="sm">Rabat:</Text>
                 <Text fz="sm" fw={600} c="red">
                   -{discountAmount.toLocaleString("pl-PL")} zł
-                  {discount.type === "percent" && ` (${discount.value}%)`}
                 </Text>
               </Group>
             )}

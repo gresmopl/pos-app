@@ -154,6 +154,6 @@ export interface CartItem {
 }
 
 export interface DiscountState {
-  type: "percent" | "amount";
+  type: "amount";
   value: number;
 }

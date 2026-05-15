@@ -46,14 +46,6 @@ describe("useCart", () => {
     expect(result.current.cart).toHaveLength(0);
   });
 
-  it("calculates percent discount", () => {
-    const { result } = renderHook(() => useCart());
-    act(() => result.current.addToCart({ id: "s1", name: "Strzyżenie", price: 100 }, "service"));
-    act(() => result.current.setDiscount({ type: "percent", value: 20 }));
-    expect(result.current.discountAmount).toBe(20);
-    expect(result.current.total).toBe(80);
-  });
-
   it("calculates fixed discount capped at subtotal", () => {
     const { result } = renderHook(() => useCart());
     act(() => result.current.addToCart({ id: "s1", name: "Strzyżenie", price: 50 }, "service"));
@@ -73,7 +65,7 @@ describe("useCart", () => {
     const { result } = renderHook(() => useCart());
     act(() => result.current.addToCart({ id: "s1", name: "Strzyżenie", price: 50 }, "service"));
     act(() => result.current.setTipAmount(10));
-    act(() => result.current.setDiscount({ type: "percent", value: 10 }));
+    act(() => result.current.setDiscount({ type: "amount", value: 10 }));
     act(() => result.current.resetCart());
     expect(result.current.cart).toEqual([]);
     expect(result.current.tipAmount).toBe(0);

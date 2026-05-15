@@ -593,9 +593,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         const now = new Date().toISOString();
 
         // 1. Insert transaction
-        // Map frontend discount type to DB enum (percent -> percentage)
-        const dbDiscountType =
-          input.discount?.type === "percent" ? "percentage" : input.discount?.type || null;
+        const dbDiscountType = input.discount?.type ?? null;
         const { error: txError } = await supabase.from("transaction").insert({
           id: txId,
           salon_id: SALON_ID,

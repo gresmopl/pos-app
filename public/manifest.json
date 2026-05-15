@@ -28,6 +28,15 @@
       "purpose": "any"
     }
   ],
+  "screenshots": [
+    {
+      "src": "./icons/screenshots/dashboard-narrow.png",
+      "sizes": "810x1007",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "FORMEN POS - lista fryzjerów"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Nowa sprzedaż",
