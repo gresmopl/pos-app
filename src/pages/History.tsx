@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useEmployees } from "@/hooks/useDbData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
 import type { Transaction } from "@/lib/types";
 import {
@@ -46,6 +47,7 @@ function endOfDay(date: Date): string {
 }
 
 export default function HistoryPage() {
+  useDocumentTitle("Historia");
   const { data: employees = [] } = useEmployees();
   const { isPersonal, lockedEmployeeId } = useDeviceRole();
   const [transactions, setTransactions] = useState<Transaction[]>([]);

@@ -1,6 +1,6 @@
 {
   "id": "/",
-  "name": "FORMEN - System POS",
+  "name": "FORMEN POS",
   "short_name": "FORMEN",
   "description": "System POS dla salonów fryzjerskich",
   "start_url": ".",
@@ -28,20 +28,30 @@
       "purpose": "any"
     }
   ],
-  "screenshots": [
+  "shortcuts": [
     {
-      "src": "./icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "narrow",
-      "label": "FORMEN POS - ekran główny"
+      "name": "Nowa sprzedaż",
+      "short_name": "Sprzedaż",
+      "url": "/",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
     },
     {
-      "src": "./icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "FORMEN POS - widok desktopowy"
+      "name": "Kasa",
+      "short_name": "Kasa",
+      "url": "/cash",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Historia transakcji",
+      "short_name": "Historia",
+      "url": "/history",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Zamknięcie zmiany",
+      "short_name": "Zmiana",
+      "url": "/shift-close",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }

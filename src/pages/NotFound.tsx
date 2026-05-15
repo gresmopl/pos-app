@@ -1,8 +1,10 @@
 import { useNavigate } from "react-router";
 import { Container, Stack, Text, Button, Box } from "@mantine/core";
 import { IconError404 } from "@tabler/icons-react";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function NotFound() {
+  useDocumentTitle("Nie znaleziono");
   const navigate = useNavigate();
 
   return (

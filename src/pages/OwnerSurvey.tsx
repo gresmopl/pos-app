@@ -14,6 +14,7 @@ import {
 } from "@mantine/core";
 import { IconClipboard, IconCheck } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 interface OpenQuestion {
   id: string;
@@ -73,6 +74,7 @@ const completedAnswers = [
 ];
 
 export default function OwnerSurvey(): React.JSX.Element {
+  useDocumentTitle("Ankieta");
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [notes, setNotes] = useState("");
 

@@ -19,6 +19,7 @@ import { IconPlus, IconDiscount2, IconChevronRight, IconCoin } from "@tabler/ico
 import { pluralize } from "@/lib/constants";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useCart } from "@/hooks/useCart";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionLabel } from "@/components/layout/SectionLabel";
@@ -31,6 +32,7 @@ import { ConfirmModal } from "@/components/pos/ConfirmModal";
 import type { CartItem } from "@/lib/types";
 
 export default function POSPage() {
+  useDocumentTitle("Sprzedaż");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { data: employees = [], loading: empLoading } = useEmployees();

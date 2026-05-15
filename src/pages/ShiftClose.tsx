@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { useForm } from "@mantine/form";
 import { db } from "@/db";
 import { useEmployees } from "@/hooks/useDbData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import type { Transaction, CashMovement, TerminalCheck } from "@/lib/types";
 import { calcExpectedCash, calcSystemCash } from "@/lib/cash";
 import {
@@ -24,6 +25,7 @@ import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 
 export default function ShiftClosePage(): React.JSX.Element {
+  useDocumentTitle("Zamknięcie zmiany");
   const navigate = useNavigate();
   const { lockedEmployeeId } = useDeviceRole();
 

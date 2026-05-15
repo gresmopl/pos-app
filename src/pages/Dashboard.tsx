@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { useEmployees, useSalonSettings } from "@/hooks/useDbData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import {
   Text,
   Group,
@@ -51,6 +52,7 @@ function RetentionAvatarIcon({ rank }: { rank: RetentionRank }) {
 }
 
 export default function Dashboard() {
+  useDocumentTitle("Sprzedaż");
   const navigate = useNavigate();
   const { colorScheme, toggleColorScheme } = useMantineColorScheme();
   const isDark = colorScheme === "dark";

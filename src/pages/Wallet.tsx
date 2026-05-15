@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useEmployees } from "@/hooks/useDbData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
 import type { Employee, CashMovement } from "@/lib/types";
 import {
@@ -21,6 +22,7 @@ import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 import { notifications } from "@mantine/notifications";
 
 export default function WalletPage(): React.JSX.Element {
+  useDocumentTitle("Napiwki");
   const { data: employees = [], refetch } = useEmployees();
   const { isPersonal, lockedEmployeeId } = useDeviceRole();
 

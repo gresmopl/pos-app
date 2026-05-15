@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { useSalonSettings } from "@/hooks/useDbData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
 import {
   Text,
@@ -21,6 +22,7 @@ import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { SectionLabel } from "@/components/layout/SectionLabel";
 
 export default function AdminSettingsPage(): React.JSX.Element {
+  useDocumentTitle("Ustawienia");
   const { data: salon, loading } = useSalonSettings();
   const [saving, setSaving] = useState(false);
 

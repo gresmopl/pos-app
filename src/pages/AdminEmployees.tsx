@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { useAllEmployees } from "@/hooks/useDbData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
 import type { Employee } from "@/lib/types";
 import { sortEmployees } from "@/lib/employees";
@@ -28,6 +29,7 @@ import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionLabel } from "@/components/layout/SectionLabel";
 
 export default function AdminEmployeesPage() {
+  useDocumentTitle("Pracownicy");
   const { data: dbEmployees } = useAllEmployees();
   const [employees, setEmployees] = useState<Employee[]>([]);
 

@@ -1,18 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useEmployees } from "@/hooks/useDbData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
 import { calcExpectedCash, calcSystemCash } from "@/lib/cash";
 import type { Transaction, CashMovement, TerminalCheck } from "@/lib/types";
-import {
-  Text,
-  Group,
-  Stack,
-  Box,
-  Container,
-  Divider,
-  Button,
-  UnstyledButton,
-} from "@mantine/core";
+import { Text, Group, Stack, Box, Container, Divider, Button, UnstyledButton } from "@mantine/core";
 import {
   IconSearch,
   IconShoppingCart,
@@ -86,6 +78,7 @@ function ActionButton({
 }
 
 export default function CashPage() {
+  useDocumentTitle("Kasa");
   const { data: employees = [] } = useEmployees();
   const { lockedEmployeeId } = useDeviceRole();
 
@@ -455,4 +448,3 @@ export default function CashPage() {
     </Box>
   );
 }
-

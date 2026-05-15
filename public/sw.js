@@ -1,4 +1,4 @@
-const CACHE_NAME = "formen-v3";
+const CACHE_NAME = "formen-v4";
 
 // Detect base path from SW scope (works for both "/" and "/pos-app/")
 const BASE = self.registration.scope.replace(self.location.origin, "") || "/";
@@ -11,12 +11,18 @@ const PRECACHE_URLS = [
   BASE + "icons/icon.svg",
 ];
 
-// Install: precache critical assets
+// Install: precache critical assets (do NOT skipWaiting — let user control update)
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE_URLS))
   );
-  self.skipWaiting();
+});
+
+// Message: respond to SKIP_WAITING from client to activate pending update
+self.addEventListener("message", (event) => {
+  if (event.data?.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // Activate: clean old caches

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { db } from "@/db";
 import { useDbQuery } from "@/hooks/useDbQuery";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { notifications } from "@mantine/notifications";
 import {
   Text,
@@ -196,6 +197,7 @@ function DeviceCard({
 }
 
 export default function AdminDevicesPage(): React.JSX.Element {
+  useDocumentTitle("Urządzenia");
   const { data: devices, loading, refetch } = useDevices();
 
   const pending = devices?.filter((d) => d.status === "pending") ?? [];

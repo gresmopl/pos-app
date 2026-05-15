@@ -21,6 +21,7 @@ import {
   IconCalendarEvent,
 } from "@tabler/icons-react";
 import { useDeviceRole, useDevice } from "@/contexts/DeviceContext";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 
 interface MenuItem {
@@ -91,6 +92,7 @@ function SectionLabel({ children }: { children: string }): React.JSX.Element {
 }
 
 export default function MorePage(): React.JSX.Element {
+  useDocumentTitle("Więcej");
   const navigate = useNavigate();
   const { isAdmin } = useDeviceRole();
   const { device } = useDevice();

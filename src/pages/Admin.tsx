@@ -4,6 +4,7 @@ import { Text, Group, Stack, Box, Container, Divider, PinInput, Button } from "@
 import { IconLock, IconRefresh, IconDownload } from "@tabler/icons-react";
 import { MOCK_ADMIN_PIN } from "@/lib/constants";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 declare const APP_VERSION: string;
 
@@ -27,6 +28,7 @@ window.addEventListener("beforeinstallprompt", (e) => {
 });
 
 export default function AdminPage() {
+  useDocumentTitle("Panel szefa");
   const navigate = useNavigate();
   const [pin, setPin] = useState("");
   const [error, setError] = useState(false);

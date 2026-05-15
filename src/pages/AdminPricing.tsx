@@ -1,6 +1,7 @@
 import { useState, useId, useEffect } from "react";
 import { useForm } from "@mantine/form";
 import { useAllServices, useAllProducts } from "@/hooks/useDbData";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
 import type { Service, Product } from "@/lib/types";
 import {
@@ -35,6 +36,7 @@ type PricingItem = {
 };
 
 export default function PricingPage() {
+  useDocumentTitle("Cennik");
   const pricingTabId = useId();
   const { data: dbServices } = useAllServices();
   const { data: dbProducts } = useAllProducts();
