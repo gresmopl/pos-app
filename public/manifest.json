@@ -3,7 +3,7 @@
   "name": "FORMEN POS",
   "short_name": "FORMEN",
   "description": "System POS dla salonów fryzjerskich",
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#00e676",
@@ -19,7 +19,7 @@
       "src": "./icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "./icons/apple-touch-icon.png",
