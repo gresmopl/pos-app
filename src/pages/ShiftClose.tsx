@@ -167,7 +167,7 @@ export default function ShiftClosePage(): React.JSX.Element {
             {/* Receipt */}
             <Box
               w="100%"
-              p="md"
+              p={8}
               data-print-area
               style={{
                 borderRadius: "var(--mantine-radius-md)",
@@ -175,46 +175,46 @@ export default function ShiftClosePage(): React.JSX.Element {
                 fontFamily: "monospace",
               }}
             >
-              <Text fz="sm" ta="center" fw={700} mb="xs">
+              <Text fz="sm" ta="center" fw={700} mb={4}>
                 RAPORT KASOWY
               </Text>
-              <Text fz="xs" ta="center" c="dimmed" mb="md">
-                {new Date().toLocaleDateString("pl-PL")},{" "}
+              <Text fz="xs" ta="center" c="dimmed" mb={6}>
+                {new Date().toLocaleDateString("pl-PL")}{" "}
                 {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} ·
-                Zamykał: {closingName}
+                {closingName}
               </Text>
-              <Divider mb="sm" variant="dashed" />
+              <Divider mb={4} variant="dashed" />
 
-              <Group justify="space-between" mb={4}>
+              <Group justify="space-between" mb={2}>
                 <Text fz="xs">Łączna sprzedaż:</Text>
                 <Text fz="xs" fw={600}>
                   {expectedCash.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
               {totalTerminal > 0 && (
-                <Group justify="space-between" mb={4}>
+                <Group justify="space-between" mb={2}>
                   <Text fz="xs">Terminal (karty/blik):</Text>
                   <Text fz="xs" fw={600}>
                     {totalTerminal.toLocaleString("pl-PL")} zł
                   </Text>
                 </Group>
               )}
-              <Group justify="space-between" mb={4}>
+              <Group justify="space-between" mb={2}>
                 <Text fz="xs">Oczekiwana gotówka:</Text>
                 <Text fz="xs" fw={600}>
                   {expectedCashOnly.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
 
-              <Divider my="sm" variant="dashed" />
+              <Divider my={4} variant="dashed" />
 
-              <Group justify="space-between" mb={4}>
+              <Group justify="space-between" mb={2}>
                 <Text fz="xs">Drobne na jutro:</Text>
                 <Text fz="xs" fw={600}>
                   {floatVal.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
-              <Group justify="space-between" mb={4}>
+              <Group justify="space-between" mb={2}>
                 <Text fz="xs">Do koperty:</Text>
                 <Text fz="xs" fw={600}>
                   {envelopeVal.toLocaleString("pl-PL")} zł
@@ -223,8 +223,8 @@ export default function ShiftClosePage(): React.JSX.Element {
 
               {difference !== 0 && (
                 <>
-                  <Divider my="sm" variant="dashed" />
-                  <Group justify="space-between" mb={4}>
+                  <Divider my={4} variant="dashed" />
+                  <Group justify="space-between" mb={2}>
                     <Text fz="xs">Różnica kasowa:</Text>
                     <Text fz="xs" fw={600} c={difference > 0 ? "blue" : "red"}>
                       {difference > 0 ? "+" : ""}
@@ -238,15 +238,15 @@ export default function ShiftClosePage(): React.JSX.Element {
 
             <Group>
               <Button
-                variant="light"
+                color="green"
                 size="lg"
                 leftSection={<IconPrinter size={18} />}
                 onClick={() => window.print()}
               >
                 Drukuj raport
               </Button>
-              <Button size="lg" onClick={() => navigate("/")}>
-                Powrót do ekranu głównego
+              <Button color="dark" size="lg" onClick={() => navigate("/")}>
+                Powrót
               </Button>
             </Group>
           </Stack>
