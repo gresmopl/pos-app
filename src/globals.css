@@ -86,8 +86,7 @@ textarea {
     visibility: visible;
   }
   [data-print-area] {
-    /* fixed zamiast absolute — zawsze relatywny do strony, nie do body */
-    position: fixed;
+    position: absolute;
     left: 0;
     top: 0;
     width: 100%;
