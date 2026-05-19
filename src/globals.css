@@ -66,7 +66,17 @@ textarea {
 @media print {
   @page {
     size: 100mm 80mm;
-    margin: 2mm 3mm;
+    margin: 0;
+  }
+  /* Reset pozycjonowania body/#root — blokują prawidłowe position:fixed w druku */
+  body {
+    position: static !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+  #root {
+    overflow: visible !important;
+    height: auto !important;
   }
   body * {
     visibility: hidden;
@@ -76,14 +86,14 @@ textarea {
     visibility: visible;
   }
   [data-print-area] {
-    position: absolute;
+    /* fixed zamiast absolute — zawsze relatywny do strony, nie do body */
+    position: fixed;
     left: 0;
     top: 0;
     width: 100%;
     border: none !important;
     border-radius: 0 !important;
-    padding: 0 !important;
-    /* Nadpisanie zmiennych Mantine — kaskaduje do wszystkich fz="xs/sm" dzieci */
+    padding: 2mm 3mm !important;
     --mantine-font-size-xs: 7pt;
     --mantine-font-size-sm: 8pt;
     --mantine-font-size-md: 9pt;
