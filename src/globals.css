@@ -65,21 +65,25 @@ textarea {
 
 @media print {
   @page {
-    size: 100mm 80mm;
+    size: 100mm 60mm;
     margin: 0;
   }
-  /* Reset pozycjonowania body/#root — blokują prawidłowe position:fixed w druku */
   body {
     position: static !important;
-    overflow: visible !important;
-    height: auto !important;
+    overflow: hidden !important;
+    height: 60mm !important;
+    max-height: 60mm !important;
+    min-height: 0 !important;
   }
   #root {
-    overflow: visible !important;
-    height: auto !important;
+    overflow: hidden !important;
+    height: 60mm !important;
+    max-height: 60mm !important;
+    min-height: 0 !important;
   }
   body * {
     visibility: hidden;
+    min-height: 0 !important;
   }
   [data-print-area],
   [data-print-area] * {
@@ -88,11 +92,11 @@ textarea {
   [data-print-area] {
     position: absolute;
     left: 0;
-    top: 0;
+    top: 4mm;
     width: 100%;
     border: none !important;
     border-radius: 0 !important;
-    padding: 2mm 3mm !important;
+    padding: 0 2mm !important;
     --mantine-font-size-xs: 7pt;
     --mantine-font-size-sm: 8pt;
     --mantine-font-size-md: 9pt;
