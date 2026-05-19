@@ -92,8 +92,11 @@ textarea {
   [data-print-area] {
     position: absolute;
     left: 0;
-    top: 4mm;
+    top: 2mm;
     width: 100%;
+    /* Twarde przyciecie do jednej etykiety — zapobiega drugiej pustej stronie */
+    max-height: 58mm;
+    overflow: hidden;
     border: none !important;
     border-radius: 0 !important;
     padding: 0 2mm !important;
