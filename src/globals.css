@@ -68,41 +68,25 @@ textarea {
     size: 100mm 60mm;
     margin: 0;
   }
-  body {
-    position: static !important;
-    overflow: hidden !important;
-    height: 60mm !important;
-    max-height: 60mm !important;
-    min-height: 0 !important;
-  }
+  /* Chowamy caly #root — portal z receiptem jest bezposrednio w body */
   #root {
-    overflow: hidden !important;
-    height: 60mm !important;
-    max-height: 60mm !important;
-    min-height: 0 !important;
-  }
-  body * {
-    visibility: hidden;
-    min-height: 0 !important;
-  }
-  [data-print-area],
-  [data-print-area] * {
-    visibility: visible;
+    display: none !important;
   }
   [data-print-area] {
+    display: block;
     position: absolute;
     left: 0;
     top: 2mm;
-    width: 100%;
-    /* Twarde przyciecie do jednej etykiety — zapobiega drugiej pustej stronie */
+    width: 100mm;
     max-height: 58mm;
     overflow: hidden;
-    border: none !important;
-    border-radius: 0 !important;
-    padding: 0 2mm !important;
-    --mantine-font-size-xs: 7pt;
-    --mantine-font-size-sm: 8pt;
-    --mantine-font-size-md: 9pt;
-    --mantine-line-height: 1.3;
+    padding: 0 2mm 0 5mm;
+    font-size: 6pt;
+    line-height: 1.35;
+    font-family: monospace;
+  }
+  [data-print-area] * {
+    font-size: inherit;
+    line-height: inherit;
   }
 }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import { useForm } from "@mantine/form";
 import { db } from "@/db";
@@ -164,27 +165,21 @@ export default function ShiftClosePage(): React.JSX.Element {
               Raport kasowy gotowy. Zamykał: {closingName}
             </Text>
 
-            {/* Receipt */}
+            {/* Receipt — widok na ekranie */}
             <Box
               w="100%"
               p={8}
-              data-print-area
               style={{
                 borderRadius: "var(--mantine-radius-md)",
                 border: "1px solid var(--mantine-color-default-border)",
                 fontFamily: "monospace",
               }}
             >
-              <Text fz="sm" ta="center" fw={700} mb={4}>
-                RAPORT KASOWY
-              </Text>
-              <Text fz="xs" ta="center" c="dimmed" mb={6}>
-                {new Date().toLocaleDateString("pl-PL")}{" "}
-                {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} ·
+              <Text fz="xs" ta="center" c="dimmed" mb={4}>
+                FORMEN · {new Date().toLocaleDateString("pl-PL")}{" "}
+                {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} ·{" "}
                 {closingName}
               </Text>
-              <Divider mb={4} variant="dashed" />
-
               <Group justify="space-between" mb={2}>
                 <Text fz="xs">Łączna sprzedaż:</Text>
                 <Text fz="xs" fw={600}>
@@ -193,7 +188,7 @@ export default function ShiftClosePage(): React.JSX.Element {
               </Group>
               {totalTerminal > 0 && (
                 <Group justify="space-between" mb={2}>
-                  <Text fz="xs">Terminal (karty/blik):</Text>
+                  <Text fz="xs">Terminal:</Text>
                   <Text fz="xs" fw={600}>
                     {totalTerminal.toLocaleString("pl-PL")} zł
                   </Text>
@@ -205,9 +200,6 @@ export default function ShiftClosePage(): React.JSX.Element {
                   {expectedCashOnly.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
-
-              <Divider my={4} variant="dashed" />
-
               <Group justify="space-between" mb={2}>
                 <Text fz="xs">Drobne na jutro:</Text>
                 <Text fz="xs" fw={600}>
@@ -220,21 +212,63 @@ export default function ShiftClosePage(): React.JSX.Element {
                   {envelopeVal.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
-
               {difference !== 0 && (
-                <>
-                  <Divider my={4} variant="dashed" />
-                  <Group justify="space-between" mb={2}>
-                    <Text fz="xs">Różnica kasowa:</Text>
-                    <Text fz="xs" fw={600} c={difference > 0 ? "blue" : "red"}>
-                      {difference > 0 ? "+" : ""}
-                      {difference.toLocaleString("pl-PL")} zł
-                      {difference > 0 ? " (nadwyżka)" : " (manko)"}
-                    </Text>
-                  </Group>
-                </>
+                <Group justify="space-between" mb={2}>
+                  <Text fz="xs">Różnica:</Text>
+                  <Text fz="xs" fw={600} c={difference > 0 ? "blue" : "red"}>
+                    {difference > 0 ? "+" : ""}
+                    {difference.toLocaleString("pl-PL")} zł
+                    {difference > 0 ? " (nadwyżka)" : " (manko)"}
+                  </Text>
+                </Group>
               )}
             </Box>
+
+            {/* Receipt portal — drukowany poza #root, gwarantuje 1 etykiete */}
+            {createPortal(
+              <div data-print-area style={{ fontFamily: "monospace" }}>
+                <div style={{ marginBottom: 3 }}>
+                  FORMEN · {new Date().toLocaleDateString("pl-PL")}{" "}
+                  {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} ·{" "}
+                  {closingName}
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+                  <span>Laczna sprzedaz:</span>
+                  <span>{expectedCash.toLocaleString("pl-PL")} zl</span>
+                </div>
+                {totalTerminal > 0 && (
+                  <div
+                    style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}
+                  >
+                    <span>Terminal:</span>
+                    <span>{totalTerminal.toLocaleString("pl-PL")} zl</span>
+                  </div>
+                )}
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+                  <span>Oczekiwana gotowka:</span>
+                  <span>{expectedCashOnly.toLocaleString("pl-PL")} zl</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+                  <span>Drobne na jutro:</span>
+                  <span>{floatVal.toLocaleString("pl-PL")} zl</span>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+                  <span>Do koperty:</span>
+                  <span>{envelopeVal.toLocaleString("pl-PL")} zl</span>
+                </div>
+                {difference !== 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span>Roznica:</span>
+                    <span>
+                      {difference > 0 ? "+" : ""}
+                      {difference.toLocaleString("pl-PL")} zl{" "}
+                      {difference > 0 ? "(nadwyzka)" : "(manko)"}
+                    </span>
+                  </div>
+                )}
+              </div>,
+              document.body
+            )}
 
             <Group>
               <Button
