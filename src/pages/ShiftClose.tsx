@@ -19,7 +19,7 @@ import {
   Select,
   Modal,
 } from "@mantine/core";
-import { IconPrinter, IconCheck } from "@tabler/icons-react";
+import { IconPrinter, IconCheck, IconEye } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionLabel } from "@/components/layout/SectionLabel";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
@@ -53,12 +53,14 @@ export default function ShiftClosePage(): React.JSX.Element {
   const [confirmModal, setConfirmModal] = useState(false);
   const [done, setDone] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [labelPreview, setLabelPreview] = useState(false);
 
   const { data: employees = [] } = useEmployees();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [movements, setMovements] = useState<CashMovement[]>([]);
   const [terminalChecks, setTerminalChecks] = useState<TerminalCheck[]>([]);
   const [openingBalance, setOpeningBalance] = useState(0);
+  const [lastClosedAt, setLastClosedAt] = useState<string | null>(null);
 
   useEffect(() => {
     async function load(): Promise<void> {
@@ -85,6 +87,7 @@ export default function ShiftClosePage(): React.JSX.Element {
         console.error("[ShiftClose] transactions/movements load failed:", err);
       }
       setOpeningBalance(lastFloat);
+      setLastClosedAt(since);
     }
     load().catch(console.error);
   }, []);
@@ -143,6 +146,87 @@ export default function ShiftClosePage(): React.JSX.Element {
     }
   };
 
+  // === SHARED: label preview modal (dostepny i w formularzu, i po zamknieciu) ===
+  const lastClosedLabel = lastClosedAt
+    ? new Date(lastClosedAt).toLocaleString("pl-PL", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : "pierwsza zmiana";
+
+  const labelContent = (
+    <>
+      <div style={{ marginBottom: 3 }}>
+        FORMEN · {new Date().toLocaleDateString("pl-PL")}{" "}
+        {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} ·{" "}
+        {closingName}
+      </div>
+      <div style={{ marginBottom: 3 }}>Od: {lastClosedLabel}</div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+        <span>Laczna sprzedaz:</span>
+        <span>{systemCash.toLocaleString("pl-PL")} zl</span>
+      </div>
+      {totalTerminal > 0 && (
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+          <span>Terminal:</span>
+          <span>{totalTerminal.toLocaleString("pl-PL")} zl</span>
+        </div>
+      )}
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+        <span>Oczekiwana gotowka:</span>
+        <span>{expectedCashOnly.toLocaleString("pl-PL")} zl</span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+        <span>Drobne na jutro:</span>
+        <span>{floatVal.toLocaleString("pl-PL")} zl</span>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
+        <span>Do koperty:</span>
+        <span>{envelopeVal.toLocaleString("pl-PL")} zl</span>
+      </div>
+      {difference !== 0 && (
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span>Roznica:</span>
+          <span>
+            {difference > 0 ? "+" : ""}
+            {difference.toLocaleString("pl-PL")} zl {difference > 0 ? "(nadwyzka)" : "(manko)"}
+          </span>
+        </div>
+      )}
+    </>
+  );
+
+  const labelPreviewModal = (
+    <Modal
+      opened={labelPreview}
+      onClose={() => setLabelPreview(false)}
+      title="Podgląd etykiety 100×60mm"
+      size="auto"
+      centered
+    >
+      <Box
+        style={{
+          width: 378,
+          height: 227,
+          fontFamily: "monospace",
+          fontSize: 15,
+          lineHeight: 1.35,
+          padding: "8px 8px 0 19px",
+          border: "2px dashed var(--mantine-color-dimmed)",
+          background: "white",
+          color: "black",
+          overflow: "hidden",
+          boxSizing: "border-box",
+        }}
+      >
+        {labelContent}
+      </Box>
+    </Modal>
+  );
+
   // === SUCCESS SCREEN ===
   if (done) {
     return (
@@ -175,15 +259,18 @@ export default function ShiftClosePage(): React.JSX.Element {
                 fontFamily: "monospace",
               }}
             >
-              <Text fz="xs" ta="center" c="dimmed" mb={4}>
+              <Text fz="xs" ta="center" c="dimmed" mb={2}>
                 FORMEN · {new Date().toLocaleDateString("pl-PL")}{" "}
                 {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} ·{" "}
                 {closingName}
               </Text>
+              <Text fz="xs" c="dimmed" mb={4}>
+                Od: {lastClosedLabel}
+              </Text>
               <Group justify="space-between" mb={2}>
                 <Text fz="xs">Łączna sprzedaż:</Text>
                 <Text fz="xs" fw={600}>
-                  {expectedCash.toLocaleString("pl-PL")} zł
+                  {systemCash.toLocaleString("pl-PL")} zł
                 </Text>
               </Group>
               {totalTerminal > 0 && (
@@ -227,45 +314,7 @@ export default function ShiftClosePage(): React.JSX.Element {
             {/* Receipt portal — drukowany poza #root, gwarantuje 1 etykiete */}
             {createPortal(
               <div data-print-area style={{ fontFamily: "monospace" }}>
-                <div style={{ marginBottom: 3 }}>
-                  FORMEN · {new Date().toLocaleDateString("pl-PL")}{" "}
-                  {new Date().toLocaleTimeString("pl-PL", { hour: "2-digit", minute: "2-digit" })} ·{" "}
-                  {closingName}
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                  <span>Laczna sprzedaz:</span>
-                  <span>{expectedCash.toLocaleString("pl-PL")} zl</span>
-                </div>
-                {totalTerminal > 0 && (
-                  <div
-                    style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}
-                  >
-                    <span>Terminal:</span>
-                    <span>{totalTerminal.toLocaleString("pl-PL")} zl</span>
-                  </div>
-                )}
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                  <span>Oczekiwana gotowka:</span>
-                  <span>{expectedCashOnly.toLocaleString("pl-PL")} zl</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                  <span>Drobne na jutro:</span>
-                  <span>{floatVal.toLocaleString("pl-PL")} zl</span>
-                </div>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
-                  <span>Do koperty:</span>
-                  <span>{envelopeVal.toLocaleString("pl-PL")} zl</span>
-                </div>
-                {difference !== 0 && (
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span>Roznica:</span>
-                    <span>
-                      {difference > 0 ? "+" : ""}
-                      {difference.toLocaleString("pl-PL")} zl{" "}
-                      {difference > 0 ? "(nadwyzka)" : "(manko)"}
-                    </span>
-                  </div>
-                )}
+                {labelContent}
               </div>,
               document.body
             )}
@@ -279,12 +328,21 @@ export default function ShiftClosePage(): React.JSX.Element {
               >
                 Drukuj raport
               </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                leftSection={<IconEye size={18} />}
+                onClick={() => setLabelPreview(true)}
+              >
+                Podgląd
+              </Button>
               <Button color="dark" size="lg" onClick={() => navigate("/")}>
                 Powrót
               </Button>
             </Group>
           </Stack>
         </Container>
+        {labelPreviewModal}
       </Box>
     );
   }
@@ -320,19 +378,17 @@ export default function ShiftClosePage(): React.JSX.Element {
                   Łączna sprzedaż (system):
                 </Text>
                 <Text fz="lg" fw={700} c="green" lh={1.2}>
-                  {expectedCash.toLocaleString("pl-PL")} zł
+                  {systemCash.toLocaleString("pl-PL")} zł
                 </Text>
               </div>
-              {totalTerminal > 0 && (
-                <div>
-                  <Text fz="sm" fw={700}>
-                    Oczekiwana gotówka w kasie:
-                  </Text>
-                  <Text fz="lg" fw={700} c="blue" lh={1.2}>
-                    {expectedCashOnly.toLocaleString("pl-PL")} zł
-                  </Text>
-                </div>
-              )}
+              <div>
+                <Text fz="sm" fw={700}>
+                  Oczekiwana gotówka w kasie:
+                </Text>
+                <Text fz="lg" fw={700} c="blue" lh={1.2}>
+                  {expectedCashOnly.toLocaleString("pl-PL")} zł
+                </Text>
+              </div>
             </Stack>
 
             {/* KROK 3: Inputy fryzjera */}
@@ -433,23 +489,36 @@ export default function ShiftClosePage(): React.JSX.Element {
         p="md"
       >
         <Container size="lg">
-          <Button
-            fullWidth
-            size="lg"
-            color="dark"
-            disabled={isSubmitting || !form.values.closingEmployee}
-            onClick={() => {
-              if (form.validate().hasErrors) return;
-              setConfirmModal(true);
-            }}
-            leftSection={<IconCheck size={20} />}
-            fz="md"
-            fw={600}
-          >
-            Zamknij zmianę
-          </Button>
+          <Group gap="sm">
+            <Button
+              style={{ flex: 1 }}
+              size="lg"
+              color="dark"
+              disabled={isSubmitting || !form.values.closingEmployee}
+              onClick={() => {
+                if (form.validate().hasErrors) return;
+                setConfirmModal(true);
+              }}
+              leftSection={<IconCheck size={20} />}
+              fz="md"
+              fw={600}
+            >
+              Zamknij zmianę
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              leftSection={<IconEye size={18} />}
+              onClick={() => setLabelPreview(true)}
+              title="Podgląd etykiety wydruku"
+            >
+              Podgląd
+            </Button>
+          </Group>
         </Container>
       </Box>
+
+      {labelPreviewModal}
 
       {/* CONFIRM MODAL */}
       <Modal
