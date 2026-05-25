@@ -20,7 +20,7 @@ import { useMediaQuery } from "@mantine/hooks";
 import {
   IconSun,
   IconMoon,
-  IconScissors,
+  // IconScissors, // cofnij jesli wlasciciel woli nozyczki zamiast logo
   IconChevronRight,
   IconDiamond,
   IconCrown,
@@ -93,7 +93,8 @@ export default function Dashboard() {
         {/* ===== HEADER ===== */}
         <Group justify="space-between" py="md">
           <Group gap="sm">
-            <IconScissors size={22} stroke={1.5} />
+            <img src="/icons/icon-192.png" width={28} height={28} style={{ borderRadius: 6 }} />
+            {/* <IconScissors size={22} stroke={1.5} /> */}
             <Text fw={700} fz={24}>
               FORMEN
             </Text>
