@@ -93,7 +93,12 @@ export default function Dashboard() {
         {/* ===== HEADER ===== */}
         <Group justify="space-between" py="md">
           <Group gap="sm">
-            <img src="/icons/icon-192.png" width={28} height={28} style={{ borderRadius: 6 }} />
+            <img
+              src={`${import.meta.env.BASE_URL}icons/icon-192.png`}
+              width={28}
+              height={28}
+              style={{ borderRadius: 6 }}
+            />
             {/* <IconScissors size={22} stroke={1.5} /> */}
             <Text fw={700} fz={24}>
               FORMEN
