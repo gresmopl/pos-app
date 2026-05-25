@@ -41,3 +41,4 @@ workbox-*.js
 
 # Vercel
 .vercel/
+.playwright-mcp/
