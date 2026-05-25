@@ -1,6 +1,23 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.119] - 2026-05-25
+- feat(shift-close): Podglad etykiety 100x60mm na ekranie (on-screen preview 378x227px = 1:1 z drukarką)
+  Przycisk "Podglad" dostepny: (1) w CTA formularza - przed zamknieciem zmiany, bez zapisu do bazy,
+  (2) na ekranie sukcesu - obok "Drukuj raport". Modal pokazuje przerywana ramke = krawedz etykiety.
+- feat(shift-close): Data i godzina ostatniego zamkniecia zmiany ("Od: DD.MM.RRRR, HH:MM") na etykiecie
+  wydruku i w receipt box na ekranie sukcesu. Jesli brak poprzedniego zamkniecia: "pierwsza zmiana".
+- fix(shift-close): "Laczna sprzedaz (system)" pokazywala expectedCash (saldo otwarcia + utarg + ruchy kasowe)
+  zamiast systemCash (czysty utarg od ostatniego zamkniecia). Poprawiono na systemCash.
+- fix(shift-close): "Oczekiwana gotowka w kasie" pokazywana zawsze (poprzednio tylko gdy terminal > 0).
+- refactor(shift-close): Wspolny `labelContent` JSX dla portalu druku i modalu podgladu - eliminacja
+  duplikacji kodu (poprzednio trzy kopie tej samej tresci etykiety).
+- fix(print): Czcionka wydruku zwiekszona z 6pt do 11pt dla lepszej czytelnosci na etykiecie 100x60mm.
+- feat(dashboard): Logo apki (icon-192.png) zamiast ikony nozyczek w naglowku - do oceny przez
+  wlasciciela salonu. Nozyczki zakomentowane (latwy powrot): odkomentowac IconScissors w imporcie
+  i w JSX w src/pages/Dashboard.tsx.
+- fix(dashboard): Usunieto nieuzywany import IconScissors (ESLint) przy zamianie na logo.
+
 [0.1.118] - 2026-05-13
 - feat(pos): Rabat tylko kwotowy (usuniety procentowy), przyciski +1/+5/+10/+20 dodaja do aktualnej kwoty (clamp do subtotal)
 - feat(pos): Napiwek jako modal analogiczny do rabatu - przycisk obok Dodaj/Rabat, disabled gdy brak uslugi, przyciski +1/+5/+10/+20, badge "Napiwek: +X zl" przy "Do zaplaty"
