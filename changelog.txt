@@ -7,6 +7,8 @@ CHANGELOG - FORMEN POS App
   Modal "Cena uslugi/produktu" z dynamicznym tytulem. CartItemList pokazuje olowek dla kazdej pozycji.
 - docs: ADR-012 + decyzja szefa #19 oznaczone jako nadpisane (cena uslugi edytowalna)
 - test: nowy test POS - olowek edycji ceny widoczny dla uslugi + modal "Cena uslugi" (67 testow)
+- fix(pos): czytelniejszy uklad pozycji koszyka na telefonie - uklad dwurzedowy (nazwa+cena u gory,
+  stepper/olowek/kosz w drugim rzedzie); dluga nazwa ucinana ellipsis zamiast nachodzenia na przyciski
 
 [0.1.119] - 2026-05-25
 - feat(shift-close): Podglad etykiety 100x60mm na ekranie (on-screen preview 378x227px = 1:1 z drukarką)
