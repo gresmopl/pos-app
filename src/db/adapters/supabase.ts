@@ -899,6 +899,14 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           };
         });
       },
+
+      async getBalanceSince(since: string | null): Promise<number> {
+        let query = supabase.from("daily_report").select("difference").eq("salon_id", SALON_ID);
+        if (since) query = query.gt("closed_at", since);
+        const { data, error } = await query;
+        if (error) throw error;
+        return (data ?? []).reduce((sum, r) => sum + Number(r.difference), 0);
+      },
     },
 
     terminalChecks: {

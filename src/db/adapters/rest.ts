@@ -247,6 +247,14 @@ export function createRestClient(config: DbConfig): DbClient {
         if (!r.ok) throw new Error(`API error: ${r.status}`);
         return r.json();
       },
+      async getBalanceSince(since: string | null) {
+        const qs = since ? `?since=${encodeURIComponent(since)}` : "";
+        const r = await fetch(`${apiUrl}/api/daily-reports/balance${qs}`);
+        if (r.status === 404) return 0;
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+        const data = await r.json();
+        return data.balance ?? 0;
+      },
     },
     terminalChecks: {
       async create(input) {

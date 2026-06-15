@@ -129,6 +129,7 @@ export interface SalonSettings {
   retentionThresholdTop: number;
   retentionThresholdHigh: number;
   retentionThresholdMid: number;
+  balanceClearedAt: string | null;
 }
 
 export interface DeviceRegistration {

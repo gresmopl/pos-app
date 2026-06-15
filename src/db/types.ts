@@ -178,6 +178,7 @@ export interface DbClient {
     getLastClosedAt(): Promise<string | null>;
     getLastFloat(): Promise<number>;
     getRecent(limit: number): Promise<DailyReportSummary[]>;
+    getBalanceSince(since: string | null): Promise<number>;
   };
   terminalChecks: {
     create(input: CreateTerminalCheckInput): Promise<TerminalCheck>;

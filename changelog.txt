@@ -1,6 +1,14 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.121] - 2026-06-15
+- feat(shift-close): Bilans kasowy (suma nadplata/manko) na ekranie zamkniecia zmiany
+  Liczony od ostatniego resetu (salon.balance_cleared_at) lub "od poczatku". Na zywo:
+  suma roznic z poprzednich zamkniec + biezaca roznica. Jeden numer netto + data "od kiedy".
+- feat(db): dailyReports.getBalanceSince(since) - suma daily_report.difference od daty (supabase + rest)
+- feat(db): SalonSettings.balanceClearedAt + mapper (kolumna balance_cleared_at)
+- test: mapSalon balanceClearedAt (68 testow)
+
 [0.1.120] - 2026-06-15
 - feat(pos): Edycja ceny jednostkowej takze dla uslug w koszyku (ikona olowka, jak produkty)
   Wczesniej tylko produkty (ADR-012); rozszerzone na uslugi - decyzja szefa ("Kwota wlasna").

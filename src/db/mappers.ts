@@ -107,5 +107,6 @@ export function mapSalon(row: Record<string, unknown>): SalonSettings {
       row.retention_threshold_high != null ? Number(row.retention_threshold_high) : 85,
     retentionThresholdMid:
       row.retention_threshold_mid != null ? Number(row.retention_threshold_mid) : 75,
+    balanceClearedAt: (row.balance_cleared_at as string | null) ?? null,
   };
 }

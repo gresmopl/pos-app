@@ -61,6 +61,8 @@ export default function ShiftClosePage(): React.JSX.Element {
   const [terminalChecks, setTerminalChecks] = useState<TerminalCheck[]>([]);
   const [openingBalance, setOpeningBalance] = useState(0);
   const [lastClosedAt, setLastClosedAt] = useState<string | null>(null);
+  const [balanceClearedAt, setBalanceClearedAt] = useState<string | null>(null);
+  const [priorBalance, setPriorBalance] = useState(0);
 
   useEffect(() => {
     async function load(): Promise<void> {
@@ -88,6 +90,13 @@ export default function ShiftClosePage(): React.JSX.Element {
       }
       setOpeningBalance(lastFloat);
       setLastClosedAt(since);
+      try {
+        const salon = await db.salon.get();
+        setBalanceClearedAt(salon.balanceClearedAt);
+        setPriorBalance(await db.dailyReports.getBalanceSince(salon.balanceClearedAt));
+      } catch (err) {
+        console.error("[ShiftClose] balance load failed:", err);
+      }
     }
     load().catch(console.error);
   }, []);
@@ -110,6 +119,14 @@ export default function ShiftClosePage(): React.JSX.Element {
   const actualCash = floatVal + envelopeVal;
   const expectedCashOnly = expectedCash - totalTerminal;
   const difference = actualCash - expectedCashOnly;
+  const periodBalance = priorBalance + difference;
+  const balanceClearedLabel = balanceClearedAt
+    ? new Date(balanceClearedAt).toLocaleDateString("pl-PL", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+    : null;
 
   const closingName = form.values.closingEmployee
     ? employees.find((e) => e.id === form.values.closingEmployee)?.name
@@ -467,6 +484,19 @@ export default function ShiftClosePage(): React.JSX.Element {
                           : `Nadwyżka: +${difference.toLocaleString("pl-PL")} zł`}
                       </Text>
                     )}
+                    <Divider w="100%" />
+                    <div style={{ textAlign: "center" }}>
+                      <Text fz="sm" fw={700}>
+                        Bilans (suma nadpłata/manko):
+                      </Text>
+                      <Text fz="lg" fw={700} c={periodBalance < 0 ? "red" : "green"} lh={1.2}>
+                        {periodBalance > 0 ? "+" : ""}
+                        {periodBalance.toLocaleString("pl-PL")} zł
+                      </Text>
+                      <Text fz="xs" c="dimmed">
+                        {balanceClearedLabel ? `od: ${balanceClearedLabel}` : "od początku"}
+                      </Text>
+                    </div>
                   </Stack>
                 </Box>
               </>

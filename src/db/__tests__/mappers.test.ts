@@ -83,6 +83,13 @@ describe("mapSalon", () => {
     expect(result.adminPinHash).toBe("");
     expect(result.operationsPinHash).toBe("");
   });
+
+  it("mapuje balanceClearedAt (null gdy brak kolumny)", () => {
+    expect(mapSalon(salonRow()).balanceClearedAt).toBe(null);
+    expect(
+      mapSalon(salonRow({ balance_cleared_at: "2026-06-01T00:00:00Z" })).balanceClearedAt
+    ).toBe("2026-06-01T00:00:00Z");
+  });
 });
 
 describe("mapEmployee", () => {
