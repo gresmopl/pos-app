@@ -250,7 +250,7 @@ Kazda decyzja zawiera kontekst, rozpatrywane opcje, wybor i uzasadnienie.
 ## ADR-012: Edytowalna cena jednostkowa produktu w koszyku
 
 **Data:** 2026-05-13
-**Status:** Zaakceptowana (decyzja szefa)
+**Status:** CZESCIOWO NADPISANA 2026-06-15 - edycja ceny rozszerzona takze na uslugi (pierwotnie tylko produkty, "uslugi bez edycji"). Mechanizm bez zmian (ikona olowka, modal NumberInput min 0.01, decimalScale 2). Powod: decyzja szefa - "Kwota wlasna" dla uslug tak samo jak dla produktow.
 
 **Kontekst:** Pracownik czasem sprzedaje produkt po innej cenie niz cennikowa (np. produkt z koncowki, promocja, prezent dla stalego klienta). Uslugi maja stale ceny - bez wyjatkow.
 

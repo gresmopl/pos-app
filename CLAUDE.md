@@ -73,7 +73,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 16. Bony papierowe przy zamknieciu zmiany liczone razem z gotowka (bez osobnego pola)
 17. Wplata do kasy - JEDEN typ dla wszystkich (bez rozroznienia szef/pracownik); kwota zasila kasetke + Portfel pracownika (obsluguje tez sytuacje "fryzjer wydal reszte z wlasnych")
 18. Rabat w POS - tylko kwotowy (procentowy usuniety) - decyzja z 2026-05-13, patrz ADR-011
-19. Edytowalna cena jednostkowa - tylko dla produktow w koszyku, uslugi bez edycji - decyzja z 2026-05-13, patrz ADR-012
+19. Edytowalna cena jednostkowa - dla produktow I uslug w koszyku (ikona olowka) - NADPISANE 2026-06-15 (wczesniej tylko produkty), patrz ADR-012
 20. Kolejnosc pracownikow konfigurowalna (display_order) + opcjonalny badge tekstowy retencji (show_retention_badge); ikona statusu na avatarze zawsze widoczna - decyzja z 2026-05-13, patrz ADR-013
 
 ## Bezpieczenstwo

@@ -148,4 +148,12 @@ describe("POSPage finalize flow", () => {
 
     consoleSpy.mockRestore();
   });
+
+  it("pokazuje olowek edycji ceny takze dla uslugi i otwiera modal 'Cena uslugi'", async () => {
+    renderPOS();
+    const editBtn = screen.getByRole("button", { name: /zmień cenę usługi strzyżenie/i });
+    expect(editBtn).toBeInTheDocument();
+    await userEvent.click(editBtn);
+    expect(await screen.findByText("Cena usługi")).toBeInTheDocument();
+  });
 });

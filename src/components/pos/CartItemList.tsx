@@ -66,17 +66,15 @@ export function CartItemList({
               <Text fw={600} fz="md" w={70} ta="right">
                 {(item.price * item.quantity).toLocaleString("pl-PL")} zł
               </Text>
-              {item.type === "product" && (
-                <ActionIcon
-                  variant="light"
-                  color="green"
-                  size="lg"
-                  onClick={() => onEditPrice(item)}
-                  aria-label={`Zmień cenę produktu ${item.name}`}
-                >
-                  <IconPencil size={16} />
-                </ActionIcon>
-              )}
+              <ActionIcon
+                variant="light"
+                color="green"
+                size="lg"
+                onClick={() => onEditPrice(item)}
+                aria-label={`Zmień cenę ${item.type === "service" ? "usługi" : "produktu"} ${item.name}`}
+              >
+                <IconPencil size={16} />
+              </ActionIcon>
               <ActionIcon
                 variant="subtle"
                 color="red"

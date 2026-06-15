@@ -1,6 +1,13 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.120] - 2026-06-15
+- feat(pos): Edycja ceny jednostkowej takze dla uslug w koszyku (ikona olowka, jak produkty)
+  Wczesniej tylko produkty (ADR-012); rozszerzone na uslugi - decyzja szefa ("Kwota wlasna").
+  Modal "Cena uslugi/produktu" z dynamicznym tytulem. CartItemList pokazuje olowek dla kazdej pozycji.
+- docs: ADR-012 + decyzja szefa #19 oznaczone jako nadpisane (cena uslugi edytowalna)
+- test: nowy test POS - olowek edycji ceny widoczny dla uslugi + modal "Cena uslugi" (67 testow)
+
 [0.1.119] - 2026-05-25
 - feat(shift-close): Podglad etykiety 100x60mm na ekranie (on-screen preview 378x227px = 1:1 z drukarką)
   Przycisk "Podglad" dostepny: (1) w CTA formularza - przed zamknieciem zmiany, bez zapisu do bazy,

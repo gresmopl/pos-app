@@ -302,7 +302,7 @@ export default function POSPage() {
         }}
         title={
           <Text fw={700} fz="lg">
-            Cena produktu
+            Cena {priceEditItem?.type === "service" ? "usługi" : "produktu"}
           </Text>
         }
         size="sm"
