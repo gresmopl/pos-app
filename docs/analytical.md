@@ -197,7 +197,7 @@ Etap 2 - Rozliczenie:
    - Depozyt = (gotowka - drobne) + bony
    - Roznica gotowkowa = policzona gotowka - oczekiwana
    - Roznica bonowa = policzone bony - oczekiwane
-7. Tolerancja: roznica <= 10 zl = OK (zielone)
+7. Kazda roznica pokazywana - brak tolerancji (decyzja #7); zielone "OK" tylko gdy roznica = 0
 8. Potwierdzenie -> db.dailyReports.create() -> raport kasowy -> wydruk
 ```
 

@@ -430,20 +430,20 @@ Szef z dwoma salonami: 2 PWA na telefonie (osobne subdomeny/origin).
 
 Zdefiniowane w `src/lib/types.ts`:
 
-| Typ                | Opis                                               | Uzywany w                |
-| ------------------ | -------------------------------------------------- | ------------------------ |
-| Employee           | Pracownik (imie, rola, saldo napiwkow, statystyki) | Dashboard, POS, Cash     |
-| DailyStats         | Statystyki salonowe (dzis, miesiac, rok, rekord)   | Dashboard                |
-| Service            | Usluga (nazwa, cena, czas, opis, kategoria)        | POS, AdminPricing        |
-| Product            | Produkt (nazwa, cena, opis)                        | POS, AdminPricing        |
-| Transaction        | Transakcja (pozycje, rabat, napiwek)               | History, ShiftClose      |
-| TransactionItem    | Pozycja transakcji (nazwa, cena, typ, prowizja)    | History, POS             |
-| CashMovement       | Operacja kasowa (typ, kwota, status)               | Cash, ShiftClose         |
-| CartItem           | Pozycja w koszyku (ilosc, typ)                     | POS                      |
-| DiscountState      | Stan rabatu (typ + wartosc)                        | POS                      |
-| Voucher            | Bon podarunkowy (wartosc, saldo, waznosc)          | Cash                     |
-| SalonSettings      | Konfiguracja salonu (kasa, prowizje, cel)          | AdminSettings, Dashboard |
-| DeviceRegistration | Rejestracja urzadzenia (UUID, typ, status)         | DeviceGate, AdminDevices |
+| Typ                | Opis                                                | Uzywany w                |
+| ------------------ | --------------------------------------------------- | ------------------------ |
+| Employee           | Pracownik (imie, rola, saldo napiwkow, statystyki)  | Dashboard, POS, Cash     |
+| DailyStats         | Statystyki salonowe (dzis, miesiac, rok, rekord)    | Dashboard                |
+| Service            | Usluga (nazwa, cena, priceFrom, opis, displayOrder) | POS, AdminPricing        |
+| Product            | Produkt (nazwa, cena, opis)                         | POS, AdminPricing        |
+| Transaction        | Transakcja (pozycje, rabat, napiwek)                | History, ShiftClose      |
+| TransactionItem    | Pozycja transakcji (nazwa, cena, typ, prowizja)     | History, POS             |
+| CashMovement       | Operacja kasowa (typ, kwota, status)                | Cash, ShiftClose         |
+| CartItem           | Pozycja w koszyku (ilosc, typ)                      | POS                      |
+| DiscountState      | Stan rabatu (typ + wartosc)                         | POS                      |
+| Voucher            | Bon podarunkowy (wartosc, saldo, waznosc)           | Cash                     |
+| SalonSettings      | Konfiguracja salonu (kasa, prowizje, cel)           | AdminSettings, Dashboard |
+| DeviceRegistration | Rejestracja urzadzenia (UUID, typ, status)          | DeviceGate, AdminDevices |
 
 ---
 

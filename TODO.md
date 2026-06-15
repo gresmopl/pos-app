@@ -47,7 +47,7 @@
 
 - [x] Presety napiwkow - usuniete, tylko pole na kwote (decyzja szefa)
 - [x] Presety bonow - usuniete, tylko pole na kwote (decyzja szefa)
-- [x] Tolerancja kasowa - 10 zl (roznice <= 10 zl pokazywane jako OK)
+- [x] ~~Tolerancja kasowa - 10 zl~~ - ZMIENIONE 2026-04-13: brak tolerancji, pokazuj kazda roznice (patrz nizej "Tolerancja kasowa a v2.1" + decyzja #7)
 - [x] Waznosc bonu - 12 miesiecy (expires_at w schema.sql)
 - [x] Slepe liczenie - szef chce transparentnosc (widzi kwote systemowa od razu)
 
@@ -75,9 +75,8 @@
 - [x] Hooki async: useDbQuery, useEmployees, useServices, useProducts, useTodayTransactions, useDailyStats
 - [x] Wszystkie strony podlaczone do warstwy DB (Dashboard, POS, History, Cash, ShiftClose, AdminPricing)
 - [x] Zapis transakcji do bazy (transaction + items + tip_balance)
-- [x] Pole description + description_long w Service, description w Product
-- [x] duration_minutes jako VARCHAR (zakresy "30-45")
-- [x] Formularz cennika: nazwa, cena, czas trwania, krotki opis, opis szczegolowy
+- [x] Pole description w Service i Product (description_long, duration_minutes, category USUNIETE w v0.1.72 wraz z Katalogiem Wiedzy)
+- [x] Formularz cennika: nazwa, cena, opis (czas trwania + opis szczegolowy usuniete w v0.1.72)
 
 **Do zrealizowania:**
 
@@ -170,9 +169,9 @@ Niezaadresowane obawy z review zmian codexa (2026-05-13):
 - [x] **Edge case: badge bez `retentionPercent`** - zweryfikowane: `getRetentionRank(null)` zwraca `RANK_DEVELOPMENT` (gray, "ROZWOJ"), `RetentionAvatarIcon` ma fallback na `IconTrendingUp`. Pracownik bez retencji ma ikone wykresu na szarym tle - dziala - 2026-05-13
 - [ ] **Migracja PROD (Hetzner)** - po merge do `main` wykonac na produkcji:
       `sql
-  ALTER TABLE employee ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
-  ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT NULL DEFAULT true;
-  `
+ALTER TABLE employee ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
+ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT NULL DEFAULT true;
+`
       (DEV/Supabase juz zmigrowane 2026-05-13)
 
 ## Przyszle usprawnienia
