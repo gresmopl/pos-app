@@ -164,16 +164,16 @@ Technologia: Gemini Flash (tekst + vision, ~0.30 zl/mln tokenow) + Web Speech AP
 
 Niezaadresowane obawy z review zmian codexa (2026-05-13):
 
-- [ ] **Uruchomic `npm test`** - sprawdzic czy testy mapperow nie pekly po dodaniu `displayOrder` i `showRetentionBadge` do typu `Employee` (40 testow / 4 pliki)
+- [x] **Uruchomic `npm test`** - zweryfikowane 2026-06-15: 66 testow / 7 plikow przechodzi (mappery 25 testow, w tym `displayOrder` + `showRetentionBadge`)
 - [x] **Logika napiwku** - zweryfikowane: napiwek jest atrybutem transakcji (`transaction.tip_amount`), nie pozycji. Jeden `employee_id` per transakcja - regula "pierwsza usluga" nie ma odzwierciedlenia w storage. Codex nie tknal logiki adaptera. UI egzekwuje wymog uslugi w koszyku (`disabled={!hasService}` + useEffect reset). Server-side guard swiadomie pominiety - 2026-05-13
-- [ ] **`npm run build`** - sprawdzic czy production bundle wstaje (dev server moze wybaczyc rzeczy ktore bundler zauwazy)
+- [x] **`npm run build`** - zweryfikowane 2026-06-15: production bundle wstaje (tsc --noEmit + vite build OK)
 - [x] **Edge case: cena produktu = 0 zl** - zmieniono `min={0.01}` w modalu POS + guard w `applyPriceEdit` (odrzuca puste pole i wartosci < 0.01). Produkt za darmo nie do zapisania - 2026-05-13
 - [x] **Edge case: badge bez `retentionPercent`** - zweryfikowane: `getRetentionRank(null)` zwraca `RANK_DEVELOPMENT` (gray, "ROZWOJ"), `RetentionAvatarIcon` ma fallback na `IconTrendingUp`. Pracownik bez retencji ma ikone wykresu na szarym tle - dziala - 2026-05-13
 - [ ] **Migracja PROD (Hetzner)** - po merge do `main` wykonac na produkcji:
-      ```sql
-      ALTER TABLE employee ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
-      ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT NULL DEFAULT true;
-      ```
+      `sql
+    ALTER TABLE employee ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
+    ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT NULL DEFAULT true;
+    `
       (DEV/Supabase juz zmigrowane 2026-05-13)
 
 ## Przyszle usprawnienia

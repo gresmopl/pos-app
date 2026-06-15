@@ -9,24 +9,24 @@ Docelowo: Progressive Web App (PWA) z offline fallback.
 
 ### Stack
 
-| Warstwa    | Technologia                             | Wersja |
-| ---------- | --------------------------------------- | ------ |
-| Bundler    | Vite                                    | 6.x    |
-| Framework  | React                                   | 19.x   |
-| Jezyk      | TypeScript (strict)                     | 5.x    |
-| Routing    | React Router                            | 7.x    |
-| UI         | Mantine                                 | 9.x    |
-| Baza       | PostgreSQL (Supabase DEV / Hetzner VPS) | 16     |
-| DB SDK     | @supabase/supabase-js                   | 2.x    |
-| Testy      | Vitest + Testing Library                | 4.x    |
-| Linting    | ESLint (typescript-eslint) + Prettier   | -      |
-| Pre-commit | Husky + lint-staged                     | -      |
+| Warstwa    | Technologia                                                             | Wersja |
+| ---------- | ----------------------------------------------------------------------- | ------ |
+| Bundler    | Vite                                                                    | 6.x    |
+| Framework  | React                                                                   | 19.x   |
+| Jezyk      | TypeScript (strict)                                                     | 5.x    |
+| Routing    | React Router                                                            | 7.x    |
+| UI         | Mantine                                                                 | 9.x    |
+| Baza       | Supabase DEV (PostgreSQL) / SQLite na Hetzner PROD (planowane, ADR-015) | 16 / - |
+| DB SDK     | @supabase/supabase-js                                                   | 2.x    |
+| Testy      | Vitest + Testing Library                                                | 4.x    |
+| Linting    | ESLint (typescript-eslint) + Prettier                                   | -      |
+| Pre-commit | Husky + lint-staged                                                     | -      |
 
 ### Hosting i deploy
 
 | Srodowisko  | Hosting          | Baza                        | Branch | Deploy                        |
 | ----------- | ---------------- | --------------------------- | ------ | ----------------------------- |
-| Produkcja   | Hetzner CX24 VPS | PostgreSQL 16 (self-hosted) | main   | SSH/rsync (po npm run build)  |
+| Produkcja   | Hetzner CX22 VPS | SQLite (planowane, ADR-015) | main   | SSH/rsync (po npm run build)  |
 | Dev/Preview | GitHub Pages     | Supabase DEV (free)         | dev    | GitHub Actions (automatyczny) |
 | Lokalne     | Vite dev         | Supabase DEV                | dev    | `npm run dev`                 |
 
@@ -72,10 +72,11 @@ Klucz `anon` Supabase jest publiczny - trafia do bundla JS w przegladarce. Bezpi
 - Schemat PostgreSQL, seed danych, testowanie
 - Frontend na GitHub Pages
 
-**Produkcja (docelowo):**
+**Produkcja (docelowo) - wg ADR-015 (supersedes ADR-006):**
 
-- Hetzner CX24 VPS - frontend SPA + PostgreSQL 16 + Node.js (self-managed)
+- Hetzner CX22 VPS - frontend SPA (static) + Node.js/Express + SQLite (better-sqlite3) + Caddy + systemd
 - Supabase DEV zostaje jako srodowisko testowe (free, bez kosztow)
+- UWAGA: migracja jeszcze niewdrozona. Ponizsza sekcja "Hetzner CX24 - parametry" opisuje stary plan (ADR-006, PostgreSQL) - zachowana historycznie, patrz ADR-015 po aktualny stack PROD
 
 **Hetzner CX24 - parametry:**
 
@@ -238,7 +239,7 @@ dailyReports:   create(), getToday(), getLastClosedAt(), getLastFloat()
 
 ### Mappery DB (mappers.ts)
 
-Czyste funkcje mapujace surowe wiersze z bazy na typy domenowe. Wyodrebnione z supabase.ts dla testowalnosci (20 testow jednostkowych).
+Czyste funkcje mapujace surowe wiersze z bazy na typy domenowe. Wyodrebnione z supabase.ts dla testowalnosci (25 testow jednostkowych).
 
 Mappery: `mapEmployee`, `mapService`, `mapProduct`, `mapTransaction`, `mapCashMovement`, `mapSalon`.
 
@@ -403,7 +404,7 @@ Flow rejestracji:
 1. Pierwsze uruchomienie -> generuj UUID -> localStorage (formen_device_id)
 2. DeviceGate sprawdza status w DB (device_registration)
 3. Brak wpisu -> ekran rejestracji (nazwa, typ, opcjonalnie pracownik)
-4. Typ "admin" wymaga PIN-u szefa (4321) i jest auto-approved jesli brak innych zatwierdzonych
+4. Typ "admin" wymaga PIN-u szefa (1234) i jest auto-approved jesli brak innych zatwierdzonych
 5. Typ "personal"/"station" -> status "pending" -> szef zatwierdza w /admin/devices
 6. Po zatwierdzeniu -> pelny dostep do aplikacji
 ```
@@ -451,7 +452,7 @@ Zdefiniowane w `src/lib/types.ts`:
 Framework: vitest + @testing-library/react + jsdom
 
 ```bash
-npm test           # uruchom testy (40 testow, 4 pliki)
+npm test           # uruchom testy (66 testow, 7 plikow)
 npm test -- --ui   # interfejs graficzny
 ```
 

@@ -9,23 +9,25 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 
 ## Stack
 
-| Warstwa    | Technologia                                  |
-| ---------- | -------------------------------------------- |
-| Frontend   | Vite + React 19 + TypeScript (strict)        |
-| UI         | Mantine UI 9 (createTheme, dark/light mode)  |
-| Routing    | React Router v7 (SPA)                        |
-| Baza       | PostgreSQL (Supabase DEV / Hetzner VPS PROD) |
-| Testy      | Vitest + Testing Library + jsdom             |
-| Pre-commit | Husky + lint-staged (Prettier + ESLint)      |
+| Warstwa    | Technologia                                                |
+| ---------- | ---------------------------------------------------------- |
+| Frontend   | Vite + React 19 + TypeScript (strict)                      |
+| UI         | Mantine UI 9 (createTheme, dark/light mode)                |
+| Routing    | React Router v7 (SPA)                                      |
+| Baza       | Supabase DEV / SQLite na Hetzner PROD (planowane, ADR-015) |
+| Testy      | Vitest + Testing Library + jsdom                           |
+| Pre-commit | Husky + lint-staged (Prettier + ESLint)                    |
 
 ## Srodowiska
 
-| Branch | Baza                        | Hosting          | Adapter    |
-| ------ | --------------------------- | ---------------- | ---------- |
-| `dev`  | Supabase DEV (free)         | GitHub Pages     | `supabase` |
-| `main` | PostgreSQL 16 (self-hosted) | Hetzner CX24 VPS | `rest`     |
+| Branch | Baza                         | Hosting          | Adapter    |
+| ------ | ---------------------------- | ---------------- | ---------- |
+| `dev`  | Supabase DEV (free)          | GitHub Pages     | `supabase` |
+| `main` | SQLite (planowane, ADR-015)¹ | Hetzner CX22 VPS | `rest`     |
 
 `VITE_DB_ADAPTER` w .env: `supabase` (DEV), `rest` (PROD). Szczegoly: docs/technical.md
+
+¹ PROD docelowo na SQLite (better-sqlite3) + Node/Express + Caddy na Hetzner CX22 wg ADR-015 (supersedes ADR-006). Migracja jeszcze niewdrozona - obecnie `main` deployuje na GitHub Pages z adapterem supabase.
 
 ## Struktura
 
@@ -45,11 +47,11 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 ## Warstwa bazy danych
 
 - Wzorzec adapter w src/db/ (supabase / rest). Schemat: src/db/schema.sql
-- Mappery DB wyodrebnione do src/db/mappers.ts (testowalne bez Supabase, 20 testow)
+- Mappery DB wyodrebnione do src/db/mappers.ts (testowalne bez Supabase, 25 testow)
 - Hook `useDbQuery<T>` + hooki zasobowe (useEmployees, useServices, useProducts, useSalonSettings, ...)
 - Zapis: db.transactions.create(), db.services._, db.products._, db.cashMovements._, db.salon._, db.devices.\*
 - DeviceContext (src/contexts/) - jedyny globalny context (UUID, status urzadzenia, useDeviceRole)
-- Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts. 40 testow / 4 pliki
+- Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts. 66 testow / 7 plikow
 
 ## Decyzje szefa (potwierdzone 2026-04-10, 2026-04-13, 2026-05-13)
 
@@ -78,7 +80,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 
 - **PIN admina** (Panel Szefa - ZAWSZE), **PIN operacyjny** (cofniecie tx). Fryzjerzy bez PIN-u
 - **Autoryzacja urzadzen**: UUID w localStorage, DeviceGate blokuje aplikacje, szef zatwierdza w /admin/devices
-- Typy urzadzen: personal / station / admin. Pierwszy admin auto-approved (PIN 4321)
+- Typy urzadzen: personal / station / admin. Pierwszy admin auto-approved (PIN 1234)
 - Multi-salon: osobna baza per salon (osobny deploy z innym .env), bez RLS
 
 ## Claude Code setup (.claude/)
