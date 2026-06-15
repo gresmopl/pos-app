@@ -5,7 +5,7 @@ Bez integracji z drukarka fiskalna (Bingo Online) i rezerwacjami (Booksy).
 
 ## Dokumentacja
 
-docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md (ADR), docs/conventions.md (konwencje kodu), CONTRIBUTING.md (zasady pracy), src/db/schema.sql (DB), TODO.md (zadania biezace), IDEAS.md (backlog pomyslow), changelog.txt
+docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md (ADR), docs/conventions.md (konwencje kodu), CONTRIBUTING.md (zasady pracy), src/db/schema.sql (DB), TODO.md (zadania biezace), IDEAS.md (backlog pomyslow), changelog.txt, docs/product-owner-questions.md, docs/knowledge-base-archive.md (archiwum usunietego Katalogu Wiedzy)
 
 ## Stack
 
@@ -33,7 +33,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 
 `src/pages/` (15 stron), `src/components/` (layout/BottomNavBar+PageHeader+PinModal, pos/, cash/),
 `src/hooks/` (useCart, useDbQuery, useWakeLock), `src/db/` (adaptery, mappers.ts, schema),
-`src/lib/` (types.ts, constants.ts, cash.ts, commission.ts)
+`src/lib/` (types.ts, constants.ts, cash.ts, commission.ts, employees.ts)
 
 ## Konwencje kodu
 
@@ -85,11 +85,10 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 
 ## Claude Code setup (.claude/)
 
-- **Hooki** (auto): ochrona main, ochrona configow, quality check (prettier+tsc), security scan
-- **Rules** (auto, scoped): typescript, database, react-mantine, tests
-- **Komendy**: `/review`, `/deploy-check`, `/phase-status`
-- **Agenty**: ts-reviewer, db-reviewer, test-writer, ux-reviewer
-- **MCP**: context7 (aktualne docs Mantine/React/Supabase)
+- Katalog `.claude/` zawiera obecnie TYLKO `settings.local.json` (lokalne uprawnienia)
+- BRAK hookow, rules, komend i agentow w repo (wczesniejszy opis byl aspiracyjny - nie istnial)
+- Jakosc kodu egzekwuja: pre-commit (Husky + lint-staged: prettier + eslint --fix) oraz CI (.github/workflows/ci.yml - lint + tsc + testy)
+- Deploy: .github/workflows/deploy.yml (GitHub Pages przy push do main)
 
 ## Fazy
 

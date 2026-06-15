@@ -267,7 +267,7 @@ Reguly:
 
 ### Mapowanie discount_type
 
-UI: `"percent"` / `"amount"` -> DB enum: `"percentage"` / `"amount"`. Mapowanie w supabase adapter create().
+UI tworzy tylko `"amount"` -> DB enum `"amount"` (ADR-011, rabat procentowy usuniety). Wartosc `"percentage"` istnieje wylacznie jako legacy odczyt w mapperze dla historycznych transakcji. Mapowanie w supabase adapter create().
 
 ### Funkcja RPC
 

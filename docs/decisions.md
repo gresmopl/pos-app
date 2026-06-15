@@ -534,3 +534,35 @@ formen/                            ← repo (rename z pos-app)
 - Marketing trafia pod zewnetrzny zespol marketingowy → wyciagnij `apps/marketing/` do osobnego repo
 - Projekt urosnie do 10+ apek → revisit Turborepo dla cache
 - Zechcesz publikowac `@formen/shared-types` jako publiczny npm package → dodaj Changesets
+
+---
+
+## ADR-017: Likwidacja metod platnosci - wszystko = gotowka
+
+**Data:** 2026-04-18 (udokumentowana wstecznie 2026-06-15)
+**Status:** Zaakceptowana (decyzja szefa) - zaimplementowana w v0.1.73
+
+**Kontekst:** W pierwotnej wersji POS przy kazdej sprzedazy wybierano metode platnosci (gotowka / karta / BLIK / bon / split). Roztargnieni fryzjerzy klikali "karta" a przyjmowali gotowke (lub odwrotnie) i kasa sie rozjezdzala. Terminal platniczy jest nieomylnym zrodlem prawdy o platnosciach elektronicznych. Geneza: `IDEAS.md` #1 ("Likwidacja form platnosci").
+
+**Opcje:**
+
+1. Zachowac wybor metody + walidacje/raporty per metoda
+2. Usunac wybor metody - wszystko traktowane jako gotowka, karta/BLIK rejestrowane recznie z terminala
+
+**Decyzja:** Opcja 2 - usunieto wybor metody platnosci. Kazda transakcja traktowana jako gotowka. Karta/BLIK rejestrowane wylacznie jako sumaryczny reczny `terminal_amount` (sprawdzenie kasy w ciagu dnia + krok przy zamknieciu zmiany). Bony papierowe liczone razem z gotowka (decyzja #16).
+
+**Uzasadnienie (szef):**
+
+- Mniej klikania = mniej pomylek; fryzjer nie wybiera niczego, tylko zatwierdza
+- Terminal jest zrodlem prawdy dla platnosci elektronicznych - reczny wpis wystarczy
+- Kasa zgadza sie prosciej: oczekiwana gotowka = utarg + ruchy - terminal
+
+**Konsekwencje (v0.1.73):**
+
+- Usunieto: `payment_method` enum, tabele `payment_detail`, `PaymentBreakdownItem`, `paymentMethod` z `Transaction`/`CashMovement`, `enabledPaymentMethods` z `SalonSettings`/`AdminSettings`
+- Usunieto komponenty `PaymentModal`, `SplitPaymentModal` oraz stale `PAYMENT_METHODS`, `SIMPLE_METHOD_MAP`
+- `calcSystemCash` zwraca `number` (bylo `SystemCashSplit`)
+- **Raporty NIE maja podzialu per metoda platnosci per transakcja** - jedyny dostepny slad to sumaryczny `terminal_amount` z `daily_report` (poziom zmiany/okresu)
+- Realizacja bonu jako platnosci w POS przestala istniec wraz z usunieciem wyboru metody (adapter `vouchers.redeem()` pozostal, ale nie jest podpiety w UI - patrz analytical.md §3.4)
+
+**Nie re-litigowac:** propozycje "dodajmy z powrotem wybor metody / podzial platnosci w raportach" odrzucac z odsylaniem do tego ADR, chyba ze szef zmieni zdanie.

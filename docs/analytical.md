@@ -42,35 +42,22 @@ System POS zastepujacy dotychczasowa aplikacje .NET (zapis do XML na dysku lokal
 1. Fryzjer/kasjer wybiera pracownika na Dashboard
 2. Dodaje uslugi i/lub produkty do koszyka
 3. (opcjonalnie) Dodaje napiwek (dowolna kwota)
-4. (opcjonalnie) Udziela rabatu (kwotowy lub procentowy, bez limitu)
-5. Wybiera metode platnosci
-6. Potwierdza transakcje
-7. System zapisuje do bazy: transaction + items + payment_detail(s) + tip_balance
-8. Koszyk czyszczony, powrot do Dashboard
+4. (opcjonalnie) Udziela rabatu (kwotowy, bez limitu)
+5. Potwierdza transakcje
+6. System zapisuje do bazy: transaction + items + tip_balance
+7. Koszyk czyszczony, powrot do Dashboard
 ```
 
-**Metody platnosci:**
+**Platnosci:**
 
-| Metoda          | Opis                            | payment_detail rows |
-| --------------- | ------------------------------- | ------------------- |
-| Gotowka         | Platnosc gotowka                | 1 (cash)            |
-| Karta           | Platnosc karta                  | 1 (card)            |
-| BLIK            | Platnosc BLIK                   | 1 (blik)            |
-| Bon podarunkowy | Caly rachunek pokryty bonem     | 1 (voucher)         |
-| Bon + Gotowka   | Czesciowo bon, reszta gotowka   | 2 (voucher + cash)  |
-| Bon + Karta     | Czesciowo bon, reszta karta     | 2 (voucher + card)  |
-| Bon + BLIK      | Czesciowo bon, reszta BLIK      | 2 (voucher + blik)  |
-| Gotowka + Karta | Czesciowo gotowka, reszta karta | 2 (cash + card)     |
-
-Kazda metoda w splicie zapisywana jako osobny payment_detail z dokladna kwota.
+Brak wyboru metody platnosci - kazda transakcja traktowana jako gotowka (ADR-017, v0.1.73). Karta/BLIK rejestrowane wylacznie jako sumaryczny reczny `terminal_amount` (sprawdzenie kasy w ciagu dnia / krok przy zamknieciu zmiany). Bony papierowe liczone razem z gotowka (decyzja #16).
 
 **Reguly:**
 
 - 1 rachunek = 1 fryzjer
 - Klient opcjonalny (brak wyboru nie blokuje transakcji)
 - Napiwek wliczany do rachunku, trafia do wirtualnego portfela fryzjera
-- Rabat obniza cale zamowienie (nie pojedyncze pozycje)
-- Prowizja od split payment - od pelnej kwoty (niezaleznie od metody)
+- Rabat obniza cale zamowienie (nie pojedyncze pozycje), tylko kwotowy (ADR-011)
 - Prowizja od rabatu - od kwoty PO rabacie
 - Szef ufa pracownikom - brak limitu rabatu
 
@@ -102,7 +89,7 @@ Kazda metoda w splicie zapisywana jako osobny payment_detail z dokladna kwota.
 ```
 1. Ekran Ruchy kasowe -> zakladka "Bon"
 2. Wpisanie dowolnej kwoty bonu
-3. Wybor formy platnosci (gotowka lub karta)
+3. Platnosc gotowka (zasila kasetke)
 4. System generuje unikalny kod bonu (BON-{timestamp})
 5. System tworzy voucher w bazie (kod, wartosc, 12 mies. waznosc)
 6. Bon rejestrowany jako ruch kasowy (voucher_sale)
@@ -112,8 +99,7 @@ Kazda metoda w splicie zapisywana jako osobny payment_detail z dokladna kwota.
 
 - Bon NIE jest przypisany do zadnego fryzjera
 - Bon NIE wlicza sie do statystyk sprzedazowych
-- Gotowka za bon trafia do kasetki (jesli platnosc gotowka)
-- Bon za karte nie wplywa na stan kasetki
+- Gotowka za bon trafia do kasetki
 - Bon wazny 12 miesiecy od daty sprzedazy
 - Reszta z bonu zostaje na bonie (nie jest wydawana)
 - BEZ presetow kwot - tylko pole na dowolna kwote
@@ -123,21 +109,13 @@ Kazda metoda w splicie zapisywana jako osobny payment_detail z dokladna kwota.
 **Aktorzy:** Kasjer/Fryzjer
 **Wyzwalacz:** Klient placi bonem
 
-```
-1. W POS: wybor platnosci "Bon podarunkowy"
-2. Wpisanie kwoty bonu
-3. Jesli bon < rachunek: wybor metody doplaty (gotowka/karta/BLIK)
-4. Jesli bon >= rachunek: reszta zostaje na bonie
-5. Klient oddaje papierowy bon -> fryzjer wklada do kasetki
-6. System zapisuje payment_detail(s) z dokladnymi kwotami per metoda
-```
+**STATUS: NIEZAIMPLEMENTOWANE w UI.** Realizacja bonu jako platnosci przestala istniec wraz z usunieciem wyboru metody platnosci (ADR-017, v0.1.73). Adapter ma metody `vouchers.getByCode()` i `vouchers.redeem()`, ale POS nie ma zadnej obslugi platnosci bonem - nie sa wywolywane. Bony mozna obecnie SPRZEDAC (sekcja 3.3, Kasa -> voucher_sale), ale nie zrealizowac w POS.
 
-**Reguly:**
+**Do zaprojektowania w przyszlosci** (gdy szef bedzie chcial realizacje bonow):
 
-- Bon papierowy traktowany jak gotowka w kasetce (fizycznie)
-- W systemie: platnosc bezgotowkowa (nie zwieksza expected_cash)
-- Bony liczone osobno przy zamknieciu zmiany (rozliczenie bonowe)
-- Split bon+gotowka tworzy 2 payment_detail: voucher(X) + cash(Y)
+- Bon papierowy fizycznie traktowany jak gotowka w kasetce
+- W systemie platnosc bonem powinna byc bezgotowkowa (nie zwieksza expected_cash)
+- Reszta z bonu zostaje na bonie (decyzja #4)
 
 ### 3.5 Wyplata napiwkow
 
@@ -155,7 +133,7 @@ Kazda metoda w splicie zapisywana jako osobny payment_detail z dokladna kwota.
 
 **Reguly:**
 
-- Napiwki kumuluja sie niezaleznie od metody platnosci klienta
+- Napiwki z rachunku kumuluja sie w portfelu fryzjera
 - Salda przechodza na kolejne dni
 - Napiwki gotowkowe "do reki" - system NIE sledzi (tylko napiwki z rachunku)
 - Rozliczenie do konca miesiaca wg preferencji szefa
@@ -208,10 +186,11 @@ Etap 2 - Rozliczenie:
 1. Ekran "Zamkniecie zmiany"
 2. System laduje transakcje + ruchy kasowe od ostatniego zamkniecia
 3. System pokazuje podsumowanie:
-   - Sprzedaz per metoda (gotowka, karta/BLIK, bony) z paymentBreakdown
+   - Laczna sprzedaz (systemCash = suma totalAmount transakcji, wszystko gotowka)
+   - Terminal (reczny wpis karta/BLIK, sumarycznie)
    - Ruchy kasowe (wplaty, wyplaty, zakupy, zwroty)
-   - Oczekiwana gotowka (systemCash + cashIn - cashOut)
-   - Oczekiwane bony (suma platnosci voucher, takze z splitow)
+   - Oczekiwana gotowka (openingBalance + systemCash + cashIn - cashOut - terminal)
+   - Bony papierowe liczone razem z gotowka (decyzja #16)
 4. Pracownik liczy gotowke i bony fizycznie
 5. Wpisuje: gotowka, drobne na jutro, bony papierowe
 6. System oblicza:
@@ -237,45 +216,43 @@ Etap 2 - Rozliczenie:
 
 ### 4.1 Transakcja
 
-| Pole             | Typ                     | Opis                                            |
-| ---------------- | ----------------------- | ----------------------------------------------- |
-| id               | string                  | Unikalny identyfikator                          |
-| employeeId       | string (nullable)       | Fryzjer (null dla bonow)                        |
-| clientId         | string (nullable)       | Klient (opcjonalny)                             |
-| deviceId         | string                  | Urzadzenie (audyt)                              |
-| items[]          | TransactionItem[]       | Pozycje (usluga/produkt)                        |
-| totalAmount      | number                  | Suma brutto                                     |
-| tipAmount        | number                  | Napiwek                                         |
-| discountType     | "amount"               | Typ rabatu dla nowych transakcji; "percentage" tylko legacy |
-| discountValue    | number                  | Wartosc rabatu kwotowego                       |
-| paymentMethod    | string                  | Metoda platnosci (cash/card/blik/voucher/split) |
-| paymentBreakdown | PaymentBreakdownItem[]  | Rozbicie per metoda z kwotami                   |
-| status           | string                  | completed / cancelled                           |
-| timestamp        | string                  | Data i godzina                                  |
+| Pole          | Typ               | Opis                                                        |
+| ------------- | ----------------- | ----------------------------------------------------------- |
+| id            | string            | Unikalny identyfikator                                      |
+| employeeId    | string (nullable) | Fryzjer (null dla bonow)                                    |
+| clientId      | string (nullable) | Klient (opcjonalny)                                         |
+| deviceId      | string            | Urzadzenie (audyt)                                          |
+| items[]       | TransactionItem[] | Pozycje (usluga/produkt)                                    |
+| totalAmount   | number            | Suma brutto                                                 |
+| tipAmount     | number            | Napiwek                                                     |
+| discountType  | "amount"          | Typ rabatu dla nowych transakcji; "percentage" tylko legacy |
+| discountValue | number            | Wartosc rabatu kwotowego                                    |
+| status        | string            | completed / cancelled                                       |
+| timestamp     | string            | Data i godzina                                              |
 
 **Snapshot cenowy:** `price_at_sale` w TransactionItem - cena zamrozzona w momencie sprzedazy.
 
 ### 4.2 Ruch kasowy (CashMovement)
 
-| Typ            | Kierunek  | Wplyw na kasetke                         |
-| -------------- | --------- | ---------------------------------------- |
-| tip_withdrawal | OUT       | Zmniejsza stan                           |
-| expense_take   | OUT       | Zmniejsza stan                           |
-| expense_settle | IN        | Zwieksza stan (zwrot reszty z zakupow)   |
-| barber_payback | OUT       | Zmniejsza stan                           |
-| top_up         | IN        | Zwieksza stan                            |
-| voucher_sale   | IN/brak   | Zwieksza jesli gotowka, brak jesli karta |
-| barber_loan    | NEUTRALNY | Bez wplywu (rejestracja dlugu)           |
-| shift_close    | OUT       | Gotowka do koperty                       |
-| float          | IN        | Drobne z poprzedniego dnia               |
+| Typ            | Kierunek  | Wplyw na kasetke                            |
+| -------------- | --------- | ------------------------------------------- |
+| tip_withdrawal | OUT       | Zmniejsza stan                              |
+| expense_take   | OUT       | Zmniejsza stan                              |
+| expense_settle | IN        | Zwieksza stan (zwrot reszty z zakupow)      |
+| barber_payback | OUT       | Zmniejsza stan                              |
+| top_up         | IN        | Zwieksza stan                               |
+| voucher_sale   | IN        | Zwieksza kasetke (sprzedaz bonu za gotowke) |
+| barber_loan    | NEUTRALNY | Bez wplywu (rejestracja dlugu)              |
+| shift_close    | OUT       | Gotowka do koperty                          |
+| float          | IN        | Drobne z poprzedniego dnia                  |
 
 ### 4.3 Stan kasetki (oczekiwana gotowka)
 
 ```
-Oczekiwana gotowka = Sprzedaz gotowkowa (z paymentBreakdown, lacznie ze splitami)
-                   + Wplaty (top_up)
+Oczekiwana gotowka = Sprzedaz (suma totalAmount transakcji - wszystko gotowka)
+                   + Wplaty do kasy (own_cash_deposit, top_up)
                    + Zwroty z zakupow (expense_settle)
-                   + Sprzedaz bonow za gotowke (voucher_sale, paymentMethod=cash)
+                   + Sprzedaz bonow za gotowke (voucher_sale)
                    - Wyplaty napiwkow (tip_withdrawal)
                    - Pobrania na zakupy (expense_take)
                    - Zwroty dla fryzjerow (barber_payback)
@@ -284,8 +261,8 @@ Oczekiwana gotowka = Sprzedaz gotowkowa (z paymentBreakdown, lacznie ze splitami
 ### 4.4 Oczekiwane bony
 
 ```
-Oczekiwane bony = Suma platnosci "voucher" z paymentBreakdown
-                  (zarowno pelne platnosci bonem jak i czesc bonowa splitow)
+Oczekiwane bony = 0 (realizacja bonu jako platnosci niezaimplementowana - patrz §3.4;
+                  bony papierowe liczone razem z gotowka, decyzja #16; daily_report.expected_vouchers = 0)
 ```
 
 ### 4.5 Bon podarunkowy
@@ -300,17 +277,17 @@ Oczekiwane bony = Suma platnosci "voucher" z paymentBreakdown
 
 ### 4.6 Pracownik
 
-| Pole                       | Opis                       |
-| -------------------------- | -------------------------- |
-| name                       | Imie / pseudonim           |
-| role                       | admin / barber             |
-| commission_service_percent | % prowizji od uslug        |
-| commission_product_percent | % prowizji od kosmetykow   |
-| retention_percent          | Retencja klientow w %       |
-| display_order              | Reczna kolejnosc wyswietlania |
+| Pole                       | Opis                                  |
+| -------------------------- | ------------------------------------- |
+| name                       | Imie / pseudonim                      |
+| role                       | admin / barber                        |
+| commission_service_percent | % prowizji od uslug                   |
+| commission_product_percent | % prowizji od kosmetykow              |
+| retention_percent          | Retencja klientow w %                 |
+| display_order              | Reczna kolejnosc wyswietlania         |
 | show_retention_badge       | Czy pokazywac tekstowy badge retencji |
-| tip_balance                | Wirtualny portfel napiwkow |
-| is_active                  | Aktywny / nieaktywny       |
+| tip_balance                | Wirtualny portfel napiwkow            |
+| is_active                  | Aktywny / nieaktywny                  |
 
 **Historyzacja prowizji:** Zmiana % nie wplywa na historyczne transakcje (commission_amount zamrazane przy sprzedazy).
 
@@ -319,8 +296,7 @@ Oczekiwane bony = Suma platnosci "voucher" z paymentBreakdown
 - Przy finalizacji: adapter pobiera stawki pracownika, oblicza prowizje per item
 - Rabat rozkladany proporcjonalnie na pozycje (prowizja od kwoty PO rabacie)
 - Napiwek NIE wchodzi do bazy prowizji
-- Split payment: prowizja od pelnej kwoty (niezaleznie od metody platnosci)
-- Prowizja na razie niewidoczna w UI (do ustalenia z szefem)
+- Prowizja widoczna na biezaco na telefonie fryzjera (personal view Dashboard, decyzja #13)
 
 ---
 
@@ -331,26 +307,38 @@ Oczekiwane bony = Suma platnosci "voucher" z paymentBreakdown
 Generowany przy zamknieciu zmiany:
 
 - Kto zamykal
-- Sprzedaz od ostatniego zamkniecia (per metoda platnosci)
+- Sprzedaz od ostatniego zamkniecia (laczny utarg + terminal sumarycznie)
 - Ruchy kasowe (wplaty, wyplaty, zakupy, zwroty)
 - Gotowka policzona vs oczekiwana + roznica
 - Bony policzone vs oczekiwane + roznica
 - Drobne na jutro
 - Depozyt do koperty (gotowka + bony - drobne)
 
-### 5.2 Raport miesieczny (Faza 3)
+### 5.2 Raporty okresowe (Faza 3)
 
-Zestawienie pracownicze:
+Eksport do Excela (.xlsx). Wybor okresu: konkretny miesiac (1. -> koniec miesiaca) lub dowolny zakres dat od-do (domyslnie ostatni pelny miesiac). Trzy raporty w v1:
 
-- Imie | Suma uslug | Suma kosmetykow | Prowizja | Napiwki
+**A. Raport pracowniczy** (per pracownik):
 
-Analiza sprzedazy:
+- Aktywnosc: liczba zakonczonych wizyt (transakcji), liczba wykonanych uslug (suma ilosci pozycji typu usluga)
+- Finanse: przychod calkowity (suma totalAmount, bez napiwku), srednia cena wizyty
+- Struktura sprzedazy: przychod z uslug vs przychod z produktow (NIE metody platnosci - ADR-017)
+- Prowizja: suma commission_amount (zamrozona per pozycja)
+- Napiwki: suma tipAmount z rachunkow
+- Rabaty: suma udzielonych rabatow (discountAmount)
 
-- Ranking uslug
-- Sprzedaz kosmetykow
-- Podzial na metody platnosci
+**B. Raport sprzedazy** (salon):
 
-Sumaryczne saldo roznic kasowych z calego miesiaca.
+- Ranking uslug (liczba + przychod), ranking produktow (sztuki + przychod)
+- Laczny przychod, liczba wizyt, srednia wartosc wizyty, udzial uslugi/produkty
+
+**C. Raport kasowo-finansowy:**
+
+- Suma roznic kasowych (nadwyzki/manka) w okresie - z daily_report.difference
+- Gotowka vs terminal (sumarycznie - jedyny dostepny podzial, brak metod per transakcja)
+- Wydatki salonowe, wyplaty napiwkow, wplaty do kasy
+
+Raport bonow (D) - opcjonalny, poza v1.
 
 ---
 
@@ -377,8 +365,6 @@ Wydruki obejmuja:
 | Opening Balance          | Drobne zostawione z poprzedniego dnia                                               |
 | Depozyt                  | Kwota wkladana do koperty na koniec dnia                                            |
 | Raport kasowy            | Raport generowany przy zamknieciu zmiany (dawniej "Z-ka")                           |
-| Split payment            | Platnosc laczaca dwie metody (np. bon + karta, gotowka + karta)                     |
-| paymentBreakdown         | Rozbicie platnosci na poszczegolne metody z dokladnymi kwotami                      |
 | Barber Loan              | Dlug kasetki wobec fryzjera (wydal z wlasnych)                                      |
 | Snapshot cenowy          | Zamrozenie ceny w momencie sprzedazy                                                |
 | Device pairing           | Jednorazowa rejestracja urzadzenia w systemie                                       |

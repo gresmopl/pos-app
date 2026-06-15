@@ -25,7 +25,7 @@
 
 - [x] **Wspolny PageHeader** - komponent uzywany w 6 stronach (backTo + rightSection)
 - [x] **Wspolny PinModal** - reusable komponent gotowy na Phase 2
-- [x] **Plik stalych** - VOUCHER_EXPIRY_MONTHS, PAYMENT_METHODS, MAX_TIP, pluralize()
+- [x] **Plik stalych** - VOUCHER_EXPIRY_MONTHS, MAX_TIP, pluralize() (PAYMENT_METHODS usuniete w v0.1.73 - ADR-017)
 - [x] **Wyeliminowane dead code** - nieuzywane importy, zmienne, funkcje
 
 ### Do dopracowania w Fazie 1 - ZROBIONE
@@ -74,7 +74,7 @@
 - [x] Warstwa abstrakcji DB (adaptery: supabase / rest)
 - [x] Hooki async: useDbQuery, useEmployees, useServices, useProducts, useTodayTransactions, useDailyStats
 - [x] Wszystkie strony podlaczone do warstwy DB (Dashboard, POS, History, Cash, ShiftClose, AdminPricing)
-- [x] Zapis transakcji do bazy (transaction + items + payment_detail + tip_balance)
+- [x] Zapis transakcji do bazy (transaction + items + tip_balance)
 - [x] Pole description + description_long w Service, description w Product
 - [x] duration_minutes jako VARCHAR (zakresy "30-45")
 - [x] Formularz cennika: nazwa, cena, czas trwania, krotki opis, opis szczegolowy
@@ -87,7 +87,7 @@
 - [x] Portfel napiwkow (wyplata z tip_balance, zapis tip_withdrawal)
 - [x] Bony podarunkowe (sprzedaz, realizacja z kodem, saldo, waznosc, split z doplata)
 - [x] Zamkniecie zmiany - ciaglosc salda (opening balance = float z poprzedniego raportu)
-- [x] Katalog Wiedzy (/help) - dynamiczne opisy uslug/produktow, zgrupowane po kategoriach, wyszukiwarka
+- [x] ~~Katalog Wiedzy (/help)~~ - USUNIETY w v0.1.72 (2026-04-18), patrz changelog + docs/knowledge-base-archive.md
 - [x] Autoryzacja urzadzen (QR pairing, zatwierdzanie, blokowanie)
   - Rekomendacja: UUID w localStorage + tabela device w bazie
   - Flow: pierwsze uruchomienie -> generuj UUID -> ekran rejestracji (nazwa, typ) -> zatwierdzenie przez szefa
@@ -100,7 +100,6 @@
   - Kasa (brak tolerancji kasowej - kazda roznica widoczna, cel miesieczny)
   - Bony (waznosc, min. kwota, prefiks kodu)
   - Prowizje (domyslne stawki dla nowych pracownikow)
-  - Platnosci (wlaczanie/wylaczanie metod)
   - Wydruki (stopka kwitu)
   - TODO: PIN admina i operacyjny (zmiana z ustawien - wymaga integracji z auth)
 - [x] Widok per typ urzadzenia (personal / station / admin)
@@ -124,7 +123,7 @@
 - [ ] Panel admina z raportami miesiecznymi
   - Ranking uslug/produktow (co sie najlepiej sprzedaje)
   - Zestawienie pracownicze (uslugi, kosmetyki, prowizja, napiwki)
-  - Podzial na metody platnosci
+  - Struktura sprzedazy: uslugi vs produkty + gotowka vs terminal (sumarycznie, brak podzialu per metoda - ADR-017)
   - Sumaryczne roznice kasowe z calego miesiaca
 - [ ] Pasek motywacyjny (algorytmy, targety)
 - [ ] Obsluga drukarki USB (kwity, raporty)
@@ -171,9 +170,9 @@ Niezaadresowane obawy z review zmian codexa (2026-05-13):
 - [x] **Edge case: badge bez `retentionPercent`** - zweryfikowane: `getRetentionRank(null)` zwraca `RANK_DEVELOPMENT` (gray, "ROZWOJ"), `RetentionAvatarIcon` ma fallback na `IconTrendingUp`. Pracownik bez retencji ma ikone wykresu na szarym tle - dziala - 2026-05-13
 - [ ] **Migracja PROD (Hetzner)** - po merge do `main` wykonac na produkcji:
       `sql
-    ALTER TABLE employee ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
-    ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT NULL DEFAULT true;
-    `
+  ALTER TABLE employee ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
+  ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT NULL DEFAULT true;
+  `
       (DEV/Supabase juz zmigrowane 2026-05-13)
 
 ## Przyszle usprawnienia
