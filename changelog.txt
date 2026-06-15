@@ -1,6 +1,12 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.122] - 2026-06-15
+- feat(admin): Reset bilansu kasowego w panelu admina (Ustawienia -> Bilans kasowy)
+  Pokazuje biezacy bilans + date "od kiedy"; przycisk "Rozlicz (wyzeruj bilans)" z potwierdzeniem
+  ustawia salon.balance_cleared_at = teraz (bez archiwum). Domyka mechanizm bilansu (Zadanie 2).
+- feat(db): UpdateSalonInput.balanceClearedAt + mapowanie balance_cleared_at w supabase adapterze
+
 [0.1.121] - 2026-06-15
 - feat(shift-close): Bilans kasowy (suma nadplata/manko) na ekranie zamkniecia zmiany
   Liczony od ostatniego resetu (salon.balance_cleared_at) lub "od poczatku". Na zywo:

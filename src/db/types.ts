@@ -96,6 +96,7 @@ export interface UpdateSalonInput {
   retentionThresholdTop?: number;
   retentionThresholdHigh?: number;
   retentionThresholdMid?: number;
+  balanceClearedAt?: string | null;
 }
 
 /**

@@ -14,6 +14,7 @@ import {
   NumberInput,
   Button,
   Skeleton,
+  Modal,
 } from "@mantine/core";
 import { IconCheck } from "@tabler/icons-react";
 import { notifications } from "@mantine/notifications";
@@ -25,6 +26,10 @@ export default function AdminSettingsPage(): React.JSX.Element {
   useDocumentTitle("Ustawienia");
   const { data: salon, loading } = useSalonSettings();
   const [saving, setSaving] = useState(false);
+  const [balance, setBalance] = useState(0);
+  const [balanceClearedAt, setBalanceClearedAt] = useState<string | null>(null);
+  const [resetModal, setResetModal] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const form = useForm({
     initialValues: {
@@ -62,6 +67,11 @@ export default function AdminSettingsPage(): React.JSX.Element {
       retentionThresholdMid: salon.retentionThresholdMid,
     });
     form.resetDirty();
+    setBalanceClearedAt(salon.balanceClearedAt);
+    db.dailyReports
+      .getBalanceSince(salon.balanceClearedAt)
+      .then(setBalance)
+      .catch((err) => console.error("[AdminSettings] balance load failed:", err));
   }, [salon]);
 
   const handleSave = async (): Promise<void> => {
@@ -90,6 +100,26 @@ export default function AdminSettingsPage(): React.JSX.Element {
       notifications.show({ message: "Nie udało się zapisać. Spróbuj ponownie.", color: "red" });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleResetBalance = async (): Promise<void> => {
+    setResetting(true);
+    try {
+      const updated = await db.salon.update({ balanceClearedAt: new Date().toISOString() });
+      setBalanceClearedAt(updated.balanceClearedAt);
+      setBalance(0);
+      setResetModal(false);
+      notifications.show({
+        message: "Bilans wyzerowany",
+        color: "green",
+        icon: <IconCheck size={16} />,
+      });
+    } catch (err) {
+      console.error("[AdminSettings] reset balance failed:", err);
+      notifications.show({ message: "Nie udało się wyzerować bilansu.", color: "red" });
+    } finally {
+      setResetting(false);
     }
   };
 
@@ -211,6 +241,36 @@ export default function AdminSettingsPage(): React.JSX.Element {
             Poniżej progu SOLIDNY wyświetla się 📈 ROZWÓJ
           </Text>
         </Stack>
+
+        <Divider />
+
+        {/* === BILANS KASOWY === */}
+        <Stack gap="sm" py="sm">
+          <SectionLabel>Bilans kasowy</SectionLabel>
+          <Text fz="xs" c="dimmed">
+            Skumulowana suma nadwyżek i mank z zamknięć zmiany od ostatniego rozliczenia.
+          </Text>
+          <Box
+            p="sm"
+            style={{
+              borderRadius: "var(--mantine-radius-md)",
+              backgroundColor: "var(--mantine-color-default-hover)",
+            }}
+          >
+            <Text fz="xs" c="dimmed">
+              {balanceClearedAt
+                ? `od: ${new Date(balanceClearedAt).toLocaleDateString("pl-PL")}`
+                : "od początku"}
+            </Text>
+            <Text fz="xl" fw={700} c={balance < 0 ? "red" : "green"}>
+              {balance > 0 ? "+" : ""}
+              {balance.toLocaleString("pl-PL")} zł
+            </Text>
+          </Box>
+          <Button variant="light" color="red" onClick={() => setResetModal(true)}>
+            Rozlicz (wyzeruj bilans)
+          </Button>
+        </Stack>
       </Container>
 
       {/* === BOTTOM CTA === */}
@@ -241,6 +301,36 @@ export default function AdminSettingsPage(): React.JSX.Element {
           </Button>
         </Container>
       </Box>
+
+      <Modal
+        opened={resetModal}
+        onClose={() => setResetModal(false)}
+        title={
+          <Text fw={700} fz="lg">
+            Wyzerować bilans?
+          </Text>
+        }
+        size="sm"
+      >
+        <Stack gap="md">
+          <Text fz="sm">
+            Bilans zostanie wyzerowany od teraz. Tej operacji nie można cofnąć. Bieżąca wartość:{" "}
+            <Text span fw={700} c={balance < 0 ? "red" : "green"}>
+              {balance > 0 ? "+" : ""}
+              {balance.toLocaleString("pl-PL")} zł
+            </Text>
+            .
+          </Text>
+          <Group grow>
+            <Button variant="default" onClick={() => setResetModal(false)}>
+              Anuluj
+            </Button>
+            <Button color="red" loading={resetting} onClick={handleResetBalance}>
+              Wyzeruj
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
     </Box>
   );
 }

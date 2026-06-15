@@ -162,6 +162,8 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           dbInput.retention_threshold_high = input.retentionThresholdHigh;
         if (input.retentionThresholdMid !== undefined)
           dbInput.retention_threshold_mid = input.retentionThresholdMid;
+        if (input.balanceClearedAt !== undefined)
+          dbInput.balance_cleared_at = input.balanceClearedAt;
 
         const { data, error } = await supabase
           .from("salon")
