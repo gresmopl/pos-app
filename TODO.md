@@ -84,7 +84,7 @@
 - [x] Zapis ruchow kasowych do bazy (CashMovement)
 - [x] Zapis zamkniecia zmiany do bazy (DailyReport)
 - [x] Portfel napiwkow (wyplata z tip_balance, zapis tip_withdrawal)
-- [x] Bony podarunkowe (sprzedaz, realizacja z kodem, saldo, waznosc, split z doplata)
+- [x] Bony podarunkowe - sprzedaz (Kasa), saldo, waznosc. UWAGA: realizacja bonu w POS i split usuniete z UI w v0.1.73 (ADR-017) - patrz analytical.md §3.4
 - [x] Zamkniecie zmiany - ciaglosc salda (opening balance = float z poprzedniego raportu)
 - [x] ~~Katalog Wiedzy (/help)~~ - USUNIETY w v0.1.72 (2026-04-18), patrz changelog + docs/knowledge-base-archive.md
 - [x] Autoryzacja urzadzen (QR pairing, zatwierdzanie, blokowanie)
