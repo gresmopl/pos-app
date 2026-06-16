@@ -9,6 +9,13 @@ const eslintConfig = defineConfig([
   prettier,
   globalIgnores(["dist/**", "public/**"]),
   {
+    // Skrypty Node (audyt, narzedzia) - globale runtime Node
+    files: ["scripts/**/*.{mjs,js}"],
+    languageOptions: {
+      globals: { process: "readonly", console: "readonly", fetch: "readonly", URL: "readonly" },
+    },
+  },
+  {
     rules: {
       "@typescript-eslint/no-unused-vars": [
         "warn",
