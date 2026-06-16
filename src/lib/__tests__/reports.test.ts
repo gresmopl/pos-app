@@ -158,3 +158,37 @@ describe("buildReport — pracownicy", () => {
     expect(adam.tips).toBe(5);
   });
 });
+
+function report(over: Partial<DailyReportSummary> = {}): DailyReportSummary {
+  return {
+    id: "r1",
+    closedAt: "2026-06-10T20:00:00.000Z",
+    closingEmployeeName: "Jan",
+    expectedCash: 0,
+    actualCash: 0,
+    terminalAmount: 0,
+    difference: 0,
+    floatAmount: 0,
+    depositAmount: 0,
+    ...over,
+  };
+}
+
+describe("buildReport — kasa", () => {
+  it("zbiera zamknięcia z okresu i sumuje różnice", () => {
+    const cashReports = [
+      report({ id: "r1", difference: 5, closedAt: "2026-06-05T20:00:00.000Z" }),
+      report({ id: "r2", difference: -3, closedAt: "2026-06-20T20:00:00.000Z" }),
+      report({ id: "r3", difference: 100, closedAt: "2026-07-01T20:00:00.000Z" }), // poza okresem
+    ];
+    const r = buildReport({
+      transactions: [],
+      cashReports,
+      employees: [],
+      period: JUNE,
+      previousPeriod: null,
+    });
+    expect(r.cash.shifts).toHaveLength(2);
+    expect(r.cash.totalDifference).toBe(2); // 5 + (-3)
+  });
+});
