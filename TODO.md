@@ -175,6 +175,21 @@ ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT N
 `
       (DEV/Supabase juz zmigrowane 2026-05-13)
 
+## Bug fix: dryf schematu salon - progi retencji (2026-06-16)
+
+Zywa baza nie miala kolumn retention*threshold*\* (sa w schema.sql) -> zapis /admin/settings
+zwracal 400 PGRST204. Odczyt dzialal, bo mapSalon ma fallbacki (95/85/75) - maskowalo brak.
+Migracja: `src/db/migrations/2026-06-16-salon-retention-thresholds.sql`. Kod byl poprawny.
+
+- [x] **DEV/Supabase** - zmigrowane i zweryfikowane na zywo 2026-06-16 (zapis 400 -> 200)
+- [ ] **PROD (kazda baza per salon)** - uruchomic ta sama migracje:
+      `sql
+ALTER TABLE salon ADD COLUMN IF NOT EXISTS retention_threshold_top  NUMERIC(5,2) NOT NULL DEFAULT 95;
+ALTER TABLE salon ADD COLUMN IF NOT EXISTS retention_threshold_high NUMERIC(5,2) NOT NULL DEFAULT 85;
+ALTER TABLE salon ADD COLUMN IF NOT EXISTS retention_threshold_mid  NUMERIC(5,2) NOT NULL DEFAULT 75;
+`
+- [ ] **Audyt dryfu schematu** - porownac schema.sql z realnymi kolumnami DEV i PROD (wylapac reszte)
+
 ## Przyszle usprawnienia
 
 - [ ] Sortowanie uslug i produktow w POS wg popularnosci (najczesciej sprzedawane na gorze) - zliczanie z transaction_item, cache dzienne lub przy starcie
