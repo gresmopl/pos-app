@@ -119,14 +119,15 @@
 
 ## Faza 3 (raporty i finalizacja)
 
-- [ ] Panel admina z raportami miesiecznymi
-  - Ranking uslug/produktow (co sie najlepiej sprzedaje)
-  - Zestawienie pracownicze (uslugi, kosmetyki, prowizja, napiwki)
-  - Struktura sprzedazy: uslugi vs produkty + gotowka vs terminal (sumarycznie, brak podzialu per metoda - ADR-017)
-  - Sumaryczne roznice kasowe z calego miesiaca
+- [x] Panel admina z raportami miesiecznymi (v0.1.123 - wybor miesiac/zakres dat, eksport .xlsx 4 arkusze)
+  - [ ] Ranking uslug/produktow (co sie najlepiej sprzedaje) - NIE zrobione (osobne zadanie)
+  - [x] Zestawienie pracownicze (uslugi, produkty, prowizja, napiwki)
+  - [x] Struktura sprzedazy: uslugi vs produkty + bony (sumarycznie, ADR-017)
+  - [x] Sumaryczne roznice kasowe z calego miesiaca (bilans kasowy za okres)
+  - [x] Trendy: zmiana % vs poprzedni okres, najlepszy dzien
 - [ ] Pasek motywacyjny (algorytmy, targety)
 - [ ] Obsluga drukarki USB (kwity, raporty)
-- [ ] Eksport CSV/Excel
+- [x] Eksport Excel (.xlsx, raporty miesieczne - v0.1.123); CSV pominiety (decyzja: tylko Excel)
 - [ ] PWA offline fallback (pelna obsluga)
   - Offline queue - kolejkowanie operacji gdy brak internetu, wysylanie po powrocie polaczenia
 - [ ] Baza klientow (historia wizyt)

@@ -51,7 +51,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 - Hook `useDbQuery<T>` + hooki zasobowe (useEmployees, useServices, useProducts, useSalonSettings, ...)
 - Zapis: db.transactions.create(), db.services._, db.products._, db.cashMovements._, db.salon._, db.devices.\*
 - DeviceContext (src/contexts/) - jedyny globalny context (UUID, status urzadzenia, useDeviceRole)
-- Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts. 66 testow / 7 plikow
+- Testy mockuja modul @/db (vi.mock). Typy: src/lib/types.ts. 79 testow / 9 plikow
 
 ## Decyzje szefa (potwierdzone 2026-04-10, 2026-04-13, 2026-05-13)
 

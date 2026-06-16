@@ -1,6 +1,22 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.123] - 2026-06-16
+- feat(admin): Raporty miesieczne w panelu admina (/admin/reports) - aktywowany link
+  Wybor okresu: caly miesiac (MonthPicker) ALBO wlasny zakres dat (od-do). Przycisk "Generuj raport".
+  4 sekcje: Finanse salonu (przychod netto, uslugi/produkty/bony, rabaty, napiwki, liczba tx),
+  Rozliczenie pracownikow (uslugi, produkty, przychod, napiwki, prowizja per fryzjer),
+  Kontrola gotowki (bilans kasowy = suma roznic z zamkniec zmian w okresie),
+  Trendy (zmiana % przychodu/uslug vs poprzedni okres, najlepszy dzien).
+- feat(reports): Eksport do Excela (.xlsx, 4 arkusze: Pracownicy/Finanse/Kasa/Trendy)
+  SheetJS (xlsx) ladowany dynamicznie (await import) - osobny chunk, nie obciaza startu aplikacji.
+  Nazwa pliku: raport_FORMEN_2026-06.xlsx (miesiac) lub raport_FORMEN_2026-06-01_2026-06-15.xlsx (zakres).
+- feat(lib): src/lib/reports.ts - czysta agregacja buildReport() (testowalna bez DB, jak commission.ts)
+  Reuzywa sumCommission() z commission.ts. Przychod netto = totalAmount - tipAmount.
+- chore: dodano zaleznosc xlsx (SheetJS, ^0.18.5 - ostatnia wersja MIT)
+- test: reports.test.ts (9) + reportExport.test.ts (2) = 79 testow / 9 plikow
+- docs: spec + plan w docs/superpowers/ (brainstorming + TDD plan)
+
 [0.1.122] - 2026-06-15
 - feat(admin): Reset bilansu kasowego w panelu admina (Ustawienia -> Bilans kasowy)
   Pokazuje biezacy bilans + date "od kiedy"; przycisk "Rozlicz (wyzeruj bilans)" z potwierdzeniem
