@@ -164,8 +164,7 @@ export default function AdminPage() {
           <AdminLink
             label="Raporty miesięczne"
             description="Zestawienia, eksport"
-            onClick={() => {}}
-            disabled
+            onClick={() => navigate("/admin/reports")}
           />
           <Divider />
           <AdminLink
