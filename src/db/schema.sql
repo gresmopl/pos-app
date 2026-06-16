@@ -48,6 +48,7 @@ CREATE TABLE salon (
   retention_threshold_high NUMERIC(5,2) NOT NULL DEFAULT 85,
   retention_threshold_mid NUMERIC(5,2) NOT NULL DEFAULT 75,
   receipt_footer TEXT NOT NULL DEFAULT 'Dziękujemy za wizytę!',
+  balance_cleared_at TIMESTAMPTZ, -- ostatni reset bilansu kasowego (NULL = od poczatku); patrz SalonSettings.balanceClearedAt
   is_active BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
