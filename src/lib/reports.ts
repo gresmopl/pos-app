@@ -21,7 +21,11 @@ export interface EmployeeReportRow {
 }
 
 export interface FinanceSummary {
-  totalRevenue: number; // suma (totalAmount - tipAmount)
+  // UWAGA: totalRevenue to przychód NETTO po rabacie (= Σ totalAmount - tipAmount).
+  // serviceRevenue/productRevenue/voucherSales to ceny PRZED rabatem (Σ price*quantity),
+  // więc ich suma jest większa od totalRevenue dokładnie o totalDiscounts. To celowe
+  // (kolumny pokazują wartość brutto pozycji, total — faktyczny przychód).
+  totalRevenue: number;
   serviceRevenue: number;
   productRevenue: number;
   voucherSales: number;
@@ -192,12 +196,16 @@ function buildTrend(
   totalRevenue: number,
   previousPeriod: ReportPeriod | null
 ): TrendSummary {
-  // najlepszy dzień wg liczby usług
+  // najlepszy dzień wg liczby usług.
+  // slice(0, 10) daje datę w UTC — akceptowalne dla grupowania, bo salon zamyka
+  // przed północą UTC (brak transakcji przekraczających granicę doby UTC).
   const byDay = new Map<string, number>();
   for (const t of current) {
     const day = t.timestamp.slice(0, 10);
     byDay.set(day, (byDay.get(day) ?? 0) + countItems(t, "service"));
   }
+  // Remis: wygrywa najwcześniejszy dzień (Map zachowuje kolejność wstawiania,
+  // a transakcje są chronologiczne) — warunek `>` nie nadpisuje równej wartości.
   let bestDay: { date: string; services: number } | null = null;
   for (const [date, services] of byDay) {
     if (!bestDay || services > bestDay.services) bestDay = { date, services };
