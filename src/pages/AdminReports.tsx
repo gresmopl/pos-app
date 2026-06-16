@@ -41,7 +41,8 @@ function zl(n: number): string {
 export default function AdminReports(): React.JSX.Element {
   useDocumentTitle("Raporty miesięczne");
   const [mode, setMode] = useState<Mode>("month");
-  const [month, setMonth] = useState<Date>(new Date());
+  // Domyślnie poprzedni (zamknięty) miesiąc - raport robi się za miesiąc, który się skończył.
+  const [month, setMonth] = useState<Date>(() => dayjs().subtract(1, "month").toDate());
   const [from, setFrom] = useState<Date | null>(null);
   const [to, setTo] = useState<Date | null>(null);
   const [report, setReport] = useState<MonthlyReport | null>(null);
@@ -107,7 +108,7 @@ export default function AdminReports(): React.JSX.Element {
           <MonthPickerInput
             label="Miesiąc"
             value={month}
-            onChange={(v) => setMonth(v ? new Date(v) : new Date())}
+            onChange={(v) => setMonth(v ? dayjs(v).toDate() : new Date())}
             valueFormat="MMMM YYYY"
             maxDate={new Date()}
           />
@@ -117,7 +118,7 @@ export default function AdminReports(): React.JSX.Element {
               label="Od"
               valueFormat="D MMM YYYY"
               value={from}
-              onChange={(v) => setFrom(v ? new Date(v) : null)}
+              onChange={(v) => setFrom(v ? dayjs(v).toDate() : null)}
               maxDate={to ?? new Date()}
               clearable
             />
@@ -125,7 +126,7 @@ export default function AdminReports(): React.JSX.Element {
               label="Do"
               valueFormat="D MMM YYYY"
               value={to}
-              onChange={(v) => setTo(v ? new Date(v) : null)}
+              onChange={(v) => setTo(v ? dayjs(v).toDate() : null)}
               minDate={from ?? undefined}
               maxDate={new Date()}
               clearable
