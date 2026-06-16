@@ -255,8 +255,8 @@ export default function AdminReports(): React.JSX.Element {
                   {report.cash.shifts.length > 0 && (
                     <Table mt="sm">
                       <Table.Tbody>
-                        {report.cash.shifts.map((s, i) => (
-                          <Table.Tr key={i}>
+                        {report.cash.shifts.map((s) => (
+                          <Table.Tr key={s.closedAt}>
                             <Table.Td>{s.closedAt.slice(0, 10)}</Table.Td>
                             <Table.Td>{s.closingEmployeeName}</Table.Td>
                             <Table.Td
