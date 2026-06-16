@@ -101,3 +101,60 @@ describe("buildReport — finanse", () => {
     expect(r.finance.txCount).toBe(1);
   });
 });
+
+function emp(over: Partial<Employee> = {}): Employee {
+  return {
+    id: "e1",
+    name: "Jan",
+    avatar: "J",
+    role: "barber",
+    todayRevenue: 0,
+    todayServices: 0,
+    tipBalance: 0,
+    commissionServicePercent: 40,
+    commissionProductPercent: 10,
+    retentionPercent: null,
+    displayOrder: 0,
+    showRetentionBadge: false,
+    isActive: true,
+    ...over,
+  };
+}
+
+describe("buildReport — pracownicy", () => {
+  it("liczy usługi, produkty, przychód, napiwki i prowizję per pracownik", () => {
+    const transactions = [
+      tx({
+        id: "a",
+        employeeId: "e1",
+        items: [{ name: "Strzyżenie", price: 100, quantity: 1, type: "service" }],
+        totalAmount: 100,
+        tipAmount: 0,
+      }),
+      tx({
+        id: "b",
+        employeeId: "e2",
+        items: [{ name: "Strzyżenie", price: 80, quantity: 1, type: "service" }],
+        totalAmount: 80,
+        tipAmount: 5,
+      }),
+    ];
+    const employees = [emp({ id: "e1" }), emp({ id: "e2", name: "Adam" })];
+    const r = buildReport({
+      transactions,
+      cashReports: [],
+      employees,
+      period: JUNE,
+      previousPeriod: null,
+    });
+
+    const jan = r.employees.find((e) => e.employeeId === "e1")!;
+    expect(jan.servicesCount).toBe(1);
+    expect(jan.netRevenue).toBe(100);
+    expect(jan.commission).toBe(40); // 100 * 40%
+
+    const adam = r.employees.find((e) => e.employeeId === "e2")!;
+    expect(adam.netRevenue).toBe(75); // 80 - 5 tip
+    expect(adam.tips).toBe(5);
+  });
+});
