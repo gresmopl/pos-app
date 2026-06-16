@@ -192,3 +192,54 @@ describe("buildReport — kasa", () => {
     expect(r.cash.totalDifference).toBe(2); // 5 + (-3)
   });
 });
+
+describe("buildReport — trendy", () => {
+  it("wyznacza najlepszy dzień i zmianę % vs poprzedni okres", () => {
+    const MAY = rangePeriod(new Date(2026, 4, 1), new Date(2026, 4, 31));
+    const transactions = [
+      // bieżący okres (czerwiec): 2 usługi 10-go, 1 usługa 11-go
+      tx({
+        id: "c1",
+        timestamp: "2026-06-10T09:00:00.000Z",
+        totalAmount: 100,
+        items: [{ name: "S", price: 100, quantity: 2, type: "service" }],
+      }),
+      tx({
+        id: "c2",
+        timestamp: "2026-06-11T09:00:00.000Z",
+        totalAmount: 50,
+        items: [{ name: "S", price: 50, quantity: 1, type: "service" }],
+      }),
+      // poprzedni okres (maj): przychód 100, 1 usługa
+      tx({
+        id: "p1",
+        timestamp: "2026-05-10T09:00:00.000Z",
+        totalAmount: 100,
+        items: [{ name: "S", price: 100, quantity: 1, type: "service" }],
+      }),
+    ];
+    const r = buildReport({
+      transactions,
+      cashReports: [],
+      employees: [],
+      period: JUNE,
+      previousPeriod: MAY,
+    });
+    expect(r.trend.bestDay).toEqual({ date: "2026-06-10", services: 2 });
+    expect(r.trend.revenueDeltaPercent).toBe(50); // (150-100)/100
+    expect(r.trend.servicesDeltaPercent).toBe(200); // (3-1)/1
+  });
+
+  it("zwraca null gdy brak poprzedniego okresu", () => {
+    const transactions = [tx({ id: "c1", timestamp: "2026-06-10T09:00:00.000Z" })];
+    const r = buildReport({
+      transactions,
+      cashReports: [],
+      employees: [],
+      period: JUNE,
+      previousPeriod: null,
+    });
+    expect(r.trend.revenueDeltaPercent).toBeNull();
+    expect(r.trend.bestDay).not.toBeNull();
+  });
+});
