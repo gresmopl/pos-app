@@ -18,6 +18,7 @@ import {
   PinInput,
   TextInput,
   Avatar,
+  SegmentedControl,
 } from "@mantine/core";
 import { DatePickerInput } from "@mantine/dates";
 import {
@@ -70,6 +71,7 @@ export default function HistoryPage() {
   const PAGE_SIZE = 50;
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
   const [filter, setFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "service" | "product">("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [undoModal, setUndoModal] = useState(false);
   const [undoPin, setUndoPin] = useState("");
@@ -81,7 +83,7 @@ export default function HistoryPage() {
 
   useEffect(() => {
     setDisplayCount(PAGE_SIZE);
-  }, [dateFrom, dateTo, filter, searchQuery]);
+  }, [dateFrom, dateTo, filter, typeFilter, searchQuery]);
 
   const uniqueEmployees = Array.from(new Set(transactions.map((t) => t.employeeName)));
 
@@ -90,6 +92,7 @@ export default function HistoryPage() {
   const filtered = transactions.filter((t) => {
     if (lockedEmployee && t.employeeName !== lockedEmployee.name) return false;
     if (!lockedEmployee && filter !== "all" && t.employeeName !== filter) return false;
+    if (typeFilter !== "all" && !t.items.some((i) => i.type === typeFilter)) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const matchesName = t.employeeName.toLowerCase().includes(q);
@@ -172,6 +175,20 @@ export default function HistoryPage() {
           />
         </Box>
 
+        {/* ===== FILTER: TYPE ===== */}
+        <Box pb="sm">
+          <SegmentedControl
+            fullWidth
+            value={typeFilter}
+            onChange={(v) => setTypeFilter(v as "all" | "service" | "product")}
+            data={[
+              { label: "Wszystko", value: "all" },
+              { label: "Usługi", value: "service" },
+              { label: "Produkty", value: "product" },
+            ]}
+          />
+        </Box>
+
         {/* ===== FILTER: EMPLOYEE ===== */}
         {!isPersonal && (
           <ScrollArea type="auto" offsetScrollbars scrollbarSize={4}>
@@ -219,12 +236,13 @@ export default function HistoryPage() {
               <Text fz="sm" c="dimmed" ta="center">
                 Brak transakcji w wybranym okresie
               </Text>
-              {(filter !== "all" || searchQuery) && (
+              {(filter !== "all" || typeFilter !== "all" || searchQuery) && (
                 <Button
                   variant="subtle"
                   size="sm"
                   onClick={() => {
                     setFilter("all");
+                    setTypeFilter("all");
                     setSearchQuery("");
                   }}
                 >
