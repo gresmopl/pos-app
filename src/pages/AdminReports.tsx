@@ -10,9 +10,10 @@ import {
   Box,
   Table,
   SimpleGrid,
+  Alert,
 } from "@mantine/core";
 import { MonthPickerInput, DatePickerInput } from "@mantine/dates";
-import { IconFileSpreadsheet } from "@tabler/icons-react";
+import { IconFileSpreadsheet, IconInfoCircle } from "@tabler/icons-react";
 import dayjs from "dayjs";
 import { db } from "@/db";
 import {
@@ -203,6 +204,17 @@ export default function AdminReports(): React.JSX.Element {
               {/* PRACOWNICY */}
               <div>
                 <SectionLabel>Rozliczenie pracowników</SectionLabel>
+                <Alert
+                  icon={<IconInfoCircle size={16} />}
+                  color="yellow"
+                  variant="light"
+                  mb="xs"
+                  fz="xs"
+                >
+                  Prowizja liczona jest wg aktualnych stawek pracowników, nie stawek obowiązujących
+                  w dniu sprzedaży. Jeśli zmienisz komuś stawkę po zakończeniu okresu, przeliczenie
+                  raportu da inny wynik niż wcześniej - eksportuj/zapisz raport przed zmianą stawek.
+                </Alert>
                 <Box style={card} p="xs">
                   <Table>
                     <Table.Thead>
