@@ -124,7 +124,7 @@ function inPeriod(timestamp: string, period: ReportPeriod): boolean {
   return timestamp >= period.start && timestamp <= period.end;
 }
 
-function lineSum(tx: Transaction, type: TransactionItem["type"]): number {
+export function lineSum(tx: Transaction, type: TransactionItem["type"]): number {
   return tx.items.filter((i) => i.type === type).reduce((s, i) => s + i.price * i.quantity, 0);
 }
 

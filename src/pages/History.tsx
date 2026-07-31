@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useEmployees } from "@/hooks/useDbData";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
+import { lineSum } from "@/lib/reports";
 import type { Transaction } from "@/lib/types";
 import {
   Text,
@@ -113,7 +114,13 @@ export default function HistoryPage() {
       sum + t.items.filter((i) => i.type === "product").reduce((s, i) => s + i.quantity, 0),
     0
   );
-  const totalRevenue = filtered.reduce((sum, t) => sum + t.totalAmount, 0);
+  // Przy aktywnym filtrze typu pokazujemy kwote samych pozycji danego typu
+  // (nie pelna kwote transakcji), zeby np. "Produkty" nie liczyly tez uslug
+  // sprzedanych w tej samej wizycie.
+  const displayAmount = (t: Transaction): number =>
+    typeFilter === "all" ? t.totalAmount : lineSum(t, typeFilter);
+
+  const totalRevenue = filtered.reduce((sum, t) => sum + displayAmount(t), 0);
 
   const today = new Date().toDateString();
 
@@ -288,7 +295,7 @@ export default function HistoryPage() {
                       </Group>
                       <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
                         <Text fw={600} fz="md">
-                          {transaction.totalAmount.toLocaleString("pl-PL")} zł
+                          {displayAmount(transaction).toLocaleString("pl-PL")} zł
                         </Text>
                         {isExpanded ? (
                           <IconChevronUp size={16} color="var(--mantine-color-dimmed)" />
