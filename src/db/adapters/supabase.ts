@@ -33,6 +33,7 @@ import {
   mapCashMovement,
   mapSalon,
 } from "../mappers";
+import { fetchAllPages } from "../pagination";
 
 export function createSupabaseClient(config: DbConfig): DbClient {
   const { supabaseUrl, supabaseAnonKey } = config;
@@ -66,37 +67,38 @@ export function createSupabaseClient(config: DbConfig): DbClient {
     todayOnly?: boolean;
     since?: string;
   }): Promise<Transaction[]> {
-    let query = supabase
-      .from("transaction")
-      .select(
-        `
+    function buildQuery(from: number, to: number) {
+      let query = supabase
+        .from("transaction")
+        .select(
+          `
         *,
         employee:employee_id(name),
         client:client_id(name),
         transaction_item(*)
       `
-      )
-      .eq("salon_id", SALON_ID)
-      .eq("status", "completed")
-      .order("date", { ascending: false });
+        )
+        .eq("salon_id", SALON_ID)
+        .eq("status", "completed")
+        .order("date", { ascending: false });
 
-    if (filter?.employeeId) {
-      query = query.eq("employee_id", filter.employeeId);
+      if (filter?.employeeId) {
+        query = query.eq("employee_id", filter.employeeId);
+      }
+
+      if (filter?.todayOnly) {
+        const today = new Date().toISOString().split("T")[0];
+        query = query.gte("date", `${today}T00:00:00`).lte("date", `${today}T23:59:59`);
+      }
+
+      if (filter?.since) {
+        query = query.gt("date", filter.since);
+      }
+
+      return query.range(from, to);
     }
 
-    if (filter?.todayOnly) {
-      const today = new Date().toISOString().split("T")[0];
-      query = query.gte("date", `${today}T00:00:00`).lte("date", `${today}T23:59:59`);
-    }
-
-    if (filter?.since) {
-      query = query.gt("date", filter.since);
-    }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-    if (!data) return [];
+    const data = await fetchAllPages((from, to) => buildQuery(from, to));
 
     return data.map((row) => {
       const items: TransactionItem[] = (
@@ -721,19 +723,22 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       },
 
       async getSince(since: string | null): Promise<CashMovement[]> {
-        let query = supabase
-          .from("cash_movement")
-          .select("*, employee:employee_id(name)")
-          .eq("salon_id", SALON_ID)
-          .order("created_at", { ascending: false });
+        function buildQuery(from: number, to: number) {
+          let query = supabase
+            .from("cash_movement")
+            .select("*, employee:employee_id(name)")
+            .eq("salon_id", SALON_ID)
+            .order("created_at", { ascending: false });
 
-        if (since) {
-          query = query.gt("created_at", since);
+          if (since) {
+            query = query.gt("created_at", since);
+          }
+
+          return query.range(from, to);
         }
 
-        const { data, error } = await query;
-        if (error) throw error;
-        return (data || []).map((row) => {
+        const data = await fetchAllPages((from, to) => buildQuery(from, to));
+        return data.map((row) => {
           const empName =
             ((row.employee as Record<string, unknown> | null)?.name as string) || "Salon";
           return mapCashMovement(row as Record<string, unknown>, empName);
@@ -903,11 +908,18 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       },
 
       async getBalanceSince(since: string | null): Promise<number> {
-        let query = supabase.from("daily_report").select("difference").eq("salon_id", SALON_ID);
-        if (since) query = query.gt("closed_at", since);
-        const { data, error } = await query;
-        if (error) throw error;
-        return (data ?? []).reduce((sum, r) => sum + Number(r.difference), 0);
+        function buildQuery(from: number, to: number) {
+          let query = supabase
+            .from("daily_report")
+            .select("difference")
+            .eq("salon_id", SALON_ID)
+            .range(from, to);
+          if (since) query = query.gt("closed_at", since);
+          return query;
+        }
+
+        const data = await fetchAllPages((from, to) => buildQuery(from, to));
+        return data.reduce((sum, r) => sum + Number(r.difference), 0);
       },
     },
 
@@ -936,17 +948,20 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       },
 
       async getSince(since: string | null): Promise<TerminalCheck[]> {
-        let query = supabase
-          .from("terminal_check")
-          .select("*")
-          .eq("salon_id", SALON_ID)
-          .order("created_at", { ascending: true });
-        if (since) {
-          query = query.gt("created_at", since);
+        function buildQuery(from: number, to: number) {
+          let query = supabase
+            .from("terminal_check")
+            .select("*")
+            .eq("salon_id", SALON_ID)
+            .order("created_at", { ascending: true });
+          if (since) {
+            query = query.gt("created_at", since);
+          }
+          return query.range(from, to);
         }
-        const { data, error } = await query;
-        if (error) throw error;
-        return (data ?? []).map((r) => ({
+
+        const data = await fetchAllPages((from, to) => buildQuery(from, to));
+        return data.map((r) => ({
           id: r.id as string,
           terminalAmount: Number(r.terminal_amount),
           expectedCash: Number(r.expected_cash),
