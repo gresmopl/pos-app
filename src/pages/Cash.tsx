@@ -12,6 +12,7 @@ import {
   IconGift,
   IconChevronRight,
   IconReceipt,
+  IconCoin,
 } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { MovementHistory } from "@/components/cash/MovementHistory";
@@ -20,6 +21,7 @@ import { TerminalCheckModal } from "@/components/cash/TerminalCheckModal";
 import { ExpenseModal } from "@/components/cash/ExpenseModal";
 import { DepositModal } from "@/components/cash/DepositModal";
 import { VoucherModal } from "@/components/cash/VoucherModal";
+import { TopUpModal } from "@/components/cash/TopUpModal";
 import { useDeviceRole } from "@/contexts/DeviceContext";
 import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 
@@ -129,7 +131,7 @@ export default function CashPage() {
   const lastCheckTimestamp = lastCheck ? new Date(lastCheck.createdAt) : null;
 
   const [activeModal, setActiveModal] = useState<
-    "terminal" | "expense" | "deposit" | "voucher" | null
+    "terminal" | "expense" | "deposit" | "voucher" | "topup" | null
   >(null);
 
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -201,6 +203,20 @@ export default function CashPage() {
       setMovements((prev) => [movement, ...prev]);
       setActiveModal(null);
       showSuccess(`Sprzedano bon na ${amount} zł`);
+    },
+    [showSuccess]
+  );
+
+  const handleTopUp = useCallback(
+    async (amount: number) => {
+      const movement = await db.cashMovements.create({
+        type: "top_up",
+        amount,
+        description: `Zasilenie kasy ${amount} zł`,
+      });
+      setMovements((prev) => [movement, ...prev]);
+      setActiveModal(null);
+      showSuccess(`Zasilono kasę kwotą ${amount} zł`);
     },
     [showSuccess]
   );
@@ -346,6 +362,13 @@ export default function CashPage() {
             subtitle="Bon podarunkowy (bez prowizji)"
             onClick={() => setActiveModal("voucher")}
           />
+          <ActionButton
+            icon={<IconCoin size={22} color="var(--mantine-color-teal-filled)" />}
+            iconBg="var(--mantine-color-teal-light)"
+            title="Zasilenie kasy"
+            subtitle="Drobne na wydawanie reszty"
+            onClick={() => setActiveModal("topup")}
+          />
         </Stack>
 
         {/* ===== PENDING EXPENSES ===== */}
@@ -434,6 +457,13 @@ export default function CashPage() {
         opened={activeModal === "voucher"}
         onClose={() => setActiveModal(null)}
         onSale={handleVoucherSale}
+      />
+
+      {/* ===== TOP UP MODAL ===== */}
+      <TopUpModal
+        opened={activeModal === "topup"}
+        onClose={() => setActiveModal(null)}
+        onTopUp={handleTopUp}
       />
 
       {/* ===== SETTLE MODAL ===== */}
