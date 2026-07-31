@@ -1,6 +1,17 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.125] - 2026-07-31
+- feat(history): filtr typu pozycji w Historii sprzedazy (Wszystko/Uslugi/Produkty)
+- feat(cash): przycisk "Zasilenie kasy" (typ top_up) - koniec z workaroundem przez
+  fikcyjnego pracownika "Salon" i "Wplate wlasna" (ktora blednie doliczala kwote
+  do jego portfela). Stare wplaty na "Salon" zostaja bez zmian w historii.
+- fix(cash): "Dzisiejsze operacje" -> "Operacje w tej zmianie" (mylące po
+  zamknieciu kasy w trakcie dnia - widac tylko czesc dnia, nie caly dzien)
+- docs(reports): ostrzezenie w UI o przeliczaniu prowizji wg aktualnych stawek
+  pracownikow (brak snapshotu stawki na transakcji - zmiana stawki po zakonczeniu
+  okresu przeliczy tez przeszle raporty)
+
 [0.1.124] - 2026-07-31
 - fix(db): Paginacja w zapytaniach src/db/adapters/supabase.ts - Supabase (PostgREST) bez
   jawnego .range() ucina wynik do "Max Rows" projektu (domyslnie 1000) BEZ bledu. Przy
