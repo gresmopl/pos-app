@@ -1,6 +1,17 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[0.1.124] - 2026-07-31
+- fix(db): Paginacja w zapytaniach src/db/adapters/supabase.ts - Supabase (PostgREST) bez
+  jawnego .range() ucina wynik do "Max Rows" projektu (domyslnie 1000) BEZ bledu. Przy
+  order=date desc oznaczalo to ciche gubienie starszych transakcji. Zgloszenie: w appce
+  widoczne tylko ~30 dni historii mimo wiekszego zakresu dat. Potwierdzone w produkcji:
+  3028 wierszy w tabeli transaction (>1000 -> ucinanie).
+  Nowy src/db/pagination.ts (fetchAllPages) - pobiera dane stronami przez .range(), dopoki
+  strona nie zwroci mniej niz limit. Podpiete w fetchTransactions, cashMovements.getSince,
+  terminalChecks.getSince, dailyReports.getBalanceSince.
+- test: pagination.test.ts (4, w tym reprodukcja 3028 wierszy / cap 1000) = 83 testy / 10 plikow
+
 [0.1.123] - 2026-06-16
 - feat(admin): Raporty miesieczne w panelu admina (/admin/reports) - aktywowany link
   Wybor okresu: caly miesiac (MonthPicker) ALBO wlasny zakres dat (od-do). Przycisk "Generuj raport".
