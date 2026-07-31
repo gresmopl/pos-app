@@ -50,7 +50,7 @@ export function MovementHistory({ movements, terminalChecks = [] }: MovementHist
     <>
       <Divider />
       <Box mt="sm">
-        <SectionLabel>Dzisiejsze operacje</SectionLabel>
+        <SectionLabel>Operacje w tej zmianie</SectionLabel>
       </Box>
       <Stack gap={0}>
         {entries.map((entry, index) => (
