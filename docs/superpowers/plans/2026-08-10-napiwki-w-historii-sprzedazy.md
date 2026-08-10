@@ -56,7 +56,7 @@ Dlatego moduł eksportuje **dwie** funkcje: `transactionAmountFor` (reguła dla 
   - `transactionAmountFor(tx: Transaction, typeFilter: HistoryTypeFilter): number`
   - `summarizeHistory(transactions: Transaction[], typeFilter: HistoryTypeFilter): HistorySummary`
 
-- [ ] **Step 1: Wyeksportuj `countItems` z `reports.ts`**
+- [x] **Step 1: Wyeksportuj `countItems` z `reports.ts`**
 
 W `src/lib/reports.ts:131` zmień:
 
@@ -72,7 +72,7 @@ export function countItems(tx: Transaction, type: TransactionItem["type"]): numb
 
 Ciała funkcji nie ruszaj. Reszta `reports.ts` bez zmian.
 
-- [ ] **Step 2: Napisz failujące testy**
+- [x] **Step 2: Napisz failujące testy**
 
 Utwórz `src/lib/__tests__/historySummary.test.ts`:
 
@@ -175,12 +175,12 @@ describe("summarizeHistory", () => {
 });
 ```
 
-- [ ] **Step 3: Uruchom testy i potwierdź, że padają**
+- [x] **Step 3: Uruchom testy i potwierdź, że padają**
 
 Run: `npx vitest run src/lib/__tests__/historySummary.test.ts`
 Expected: FAIL — `Failed to resolve import "../historySummary"`.
 
-- [ ] **Step 4: Zaimplementuj moduł**
+- [x] **Step 4: Zaimplementuj moduł**
 
 Utwórz `src/lib/historySummary.ts`:
 
@@ -236,17 +236,17 @@ export function summarizeHistory(
 }
 ```
 
-- [ ] **Step 5: Uruchom testy i potwierdź, że przechodzą**
+- [x] **Step 5: Uruchom testy i potwierdź, że przechodzą**
 
 Run: `npx vitest run src/lib/__tests__/historySummary.test.ts`
 Expected: PASS — 11 testów.
 
-- [ ] **Step 6: Sprawdź, że nic się nie zepsuło**
+- [x] **Step 6: Sprawdź, że nic się nie zepsuło**
 
 Run: `npx tsc --noEmit && npm test`
 Expected: `tsc` bez błędów, 111 testów zielonych (100 + 11).
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/lib/historySummary.ts src/lib/__tests__/historySummary.test.ts src/lib/reports.ts

@@ -128,7 +128,7 @@ export function lineSum(tx: Transaction, type: TransactionItem["type"]): number 
   return tx.items.filter((i) => i.type === type).reduce((s, i) => s + i.price * i.quantity, 0);
 }
 
-function countItems(tx: Transaction, type: TransactionItem["type"]): number {
+export function countItems(tx: Transaction, type: TransactionItem["type"]): number {
   return tx.items.filter((i) => i.type === type).reduce((s, i) => s + i.quantity, 0);
 }
 
