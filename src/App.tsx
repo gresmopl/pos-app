@@ -23,6 +23,7 @@ const OwnerSurvey = lazy(() => import("@/pages/OwnerSurvey"));
 const Wallet = lazy(() => import("@/pages/Wallet"));
 const More = lazy(() => import("@/pages/More"));
 const AdminReports = lazy(() => import("@/pages/AdminReports"));
+const AdminShare = lazy(() => import("@/pages/AdminShare"));
 const Stats = lazy(() => import("@/pages/Stats"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
@@ -96,6 +97,14 @@ export function App() {
                   element={
                     <AdminGuard>
                       <AdminDevices />
+                    </AdminGuard>
+                  }
+                />
+                <Route
+                  path="/admin/share"
+                  element={
+                    <AdminGuard>
+                      <AdminShare />
                     </AdminGuard>
                   }
                 />

@@ -156,6 +156,12 @@ export default function AdminPage() {
           />
           <Divider />
           <AdminLink
+            label="Udostępnij aplikację"
+            description="Kod QR do rejestracji nowego urządzenia"
+            onClick={() => navigate("/admin/share")}
+          />
+          <Divider />
+          <AdminLink
             label="Ustawienia"
             description="Dane salonu, kasa, bony, prowizje, płatności"
             onClick={() => navigate("/admin/settings")}

@@ -65,7 +65,7 @@ Zadanie 1 jest niezależne od pozostałych i dowozi działającą funkcję samo 
 - Consumes: `PageHeader` z `@/components/layout/PageHeader` (propsy `title`, `backTo`), `useDocumentTitle` z `@/hooks/useDocumentTitle`.
 - Produces: `buildAppUrl(origin: string, basePath: string): string` — nieużywana przez inne zadania, ale eksportowana i testowana osobno.
 
-- [ ] **Step 1: Zainstaluj zależność**
+- [x] **Step 1: Zainstaluj zależność**
 
 ```bash
 npm install react-qr-code
@@ -73,7 +73,7 @@ npm install react-qr-code
 
 Sprawdź, że w `package.json` w `dependencies` pojawiło się `react-qr-code`, a **wersja aplikacji (`"version": "0.1.125"`) się nie zmieniła**.
 
-- [ ] **Step 2: Napisz failujący test `buildAppUrl`**
+- [x] **Step 2: Napisz failujący test `buildAppUrl`**
 
 Utwórz `src/lib/__tests__/appUrl.test.ts`:
 
@@ -102,12 +102,12 @@ describe("buildAppUrl", () => {
 });
 ```
 
-- [ ] **Step 3: Uruchom test i potwierdź, że pada**
+- [x] **Step 3: Uruchom test i potwierdź, że pada**
 
 Run: `npx vitest run src/lib/__tests__/appUrl.test.ts`
 Expected: FAIL — `Failed to resolve import "../appUrl"`.
 
-- [ ] **Step 4: Zaimplementuj `buildAppUrl`**
+- [x] **Step 4: Zaimplementuj `buildAppUrl`**
 
 Utwórz `src/lib/appUrl.ts`:
 
@@ -125,12 +125,12 @@ export function buildAppUrl(origin: string, basePath: string): string {
 }
 ```
 
-- [ ] **Step 5: Uruchom test i potwierdź, że przechodzi**
+- [x] **Step 5: Uruchom test i potwierdź, że przechodzi**
 
 Run: `npx vitest run src/lib/__tests__/appUrl.test.ts`
 Expected: PASS — 4 testy.
 
-- [ ] **Step 6: Utwórz stronę `AdminShare.tsx`**
+- [x] **Step 6: Utwórz stronę `AdminShare.tsx`**
 
 Utwórz `src/pages/AdminShare.tsx`:
 
@@ -214,7 +214,7 @@ export default function AdminSharePage(): React.JSX.Element {
 }
 ```
 
-- [ ] **Step 7: Napisz smoke test strony**
+- [x] **Step 7: Napisz smoke test strony**
 
 Utwórz `src/pages/__tests__/AdminShare.test.tsx`:
 
@@ -282,14 +282,14 @@ describe("AdminSharePage", () => {
 });
 ```
 
-- [ ] **Step 8: Uruchom testy strony**
+- [x] **Step 8: Uruchom testy strony**
 
 Run: `npx vitest run src/pages/__tests__/AdminShare.test.tsx`
 Expected: PASS — 3 testy.
 
 Jeśli test „renderuje kod QR jako SVG" pada, sprawdź, czy `react-qr-code` faktycznie się zainstalował (Step 1) — biblioteka renderuje `<svg>` bez `<canvas>`, więc w jsdom działa bez dodatkowej konfiguracji.
 
-- [ ] **Step 9: Podłącz trasę w `src/App.tsx`**
+- [x] **Step 9: Podłącz trasę w `src/App.tsx`**
 
 Po linii 25 (`const AdminReports = lazy(...)`) dodaj:
 
@@ -310,7 +310,7 @@ Po bloku trasy `/admin/devices` (linie 94-101), przed trasą `/admin/survey`, do
 />
 ```
 
-- [ ] **Step 10: Dodaj link w panelu admina**
+- [x] **Step 10: Dodaj link w panelu admina**
 
 W `src/pages/Admin.tsx`, po `<AdminLink label="Urządzenia" ... />` i następującym po nim `<Divider />` (linie 152-157), wstaw:
 
@@ -323,12 +323,12 @@ W `src/pages/Admin.tsx`, po `<AdminLink label="Urządzenia" ... />` i następuj�
 <Divider />
 ```
 
-- [ ] **Step 11: Weryfikacja całości**
+- [x] **Step 11: Weryfikacja całości**
 
 Run: `npm run lint && npx tsc --noEmit && npm test`
 Expected: lint bez błędów, tsc bez błędów, wszystkie testy zielone (83 + 7 nowych = 90).
 
-- [ ] **Step 12: Commit**
+- [x] **Step 12: Commit**
 
 ```bash
 git add package.json package-lock.json src/lib/appUrl.ts src/lib/__tests__/appUrl.test.ts src/pages/AdminShare.tsx src/pages/__tests__/AdminShare.test.tsx src/App.tsx src/pages/Admin.tsx
