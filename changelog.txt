@@ -31,6 +31,15 @@ CHANGELOG - FORMEN POS App
   zgodnie z "Razem" w widoku rozwinietym), wiec suma wierszy = Utarg + Napiwki.
   Zamkniecie zmiany nietkniete - calcSystemCash dalej liczy pelna gotowke z napiwkami,
   bo tam chodzi o zawartosc kasetki, a nie o zarobek salonu.
+- feat(history): pole "Rabat" w belce, widoczne przy filtrze typu (zamiennie z Napiwkami,
+  wiec belka nadal ma max cztery pozycje). Utarg przy filtrze Uslugi/Produkty odejmuje
+  teraz rabat, dzieki czemu zawsze znaczy "ile faktycznie weszlo" - niezaleznie od
+  ustawionego filtru. Dla wizyty jednorodnej wychodzi dokladnie ta sama kwota co przy
+  "Wszystko" (pilnuje tego test niezmiennika).
+  OGRANICZENIE: rabat jest zapisany na calej transakcji, nie na pozycji, wiec przy wizycie
+  mieszanej (usluga + produkt) odejmuje sie w calosci od kazdej strony. W danych salonu
+  taka wizyta z rabatem nie wystapila ani razu (0 na 1000 transakcji od czerwca), a wynik
+  ujemny celowo NIE jest obcinany do zera - anomalia ma byc widoczna.
 - refactor(history): arytmetyka belki podsumowania wyszla z 533-liniowego History.tsx
   do src/lib/historySummary.ts (transactionAmountFor + summarizeHistory). Regula "przy
   filtrze typu licz same pozycje tego typu" byla uzywana w dwoch miejscach (kwota wiersza

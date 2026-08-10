@@ -408,12 +408,22 @@ export default function HistoryPage() {
               </div>
             )}
             {/* Napiwek nalezy do calej transakcji, nie do pozycji - przy filtrze
-                typu ta sama kwota liczylaby sie i do uslug, i do produktow. */}
-            {typeFilter === "all" && (
+                typu ta sama kwota liczylaby sie i do uslug, i do produktow.
+                Przy filtrze typu to pole ustepuje miejsca Rabatowi, dzieki czemu
+                belka nigdy nie ma wiecej niz cztery pozycje. */}
+            {typeFilter === "all" ? (
               <div style={{ textAlign: "center" }}>
                 <SectionLabel>Napiwki</SectionLabel>
                 <Text fw={700} fz="xl">
                   {summary.tipsTotal.toLocaleString("pl-PL")} zł
+                </Text>
+              </div>
+            ) : (
+              <div style={{ textAlign: "center" }}>
+                <SectionLabel>Rabat</SectionLabel>
+                <Text fw={700} fz="xl" c="red">
+                  {summary.discountsTotal > 0 ? "-" : ""}
+                  {summary.discountsTotal.toLocaleString("pl-PL")} zł
                 </Text>
               </div>
             )}

@@ -59,9 +59,41 @@ describe("revenueFor", () => {
     expect(revenueFor(bezNapiwku, "all")).toBe(transactionAmountFor(bezNapiwku, "all"));
   });
 
-  it("przy filtrze typu liczy pozycje danego typu (przed rabatem)", () => {
-    expect(revenueFor(mixed, "service")).toBe(50);
-    expect(revenueFor(mixed, "product")).toBe(60);
+  it("przy filtrze typu odejmuje rabat od pozycji danego typu", () => {
+    // mixed ma rabat 10: uslugi 50-10=40, produkty 60-10=50
+    expect(revenueFor(mixed, "service")).toBe(40);
+    expect(revenueFor(mixed, "product")).toBe(50);
+  });
+
+  it("NIEZMIENNIK: dla wizyty jednorodnej utarg jest ten sam przy kazdym filtrze", () => {
+    // total_amount = suma pozycji - rabat + napiwek, wiec dla wizyty zlozonej
+    // z samych uslug: lineSum - rabat == totalAmount - napiwek. Ten test pilnuje,
+    // ze obie sciezki liczenia daja to samo, i zlapie kazde rozjechanie sie wzoru.
+    const jednorodna = tx({
+      items: [{ name: "Strzyżenie", price: 80, quantity: 1, type: "service" }],
+      totalAmount: 50, // 80 - 50 rabatu + 20 napiwku
+      discountAmount: 50,
+      tipAmount: 20,
+    });
+    expect(revenueFor(jednorodna, "service")).toBe(revenueFor(jednorodna, "all"));
+    expect(revenueFor(jednorodna, "service")).toBe(30);
+  });
+
+  it("przypadek skrajny: wizyta mieszana z rabatem wiekszym niz strona daje wynik ujemny", () => {
+    // Udokumentowane zachowanie, NIE obcinamy do zera: rabat jest zapisany na calej
+    // transakcji, wiec przy wizycie mieszanej odejmuje sie w calosci od kazdej strony.
+    // W danych salonu taka sytuacja nie wystapila ani razu (0 na 1000 transakcji),
+    // a widoczna anomalia jest lepsza niz po cichu zamaskowana.
+    const skrajna = tx({
+      items: [
+        { name: "Strzyżenie", price: 80, quantity: 1, type: "service" },
+        { name: "Pomada", price: 10, quantity: 1, type: "product" },
+      ],
+      totalAmount: 40,
+      discountAmount: 50,
+      tipAmount: 0,
+    });
+    expect(revenueFor(skrajna, "product")).toBe(-40);
   });
 });
 
@@ -71,8 +103,26 @@ describe("summarizeHistory", () => {
       serviceCount: 0,
       productCount: 0,
       tipsTotal: 0,
+      discountsTotal: 0,
       totalRevenue: 0,
     });
+  });
+
+  it("sumuje rabaty z wielu transakcji", () => {
+    const r = summarizeHistory(
+      [tx({ discountAmount: 5 }), tx({ id: "t2", discountAmount: 20 }), tx({ id: "t3" })],
+      "all"
+    );
+    expect(r.discountsTotal).toBe(25);
+  });
+
+  it("discountsTotal nie zalezy od filtru typu", () => {
+    // Tak jak tipsTotal: rabat nalezy do calej transakcji. Komponent pokazuje to pole
+    // tylko przy filtrze typu, bo tylko tam Utarg potrzebuje wyjasnienia.
+    const wartosci = (["all", "service", "product"] as const).map(
+      (f) => summarizeHistory([mixed], f).discountsTotal
+    );
+    expect(wartosci).toEqual([10, 10, 10]);
   });
 
   it("transakcje bez napiwkow daja tipsTotal 0", () => {
@@ -108,12 +158,12 @@ describe("summarizeHistory", () => {
     expect(sumaWierszy).toBe(r.totalRevenue + r.tipsTotal);
   });
 
-  it('utarg przy "service" pomija pozycje produktowe z tej samej transakcji', () => {
-    expect(summarizeHistory([mixed], "service").totalRevenue).toBe(50);
+  it('utarg przy "service" pomija pozycje produktowe i odejmuje rabat', () => {
+    expect(summarizeHistory([mixed], "service").totalRevenue).toBe(40);
   });
 
-  it('utarg przy "product" pomija pozycje uslugowe z tej samej transakcji', () => {
-    expect(summarizeHistory([mixed], "product").totalRevenue).toBe(60);
+  it('utarg przy "product" pomija pozycje uslugowe i odejmuje rabat', () => {
+    expect(summarizeHistory([mixed], "product").totalRevenue).toBe(50);
   });
 
   it("tipsTotal nie zalezy od filtru typu", () => {

@@ -7,6 +7,7 @@ export interface HistorySummary {
   serviceCount: number;
   productCount: number;
   tipsTotal: number;
+  discountsTotal: number;
   totalRevenue: number;
 }
 
@@ -31,12 +32,22 @@ export function transactionAmountFor(tx: Transaction, typeFilter: HistoryTypeFil
  * naliczaniu prowizji (commission.ts - netAmount), wiec Historia liczy teraz
  * to samo co reszta systemu.
  *
- * UWAGA przy filtrze typu: lineSum sumuje ceny pozycji PRZED rabatem, bo rabat
- * jest zapisany na calej transakcji (discount_value), a nie rozbity na pozycje -
- * nie da sie stwierdzic, z ktorej pozycji zostal udzielony.
+ * Przy filtrze typu odejmujemy rabat od sumy pozycji danego typu, zeby Utarg zawsze
+ * znaczyl "ile faktycznie weszlo", niezaleznie od ustawionego filtru. Dla wizyty
+ * jednorodnej wychodzi z tego dokladnie to samo co przy "all", bo
+ * total_amount = suma pozycji - rabat + napiwek (pilnuje tego test niezmiennika).
+ *
+ * OGRANICZENIE: rabat jest zapisany na calej transakcji (discount_value), a nie
+ * rozbity na pozycje - nie da sie stwierdzic, z ktorej pozycji zostal udzielony.
+ * Przy wizycie mieszanej (usluga + produkt) odejmie sie w calosci od kazdej strony,
+ * co przy duzym rabacie moze dac wynik ujemny. Celowo tego NIE obcinamy do zera:
+ * w danych salonu taka wizyta nie wystapila ani razu, a widoczna anomalia jest
+ * lepsza niz po cichu zamaskowana.
  */
 export function revenueFor(tx: Transaction, typeFilter: HistoryTypeFilter): number {
-  return typeFilter === "all" ? tx.totalAmount - tx.tipAmount : lineSum(tx, typeFilter);
+  return typeFilter === "all"
+    ? tx.totalAmount - tx.tipAmount
+    : lineSum(tx, typeFilter) - tx.discountAmount;
 }
 
 /**
@@ -57,14 +68,16 @@ export function summarizeHistory(
   let serviceCount = 0;
   let productCount = 0;
   let tipsTotal = 0;
+  let discountsTotal = 0;
   let totalRevenue = 0;
 
   for (const tx of transactions) {
     serviceCount += countItems(tx, "service");
     productCount += countItems(tx, "product");
     tipsTotal += tx.tipAmount;
+    discountsTotal += tx.discountAmount;
     totalRevenue += revenueFor(tx, typeFilter);
   }
 
-  return { serviceCount, productCount, tipsTotal, totalRevenue };
+  return { serviceCount, productCount, tipsTotal, discountsTotal, totalRevenue };
 }
