@@ -8,6 +8,11 @@ export const VOUCHER_EXPIRY_MONTHS = 12;
 // Limit zdrowego rozsadku dla napiwku (zabezpieczenie przed bledem typu klikanie "+20" wielokrotnie)
 export const MAX_TIP = 1000;
 
+// Po ilu dniach ciszy urzadzenie mozna zarchiwizowac bez ostrzezenia.
+// Ponizej tego progu archiwizacja nadal jest mozliwa, ale wymaga potwierdzenia
+// w modalu ostrzegawczym - patrz checkArchiveGuard w src/lib/devices.ts
+export const DEVICE_ARCHIVE_INACTIVE_DAYS = 30;
+
 export type RetentionTier = "top" | "high" | "mid" | "dev";
 
 export interface RetentionRank {

@@ -355,7 +355,7 @@ git commit -m "feat(admin): strona Udostepnij aplikacje z kodem QR"
 
   Zadanie 4 używa obu tych eksportów.
 
-- [ ] **Step 1: Dodaj stałą**
+- [x] **Step 1: Dodaj stałą**
 
 W `src/lib/constants.ts`, po linii 9 (`export const MAX_TIP = 1000;`), dopisz:
 
@@ -366,7 +366,7 @@ W `src/lib/constants.ts`, po linii 9 (`export const MAX_TIP = 1000;`), dopisz:
 export const DEVICE_ARCHIVE_INACTIVE_DAYS = 30;
 ```
 
-- [ ] **Step 2: Napisz failujące testy reguły**
+- [x] **Step 2: Napisz failujące testy reguły**
 
 Utwórz `src/lib/__tests__/devices.test.ts`:
 
@@ -461,14 +461,14 @@ describe("checkArchiveGuard", () => {
 });
 ```
 
-- [ ] **Step 3: Uruchom testy i potwierdź, że padają**
+- [x] **Step 3: Uruchom testy i potwierdź, że padają**
 
 Run: `npx vitest run src/lib/__tests__/devices.test.ts`
 Expected: FAIL — `Failed to resolve import "../devices"`.
 
 Jeśli zamiast tego widzisz błąd TypeScript o nadmiarowym polu `isActive` w `DeviceRegistration` — to oczekiwane, pole dochodzi w Zadaniu 3. Testy Vitest i tak się uruchomią (esbuild nie sprawdza typów), a `tsc --noEmit` przejdzie dopiero po Zadaniu 3. Nie usuwaj `isActive` z helpera `device()`.
 
-- [ ] **Step 4: Zaimplementuj regułę**
+- [x] **Step 4: Zaimplementuj regułę**
 
 Utwórz `src/lib/devices.ts`:
 
@@ -508,12 +508,12 @@ export function checkArchiveGuard(
 }
 ```
 
-- [ ] **Step 5: Uruchom testy i potwierdź, że przechodzą**
+- [x] **Step 5: Uruchom testy i potwierdź, że przechodzą**
 
 Run: `npx vitest run src/lib/__tests__/devices.test.ts`
 Expected: PASS — 9 testów.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/lib/devices.ts src/lib/__tests__/devices.test.ts src/lib/constants.ts
