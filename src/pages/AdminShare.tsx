@@ -3,6 +3,7 @@ import { Text, Stack, Box, Container, Divider, Paper, Button, Code } from "@mant
 import { notifications } from "@mantine/notifications";
 import { IconCopy, IconShare } from "@tabler/icons-react";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { PAGE_BOTTOM_PADDING } from "@/components/layout/BottomNavBar";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { buildAppUrl } from "@/lib/appUrl";
 
@@ -33,7 +34,7 @@ export default function AdminSharePage(): React.JSX.Element {
   };
 
   return (
-    <Box mih="100vh">
+    <Box mih="100vh" pb={PAGE_BOTTOM_PADDING}>
       <Container size="xs">
         <PageHeader title="Udostępnij aplikację" backTo="/admin" />
         <Divider />
