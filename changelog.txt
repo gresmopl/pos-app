@@ -23,8 +23,14 @@ CHANGELOG - FORMEN POS App
   klikniecie avatara pokazuje napiwki tego fryzjera za okres. Pole ZNIKA przy filtrze
   typu (Uslugi/Produkty) - napiwek nalezy do calej transakcji, nie do pozycji, wiec ta
   sama kwota liczylaby sie dwa razy. Przy braku napiwkow pokazuje "0 zl", a nie chowa sie.
-  UWAGA: Utarg juz zawiera napiwki (total_amount transakcji), wiec tych dwoch liczb
-  NIE nalezy do siebie dodawac.
+- fix(history): Utarg w Historii liczy sie BEZ napiwkow (totalAmount - tipAmount).
+  Dotad zawieral napiwki, przez co nie zgadzal sie z przychodem w raportach
+  miesiecznych, ktore odejmuja je od zawsze (reports.ts). Ta sama zasada rzadzi
+  prowizja (commission.ts) - fryzjer nie dostaje prowizji od wlasnego napiwku.
+  Kwota w wierszu transakcji zostaje bez zmian (pokazuje, ile zaplacil klient,
+  zgodnie z "Razem" w widoku rozwinietym), wiec suma wierszy = Utarg + Napiwki.
+  Zamkniecie zmiany nietkniete - calcSystemCash dalej liczy pelna gotowke z napiwkami,
+  bo tam chodzi o zawartosc kasetki, a nie o zarobek salonu.
 - refactor(history): arytmetyka belki podsumowania wyszla z 533-liniowego History.tsx
   do src/lib/historySummary.ts (transactionAmountFor + summarizeHistory). Regula "przy
   filtrze typu licz same pozycje tego typu" byla uzywana w dwoch miejscach (kwota wiersza

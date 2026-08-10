@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { summarizeHistory, transactionAmountFor } from "../historySummary";
+import { summarizeHistory, transactionAmountFor, revenueFor } from "../historySummary";
 import type { Transaction } from "../types";
 
 function tx(over: Partial<Transaction> = {}): Transaction {
@@ -44,6 +44,27 @@ describe("transactionAmountFor", () => {
   });
 });
 
+describe("revenueFor", () => {
+  it('przy "all" odejmuje napiwek od kwoty transakcji', () => {
+    // Klient zaplacil 100, w tym 20 napiwku - salon zarobil 80.
+    expect(revenueFor(mixed, "all")).toBe(80);
+  });
+
+  it("rozni sie od transactionAmountFor dokladnie o napiwek", () => {
+    expect(transactionAmountFor(mixed, "all") - revenueFor(mixed, "all")).toBe(mixed.tipAmount);
+  });
+
+  it("przy braku napiwku obie funkcje daja to samo", () => {
+    const bezNapiwku = tx({ tipAmount: 0 });
+    expect(revenueFor(bezNapiwku, "all")).toBe(transactionAmountFor(bezNapiwku, "all"));
+  });
+
+  it("przy filtrze typu liczy pozycje danego typu (przed rabatem)", () => {
+    expect(revenueFor(mixed, "service")).toBe(50);
+    expect(revenueFor(mixed, "product")).toBe(60);
+  });
+});
+
 describe("summarizeHistory", () => {
   it("dla pustej listy zwraca same zera", () => {
     expect(summarizeHistory([], "all")).toEqual({
@@ -73,8 +94,18 @@ describe("summarizeHistory", () => {
     expect(r.productCount).toBe(2);
   });
 
-  it('utarg przy "all" to pelne kwoty transakcji', () => {
-    expect(summarizeHistory([mixed, tx({ id: "b" })], "all").totalRevenue).toBe(150);
+  it('utarg przy "all" to kwoty transakcji BEZ napiwkow', () => {
+    // mixed: zaplacone 100, w tym 20 napiwku -> 80. Druga tx: 50 bez napiwku.
+    expect(summarizeHistory([mixed, tx({ id: "b" })], "all").totalRevenue).toBe(130);
+  });
+
+  it("suma kwot z wierszy = utarg + napiwki", () => {
+    // Wiersz pokazuje, ile zaplacil klient; Utarg, ile zarobil salon.
+    // Roznica to dokladnie pole "Napiwki" - dzieki temu obie liczby wolno dodac.
+    const lista = [mixed, tx({ id: "b", tipAmount: 5, totalAmount: 55 })];
+    const r = summarizeHistory(lista, "all");
+    const sumaWierszy = lista.reduce((s, t) => s + transactionAmountFor(t, "all"), 0);
+    expect(sumaWierszy).toBe(r.totalRevenue + r.tipsTotal);
   });
 
   it('utarg przy "service" pomija pozycje produktowe z tej samej transakcji', () => {
