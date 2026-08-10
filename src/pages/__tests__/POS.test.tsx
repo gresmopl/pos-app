@@ -51,8 +51,11 @@ vi.mock("@/hooks/useDbData", () => ({
   useProducts: () => ({ data: [], loading: false }),
 }));
 
+const DEVICE_ID = "5c4c2fa0-f085-455b-ab74-1f66b602ff7a";
+
 vi.mock("@/contexts/DeviceContext", () => ({
   useDeviceRole: () => ({ lockedEmployeeId: null, isAdmin: false, isPersonal: false }),
+  useDevice: () => ({ deviceId: DEVICE_ID, device: null, status: "approved" }),
 }));
 
 vi.mock("@/hooks/useCart", () => ({
@@ -124,6 +127,10 @@ describe("POSPage finalize flow", () => {
         employeeId: "emp-1",
         tipAmount: 10,
         totalAmount: 60,
+        // Bez tego kolumna transaction.device_id zostaje pusta i nie da sie
+        // ustalic, z ktorego urzadzenia poszla sprzedaz - tak bylo przez
+        // pierwsze 3384 transakcje.
+        deviceId: DEVICE_ID,
       })
     );
     expect(mockResetCart).toHaveBeenCalled();

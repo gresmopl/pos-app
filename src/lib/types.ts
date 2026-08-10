@@ -84,6 +84,11 @@ export interface Transaction {
   tipAmount: number;
   discountAmount: number;
   timestamp: string;
+  /**
+   * Urzadzenie, na ktorym wbito sprzedaz. Opcjonalne, bo transakcje sprzed
+   * 2026-08 maja ta kolumne pusta - insert jej wtedy nie wypelnial.
+   */
+  deviceId?: string | null;
 }
 
 export interface CashMovement {

@@ -625,6 +625,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           salon_id: SALON_ID,
           employee_id: input.employeeId || null,
           client_id: input.clientId || null,
+          device_id: input.deviceId,
           date: now,
           total_amount: input.totalAmount,
           tip_amount: input.tipAmount,
@@ -708,6 +709,7 @@ export function createSupabaseClient(config: DbConfig): DbClient {
           tipAmount: input.tipAmount,
           discountAmount: input.discountAmount,
           timestamp: now,
+          deviceId: input.deviceId,
         };
       },
 

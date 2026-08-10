@@ -20,7 +20,7 @@ import { pluralize } from "@/lib/constants";
 import { BOTTOM_NAV_HEIGHT } from "@/components/layout/BottomNavBar";
 import { useCart } from "@/hooks/useCart";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
-import { useDeviceRole } from "@/contexts/DeviceContext";
+import { useDeviceRole, useDevice } from "@/contexts/DeviceContext";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { SectionLabel } from "@/components/layout/SectionLabel";
 import { PageSkeleton } from "@/components/PageSkeleton";
@@ -40,6 +40,7 @@ export default function POSPage() {
   const { data: products = [] } = useProducts();
 
   const { lockedEmployeeId } = useDeviceRole();
+  const { deviceId } = useDevice();
   const employeeId = lockedEmployeeId ?? searchParams.get("employee");
   const employee = employees.find((e) => e.id === employeeId);
 
@@ -99,6 +100,7 @@ export default function POSPage() {
     try {
       await db.transactions.create({
         employeeId: employeeId || "",
+        deviceId,
         items: cart,
         tipAmount,
         discount,

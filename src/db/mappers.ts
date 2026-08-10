@@ -73,6 +73,7 @@ export function mapTransaction(
     tipAmount: Number(row.tip_amount) || 0,
     discountAmount,
     timestamp: row.date as string,
+    deviceId: (row.device_id as string) ?? null,
   };
 }
 

@@ -1,6 +1,18 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[Niewydane]
+- fix(pos): zapis transaction.device_id przy sprzedazy. Kolumna istniala w schemacie od
+  poczatku (schema.sql:155), ale insert nigdy jej nie wypelnial - wszystkie 3384
+  dotychczasowe transakcje maja ja pusta i nie da sie ustalic, z ktorego urzadzenia
+  poszly. Skutek: brak sladu przy sporze o transakcje ("to nie ja wbilem"), brak
+  odpowiedzi na pytanie ile sprzedazy idzie z tabletu, a ile z telefonow, oraz brak
+  twardego kryterium "urzadzenie, ktore nigdy nic nie sprzedalo" przy sprzataniu listy
+  urzadzen (musielismy sie oprzec na samym last_seen_at).
+  deviceId jest WYMAGANY w CreateTransactionInput - kazde nowe miejsce tworzace
+  transakcje musi go podac, inaczej kod sie nie skompiluje.
+  UWAGA: historyczne transakcje pozostana puste na zawsze, tej informacji nigdzie nie ma.
+
 [0.1.126] - 2026-08-11
 - feat(admin): strona "Udostepnij aplikacje" (/admin/share) - duzy kod QR z linkiem do
   aplikacji, przycisk "Skopiuj link" oraz "Wyslij" (Web Share API, tylko gdy przegladarka

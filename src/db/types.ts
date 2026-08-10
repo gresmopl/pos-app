@@ -70,6 +70,15 @@ export interface CreateTerminalCheckInput {
 
 export interface CreateTransactionInput {
   employeeId: string;
+  /**
+   * UUID urzadzenia, na ktorym wbito sprzedaz (z DeviceContext / localStorage).
+   * Pole jest WYMAGANE celowo: kolumna transaction.device_id istniala w schemacie
+   * od poczatku, ale insert jej nie wypelnial, przez co 3384 historyczne
+   * transakcje maja ja pusta i nie da sie ustalic, z ktorego urzadzenia poszly.
+   * Wymog na poziomie typu sprawia, ze kazde nowe miejsce tworzace transakcje
+   * musi ten identyfikator podac - inaczej kod sie nie skompiluje.
+   */
+  deviceId: string;
   clientId?: string;
   items: CartItem[];
   tipAmount: number;
