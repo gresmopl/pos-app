@@ -92,21 +92,21 @@ zatwierdzania i zostać przepuszczone przez pomyłkę.
 Wzorzec projektu: logika domenowa w `src/lib/` (czysta, testowalna bez bazy), UI cienki,
 dostęp do danych przez adapter `src/db/`. Strony przez `React.lazy` w `src/App.tsx`.
 
-| Plik                                              | Rola                                                                             | Akcja  |
-| ------------------------------------------------- | -------------------------------------------------------------------------------- | ------ |
-| `src/pages/AdminShare.tsx`                        | Strona QR: adres aplikacji, kod, „Skopiuj link", „Wyślij".                       | nowy   |
-| `src/lib/devices.ts`                              | Czysta reguła `checkArchiveGuard(...)` → `ArchiveGuard`. Zero zależności od DB.  | nowy   |
-| `src/lib/__tests__/devices.test.ts`               | Testy reguły na przypadkach z żywej bazy.                                        | nowy   |
-| `src/App.tsx`                                     | `lazy` import `AdminShare` + `<Route path="/admin/share">` w `AdminGuard`.       | edycja |
-| `src/pages/Admin.tsx`                             | `AdminLink` „Udostępnij aplikację" pod „Urządzenia".                             | edycja |
-| `src/pages/AdminDevices.tsx`                      | Przycisk „Archiwizuj" + modale + sekcja „Archiwum (N)" z „Przywróć".             | edycja |
-| `src/lib/types.ts`                                | `DeviceRegistration` + pole `isActive: boolean`.                                 | edycja |
-| `src/lib/constants.ts`                            | `DEVICE_ARCHIVE_INACTIVE_DAYS = 30`.                                             | edycja |
-| `src/db/types.ts`                                 | `DbAdapter.devices` + `archive(id)`, `restore(id)`.                              | edycja |
-| `src/db/adapters/supabase.ts`                     | `mapDevice` + `isActive`; implementacja `archive` / `restore`.                   | edycja |
-| `src/db/adapters/rest.ts`                         | `archive` / `restore` + naprawa odwrotnych ukośników (patrz „Dług przy okazji"). | edycja |
-| `src/db/adapters/__tests__/rest-contract.test.ts` | Sprawdzanie kształtu ścieżek URL.                                                | edycja |
-| `package.json`                                    | dodanie zależności `react-qr-code`.                                              | edycja |
+| Plik                                              | Rola                                                                                       | Akcja  |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------ |
+| `src/pages/AdminShare.tsx`                        | Strona QR: adres aplikacji, kod, „Skopiuj link", „Wyślij".                                 | nowy   |
+| `src/lib/devices.ts`                              | Czysta reguła `checkArchiveGuard(...)` → `ArchiveGuard`. Zero zależności od DB.            | nowy   |
+| `src/lib/__tests__/devices.test.ts`               | Testy reguły na przypadkach z żywej bazy.                                                  | nowy   |
+| `src/App.tsx`                                     | `lazy` import `AdminShare` + `<Route path="/admin/share">` w `AdminGuard`.                 | edycja |
+| `src/pages/Admin.tsx`                             | `AdminLink` „Udostępnij aplikację" pod „Urządzenia".                                       | edycja |
+| `src/pages/AdminDevices.tsx`                      | Przycisk „Archiwizuj" + modale + sekcja „Archiwum (N)" z „Przywróć".                       | edycja |
+| `src/lib/types.ts`                                | `DeviceRegistration` + pole `isActive: boolean`.                                           | edycja |
+| `src/lib/constants.ts`                            | `DEVICE_ARCHIVE_INACTIVE_DAYS = 30`.                                                       | edycja |
+| `src/db/types.ts`                                 | `DbAdapter.devices` + `archive(id)`, `restore(id)`.                                        | edycja |
+| `src/db/adapters/supabase.ts`                     | `mapDevice` + `isActive`; implementacja `archive` / `restore`.                             | edycja |
+| `src/db/adapters/rest.ts`                         | `archive` / `restore` (naprawa ukośników okazała się niepotrzebna — patrz „Sprostowanie"). | edycja |
+| `src/db/adapters/__tests__/rest-contract.test.ts` | Sprawdzanie kształtu ścieżek URL.                                                          | edycja |
+| `package.json`                                    | dodanie zależności `react-qr-code`.                                                        | edycja |
 
 Bez zmian w bazie danych — `is_active` już istnieje i jest niewykorzystywana.
 
@@ -231,18 +231,18 @@ był zrozumiały, a nie wyglądał na błąd.
 Lista 34 → 8 realnie używanych urządzeń. `Test 6`, `TEST33` i `TEST67` archiwizowalne
 od razu przez modal ostrzegawczy, mimo że nie przekroczyły progu 30 dni.
 
-## Dług przy okazji
+## Sprostowanie (2026-08-10, w trakcie implementacji)
 
-`src/db/adapters/rest.ts:63` i `:67` mają odwrotne ukośniki w literałach szablonowych:
+Wcześniejsza wersja tego spec-a twierdziła, że `src/db/adapters/rest.ts:63` i `:67`
+mają odwrotne ukośniki w literałach szablonowych i że `approve` / `block` są przez to
+rozsypane. **To było błędne.** Plik od zawsze miał poprawne `/api/devices/${id}/approve`;
+odwrotne ukośniki były artefaktem renderowania wyniku wyszukiwania na Windows,
+a nie treścią pliku. Żadna naprawa nie była potrzebna.
 
-```ts
-`${apiUrl}\api\devices\${id}\approve`; // \a to sekwencja ucieczki — URL jest rozsypany
-```
-
-Przez to `approve` i `block` nie działają na adapterze REST. Nie boli dziś (produkcja
-używa adaptera `supabase`), ale wybuchnie przy migracji na Hetzner wg ADR-015. Naprawa
-wchodzi razem z dopisaniem `archive` / `restore`, a `rest-contract.test.ts` zostaje
-rozszerzony o sprawdzanie kształtu ścieżek — obecny test tego nie złapał.
+Test `rest-contract.test.ts` mimo to zostaje rozszerzony o sprawdzanie kształtu ścieżek
+dla `approve` / `block` / `archive` / `restore`. Nie jest to test regresji, tylko
+zabezpieczenie na przyszłość: odwrotny ukośnik w literale szablonowym tworzy sekwencję
+ucieczki i cicho psuje URL, a TypeScript tego nie wykryje, bo typem nadal jest `string`.
 
 ## Testy
 

@@ -132,6 +132,9 @@ export function createSupabaseClient(config: DbConfig): DbClient {
       registeredAt: row.registered_at as string,
       approvedAt: (row.approved_at as string) || null,
       lastSeenAt: (row.last_seen_at as string) || null,
+      // Fallback na true: gdyby kolumny zabraklo w innym srodowisku,
+      // lepiej pokazac urzadzenie niz ukryc cala liste.
+      isActive: row.is_active !== false,
     };
   }
 
@@ -230,6 +233,25 @@ export function createSupabaseClient(config: DbConfig): DbClient {
         const { error } = await supabase
           .from("device_registration")
           .update({ status: "blocked" })
+          .eq("id", id);
+        if (error) throw error;
+      },
+      async archive(id: string) {
+        // Archiwizacja odbiera dostep I chowa z listy. Sam is_active nie wystarczy:
+        // getByDeviceId nie filtruje po is_active, wiec bez zmiany statusu
+        // urzadzenie dzialaloby dalej, tylko niewidoczne dla szefa.
+        const { error } = await supabase
+          .from("device_registration")
+          .update({ status: "blocked", is_active: false })
+          .eq("id", id);
+        if (error) throw error;
+      },
+      async restore(id: string) {
+        // Status zostaje "blocked" - urzadzenie wraca do sekcji Zablokowane,
+        // a wpuszczenie go z powrotem wymaga osobnego klikniecia "Odblokuj".
+        const { error } = await supabase
+          .from("device_registration")
+          .update({ is_active: true })
           .eq("id", id);
         if (error) throw error;
       },

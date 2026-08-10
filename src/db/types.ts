@@ -128,6 +128,8 @@ export interface DbClient {
     register(input: RegisterDeviceInput): Promise<DeviceRegistration>;
     approve(id: string): Promise<void>;
     block(id: string): Promise<void>;
+    archive(id: string): Promise<void>;
+    restore(id: string): Promise<void>;
     updateLastSeen(deviceId: string): Promise<void>;
   };
   employees: {

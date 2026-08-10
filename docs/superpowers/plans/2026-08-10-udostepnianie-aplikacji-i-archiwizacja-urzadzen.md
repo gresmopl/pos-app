@@ -39,7 +39,7 @@
 | `src/lib/types.ts`                                | `DeviceRegistration.isActive`                                              | 3       |
 | `src/db/types.ts`                                 | `DbAdapter.devices.archive` / `.restore`                                   | 3       |
 | `src/db/adapters/supabase.ts`                     | `mapDevice` + `isActive`, implementacja `archive` / `restore`              | 3       |
-| `src/db/adapters/rest.ts`                         | `archive` / `restore` + naprawa odwrotnych ukośników                       | 3       |
+| `src/db/adapters/rest.ts`                         | `archive` / `restore` (ukośniki były poprawne — patrz Sprostowanie)        | 3       |
 | `src/db/adapters/__tests__/rest-contract.test.ts` | Test kształtu ścieżek URL                                                  | 3       |
 | `src/pages/AdminDevices.tsx`                      | Przycisk „Archiwizuj", modale, sekcja „Archiwum (N)"                       | 4       |
 | `package.json`                                    | Zależność `react-qr-code`                                                  | 1       |
@@ -522,14 +522,14 @@ git commit -m "feat(devices): regula checkArchiveGuard (prog 30 dni jako ostrzez
 
 ---
 
-## Task 3: Warstwa bazy — `archive` / `restore` + naprawa `rest.ts`
+## Task 3: Warstwa bazy — `archive` / `restore`
 
 **Files:**
 
 - Modify: `src/lib/types.ts:135-146` (`DeviceRegistration`)
 - Modify: `src/db/types.ts:125-132` (`DbAdapter.devices`)
 - Modify: `src/db/adapters/supabase.ts:122-136` (`mapDevice`) i `:222-235` (metody)
-- Modify: `src/db/adapters/rest.ts:62-69` (naprawa + nowe metody)
+- Modify: `src/db/adapters/rest.ts:62-69` (nowe metody)
 - Modify: `src/db/adapters/__tests__/rest-contract.test.ts` (nowy test)
 
 **Interfaces:**
@@ -540,7 +540,7 @@ git commit -m "feat(devices): regula checkArchiveGuard (prog 30 dni jako ostrzez
   - `db.devices.archive(id: string): Promise<void>` — ustawia `status: "blocked"` **i** `is_active: false`
   - `db.devices.restore(id: string): Promise<void>` — ustawia wyłącznie `is_active: true`
 
-- [ ] **Step 1: Napisz failujący test kontraktu ścieżek URL**
+- [x] **Step 1: Napisz failujący test kontraktu ścieżek URL**
 
 W `src/db/adapters/__tests__/rest-contract.test.ts`, przed testem `"rzuca bledem na non-2xx response..."` (linia 80), wstaw:
 
@@ -562,20 +562,22 @@ it("devices.approve/block/archive/restore uzywaja poprawnych sciezek URL", async
     "http://test.local/api/devices/d1/archive",
     "http://test.local/api/devices/d1/restore",
   ]);
-  // Regresja: literaly szablonowe mialy odwrotne ukosniki, przez co "\a"
-  // bylo interpretowane jako sekwencja ucieczki i URL byl rozsypany.
+  // Odwrotny ukosnik w literale szablonowym tworzy sekwencje ucieczki ("\a")
+  // i cicho rozsypuje URL - TypeScript tego nie zlapie, bo typem nadal jest string.
   for (const url of urls) expect(url).not.toContain("\\");
 });
 ```
 
-- [ ] **Step 2: Uruchom test i potwierdź, że pada**
+- [x] **Step 2: Uruchom test i potwierdź, że pada**
 
 Run: `npx vitest run src/db/adapters/__tests__/rest-contract.test.ts`
 Expected: FAIL — `client.devices.archive is not a function`.
 
-To potwierdza, że test naprawdę sprawdza nową funkcjonalność. Po dodaniu metod, a przed naprawą ukośników, ten sam test padnie na porównaniu URL-i — to jest dowód na istnienie buga.
+To potwierdza, że test naprawdę sprawdza nową funkcjonalność.
 
-- [ ] **Step 3: Dodaj `isActive` do typu domenowego**
+> **Sprostowanie (2026-08-10):** wcześniejsza wersja tego planu twierdziła, że `approve` i `block` mają odwrotne ukośniki i są rozsypane. To było błędne — plik od zawsze miał poprawne `/api/devices/${id}/approve`, a odwrotne ukośniki były artefaktem renderowania wyniku wyszukiwania na Windows. Żadna naprawa nie jest potrzebna; test zostaje jako zabezpieczenie na przyszłość.
+
+- [x] **Step 3: Dodaj `isActive` do typu domenowego**
 
 W `src/lib/types.ts`, w interfejsie `DeviceRegistration` (linie 135-146), po `lastSeenAt: string | null;` dopisz:
 
@@ -583,7 +585,7 @@ W `src/lib/types.ts`, w interfejsie `DeviceRegistration` (linie 135-146), po `la
 isActive: boolean;
 ```
 
-- [ ] **Step 4: Rozszerz interfejs adaptera**
+- [x] **Step 4: Rozszerz interfejs adaptera**
 
 W `src/db/types.ts`, w bloku `devices` (linie 125-132), po `block(id: string): Promise<void>;` dopisz:
 
@@ -592,7 +594,7 @@ W `src/db/types.ts`, w bloku `devices` (linie 125-132), po `block(id: string): P
     restore(id: string): Promise<void>;
 ```
 
-- [ ] **Step 5: Zaimplementuj w adapterze Supabase**
+- [x] **Step 5: Zaimplementuj w adapterze Supabase**
 
 W `src/db/adapters/supabase.ts`, w funkcji `mapDevice` (linie 124-135), po `lastSeenAt: (row.last_seen_at as string) || null,` dopisz:
 
@@ -626,9 +628,9 @@ Następnie po metodzie `block` (kończy się w linii 235) dopisz:
       },
 ```
 
-- [ ] **Step 6: Napraw i uzupełnij adapter REST**
+- [x] **Step 6: Napraw i uzupełnij adapter REST**
 
-W `src/db/adapters/rest.ts` zamień metody `approve` i `block` (linie 62-69) na cztery metody z poprawnymi ukośnikami:
+W `src/db/adapters/rest.ts` dopisz dwie nowe metody obok istniejących `approve` i `block` (te ostatnie zostaw bez zmian — są poprawne):
 
 ```ts
       async approve(id) {
@@ -651,23 +653,23 @@ W `src/db/adapters/rest.ts` zamień metody `approve` i `block` (linie 62-69) na 
 
 Uwaga: te endpointy nie istnieją jeszcze po stronie serwera (ADR-015, migracja na Hetzner niewdrożona). Kod powstaje na zapas i jest weryfikowany wyłącznie testem kontraktu.
 
-- [ ] **Step 7: Uruchom testy kontraktu i potwierdź, że przechodzą**
+- [x] **Step 7: Uruchom testy kontraktu i potwierdź, że przechodzą**
 
 Run: `npx vitest run src/db/adapters/__tests__/rest-contract.test.ts`
 Expected: PASS — 4 testy (3 istniejące + 1 nowy).
 
-- [ ] **Step 8: Sprawdź typy w całym repo**
+- [x] **Step 8: Sprawdź typy w całym repo**
 
 Run: `npx tsc --noEmit`
 Expected: brak błędów.
 
 Jeśli `tsc` zgłasza brakujące `isActive` w obiektach `DeviceRegistration` w testach POS lub innych plikach, dopisz `isActive: true` do tych literałów — to zamierzony skutek rozszerzenia typu.
 
-- [ ] **Step 9: Commit**
+- [x] **Step 9: Commit**
 
 ```bash
 git add src/lib/types.ts src/db/types.ts src/db/adapters/supabase.ts src/db/adapters/rest.ts src/db/adapters/__tests__/rest-contract.test.ts
-git commit -m "feat(db): archive/restore urzadzen + naprawa sciezek URL w adapterze REST"
+git commit -m "feat(db): archive/restore urzadzen + test ksztaltu sciezek URL"
 ```
 
 ---

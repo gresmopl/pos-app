@@ -143,6 +143,7 @@ export interface DeviceRegistration {
   registeredAt: string;
   approvedAt: string | null;
   lastSeenAt: string | null;
+  isActive: boolean;
 }
 
 export interface CartItem {

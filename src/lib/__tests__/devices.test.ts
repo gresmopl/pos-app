@@ -19,6 +19,7 @@ function device(over: Partial<DeviceRegistration> = {}): DeviceRegistration {
     registeredAt: daysAgo(200),
     approvedAt: daysAgo(200),
     lastSeenAt: daysAgo(200),
+    isActive: true,
     ...over,
   };
 }

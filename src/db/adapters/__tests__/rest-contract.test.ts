@@ -77,6 +77,28 @@ describe("REST adapter contract", () => {
     expect(result[0].isActive).toBe(true);
   });
 
+  it("devices.approve/block/archive/restore uzywaja poprawnych sciezek URL", async () => {
+    const fetchMock = global.fetch as ReturnType<typeof vi.fn>;
+    fetchMock.mockResolvedValue({ ok: true, json: async () => ({}) });
+
+    const client = createRestClient(testConfig);
+    await client.devices.approve("d1");
+    await client.devices.block("d1");
+    await client.devices.archive("d1");
+    await client.devices.restore("d1");
+
+    const urls = fetchMock.mock.calls.map((c) => c[0] as string);
+    expect(urls).toEqual([
+      "http://test.local/api/devices/d1/approve",
+      "http://test.local/api/devices/d1/block",
+      "http://test.local/api/devices/d1/archive",
+      "http://test.local/api/devices/d1/restore",
+    ]);
+    // Odwrotny ukosnik w literale szablonowym tworzy sekwencje ucieczki ("\a")
+    // i cicho rozsypuje URL - TypeScript tego nie zlapie, bo typem nadal jest string.
+    for (const url of urls) expect(url).not.toContain("\\");
+  });
+
   it("rzuca bledem na non-2xx response (pokazuje URL endpointu)", async () => {
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValue({
       ok: false,

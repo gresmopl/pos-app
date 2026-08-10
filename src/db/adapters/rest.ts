@@ -67,6 +67,14 @@ export function createRestClient(config: DbConfig): DbClient {
         const r = await fetch(`${apiUrl}/api/devices/${id}/block`, { method: "POST" });
         if (!r.ok) throw new Error(`API error: ${r.status}`);
       },
+      async archive(id) {
+        const r = await fetch(`${apiUrl}/api/devices/${id}/archive`, { method: "POST" });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
+      async restore(id) {
+        const r = await fetch(`${apiUrl}/api/devices/${id}/restore`, { method: "POST" });
+        if (!r.ok) throw new Error(`API error: ${r.status}`);
+      },
       async updateLastSeen(deviceId) {
         const r = await fetch(`${apiUrl}/api/devices/heartbeat`, {
           method: "POST",
