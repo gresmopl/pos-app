@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useEmployees } from "@/hooks/useDbData";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
-import { lineSum } from "@/lib/reports";
+import { summarizeHistory, transactionAmountFor } from "@/lib/historySummary";
 import type { Transaction } from "@/lib/types";
 import {
   Text,
@@ -104,23 +104,7 @@ export default function HistoryPage() {
     return true;
   });
 
-  const serviceCount = filtered.reduce(
-    (sum, t) =>
-      sum + t.items.filter((i) => i.type === "service").reduce((s, i) => s + i.quantity, 0),
-    0
-  );
-  const productCount = filtered.reduce(
-    (sum, t) =>
-      sum + t.items.filter((i) => i.type === "product").reduce((s, i) => s + i.quantity, 0),
-    0
-  );
-  // Przy aktywnym filtrze typu pokazujemy kwote samych pozycji danego typu
-  // (nie pelna kwote transakcji), zeby np. "Produkty" nie liczyly tez uslug
-  // sprzedanych w tej samej wizycie.
-  const displayAmount = (t: Transaction): number =>
-    typeFilter === "all" ? t.totalAmount : lineSum(t, typeFilter);
-
-  const totalRevenue = filtered.reduce((sum, t) => sum + displayAmount(t), 0);
+  const summary = summarizeHistory(filtered, typeFilter);
 
   const today = new Date().toDateString();
 
@@ -295,7 +279,7 @@ export default function HistoryPage() {
                       </Group>
                       <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
                         <Text fw={600} fz="md">
-                          {displayAmount(transaction).toLocaleString("pl-PL")} zł
+                          {transactionAmountFor(transaction, typeFilter).toLocaleString("pl-PL")} zł
                         </Text>
                         {isExpanded ? (
                           <IconChevronUp size={16} color="var(--mantine-color-dimmed)" />
@@ -412,21 +396,31 @@ export default function HistoryPage() {
             <div>
               <SectionLabel>Usługi</SectionLabel>
               <Text fw={700} fz="xl">
-                {serviceCount}
+                {summary.serviceCount}
               </Text>
             </div>
-            {productCount > 0 && (
+            {summary.productCount > 0 && (
               <div style={{ textAlign: "center" }}>
                 <SectionLabel>Produkty</SectionLabel>
                 <Text fw={700} fz="xl">
-                  {productCount}
+                  {summary.productCount}
+                </Text>
+              </div>
+            )}
+            {/* Napiwek nalezy do calej transakcji, nie do pozycji - przy filtrze
+                typu ta sama kwota liczylaby sie i do uslug, i do produktow. */}
+            {typeFilter === "all" && (
+              <div style={{ textAlign: "center" }}>
+                <SectionLabel>Napiwki</SectionLabel>
+                <Text fw={700} fz="xl">
+                  {summary.tipsTotal.toLocaleString("pl-PL")} zł
                 </Text>
               </div>
             )}
             <div style={{ textAlign: "right" }}>
               <SectionLabel>Utarg</SectionLabel>
               <Text fw={700} fz="xl" c="green">
-                {totalRevenue.toLocaleString("pl-PL")} zł
+                {summary.totalRevenue.toLocaleString("pl-PL")} zł
               </Text>
             </div>
           </Group>

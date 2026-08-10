@@ -18,8 +18,20 @@ CHANGELOG - FORMEN POS App
   Prog 30 dni jest OSTRZEZENIEM, nie zakazem - archiwizowac mozna kazde urzadzenie poza
   biezacym, ale przy aktywnym w ostatnich 30 dniach modal ostrzega liczba dni ciszy.
   Efekt na produkcji: lista 34 -> 8 realnie uzywanych urzadzen.
+- feat(history): suma napiwkow w belce podsumowania Historii sprzedazy. Pole "Napiwki"
+  liczy sie z aktualnie odfiltrowanych transakcji (data, pracownik, szukajka), wiec
+  klikniecie avatara pokazuje napiwki tego fryzjera za okres. Pole ZNIKA przy filtrze
+  typu (Uslugi/Produkty) - napiwek nalezy do calej transakcji, nie do pozycji, wiec ta
+  sama kwota liczylaby sie dwa razy. Przy braku napiwkow pokazuje "0 zl", a nie chowa sie.
+  UWAGA: Utarg juz zawiera napiwki (total_amount transakcji), wiec tych dwoch liczb
+  NIE nalezy do siebie dodawac.
+- refactor(history): arytmetyka belki podsumowania wyszla z 533-liniowego History.tsx
+  do src/lib/historySummary.ts (transactionAmountFor + summarizeHistory). Regula "przy
+  filtrze typu licz same pozycje tego typu" byla uzywana w dwoch miejscach (kwota wiersza
+  i suma utargu) - teraz ma jedno zrodlo. countItems wyeksportowana z reports.ts zamiast
+  liczenia tego samego drugi raz.
 - test: appUrl.test.ts (4), devices.test.ts (9), AdminShare.test.tsx (3), rozszerzony
-  rest-contract.test.ts (1) = 100 testow / 13 plikow
+  rest-contract.test.ts (1), historySummary.test.ts (11) = 111 testow / 14 plikow
 
 [0.1.125] - 2026-07-31
 - feat(history): filtr typu pozycji w Historii sprzedazy (Wszystko/Uslugi/Produkty)

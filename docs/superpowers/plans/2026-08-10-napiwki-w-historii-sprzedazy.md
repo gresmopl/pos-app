@@ -266,7 +266,7 @@ git commit -m "feat(history): modul historySummary z arytmetyka podsumowania"
 - Consumes: `summarizeHistory`, `transactionAmountFor`, `HistoryTypeFilter` z `@/lib/historySummary` (Zadanie 1).
 - Produces: nic dla dalszych zadań.
 
-- [ ] **Step 1: Popraw importy**
+- [x] **Step 1: Popraw importy**
 
 W `src/pages/History.tsx:5` jest dziś:
 
@@ -282,7 +282,7 @@ import { summarizeHistory, transactionAmountFor } from "@/lib/historySummary";
 
 `lineSum` przestaje być w tym pliku potrzebna — używa jej teraz `historySummary.ts`. Jeśli ESLint zgłosi nieużywany import, to znaczy, że gdzieś został — usuń go.
 
-- [ ] **Step 2: Zastąp obliczenia inline wywołaniem funkcji**
+- [x] **Step 2: Zastąp obliczenia inline wywołaniem funkcji**
 
 Zamień cały blok `History.tsx:107-123` (od `const serviceCount = filtered.reduce(` do `const totalRevenue = filtered.reduce(...)` włącznie) na:
 
@@ -292,7 +292,7 @@ const summary = summarizeHistory(filtered, typeFilter);
 
 To usuwa `serviceCount`, `productCount`, `displayAmount` i `totalRevenue` z komponentu.
 
-- [ ] **Step 3: Popraw kwotę w wierszu transakcji**
+- [x] **Step 3: Popraw kwotę w wierszu transakcji**
 
 W `History.tsx` (dawna linia 298, po zmianie z kroku 2 numer się przesunie — szukaj `displayAmount(transaction)`) zamień:
 
@@ -312,7 +312,7 @@ na:
 zł;
 ```
 
-- [ ] **Step 4: Dodaj pole „Napiwki" do dolnej belki**
+- [x] **Step 4: Dodaj pole „Napiwki" do dolnej belki**
 
 W bloku dolnej belki (dawne linie 411-432) zamień zawartość `<Group justify="space-between">` na:
 
@@ -351,14 +351,14 @@ W bloku dolnej belki (dawne linie 411-432) zamień zawartość `<Group justify="
 </Group>
 ```
 
-- [ ] **Step 5: Weryfikacja typów, lintu i testów**
+- [x] **Step 5: Weryfikacja typów, lintu i testów**
 
 Run: `npm run lint && npx tsc --noEmit && npm test`
 Expected: wszystko czyste, 111 testów zielonych.
 
 Częsta pułapka: jeśli `tsc` zgłasza, że `typeFilter` ma zły typ przy wywołaniu `summarizeHistory`, sprawdź deklarację stanu w `History.tsx:75` — jest tam `useState<"all" | "service" | "product">`, czyli dokładnie `HistoryTypeFilter`. Można ją opcjonalnie zamienić na `useState<HistoryTypeFilter>` z importem typu, ale nie jest to konieczne.
 
-- [ ] **Step 6: Sprawdzenie w działającej aplikacji**
+- [x] **Step 6: Sprawdzenie w działającej aplikacji**
 
 Run: `npm run dev`
 
@@ -373,7 +373,7 @@ Wejdź na `/history` i sprawdź:
 
 Punkt 6 jest istotny: belka jest przypięta na dole i miała dotąd maksymalnie trzy pola. Jeśli na 360 px robi się ciasno, zgłoś to zamiast poprawiać na własną rękę — decyzja o skróceniu etykiet albo zmniejszeniu czcionki należy do właściciela.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add src/pages/History.tsx
@@ -384,7 +384,7 @@ git commit -m "feat(history): suma napiwkow w belce podsumowania"
 
 ## Po wykonaniu planu
 
-- [ ] Dopisz wpis do sekcji `[Niewydane]` w `changelog.txt` (bez podbijania wersji w `package.json`).
+- [x] Dopisz wpis do sekcji `[Niewydane]` w `changelog.txt` (bez podbijania wersji w `package.json`).
 - [ ] Zgłoś wynik `npm test` i poinformuj, że commity czekają na branchu `feat/history-tips`, niewypchnięte.
 
 ## Świadomie poza zakresem
