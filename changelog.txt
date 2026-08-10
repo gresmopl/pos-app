@@ -1,6 +1,26 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
+[Niewydane] - 2026-08-10
+- feat(admin): strona "Udostepnij aplikacje" (/admin/share) - duzy kod QR z linkiem do
+  aplikacji, przycisk "Skopiuj link" oraz "Wyslij" (Web Share API, tylko gdy przegladarka
+  wspiera). Adres budowany z window.location.origin + import.meta.env.BASE_URL, wiec
+  zmiana domeny nie wymaga zmiany kodu, a przedrostek /pos-app/ na GitHub Pages sie nie
+  gubi. Kod QR na wymuszonym bialym tle - w trybie ciemnym czytniki nie zeskanowalyby
+  kodu w kolorach motywu.
+- feat(devices): archiwizacja urzadzen w /admin/devices - przycisk "Archiwizuj" chowa
+  urzadzenie z listy (is_active=false) I odbiera mu dostep (status=blocked). Rekord
+  zostaje w bazie, wiec urzadzenie nie wraca jako nowe zgloszenie. "Przywroc" w sekcji
+  "Archiwum (N)" oddaje je do sekcji Zablokowane - wpuszczenie wymaga osobnego
+  klikniecia "Odblokuj".
+  Kryterium to last_seen_at, nie registered_at: wiek rejestracji jest odwrotnie
+  skorelowany z ryzykiem (najstarsze rekordy to tablet przy kasie i telefon szefa).
+  Prog 30 dni jest OSTRZEZENIEM, nie zakazem - archiwizowac mozna kazde urzadzenie poza
+  biezacym, ale przy aktywnym w ostatnich 30 dniach modal ostrzega liczba dni ciszy.
+  Efekt na produkcji: lista 34 -> 8 realnie uzywanych urzadzen.
+- test: appUrl.test.ts (4), devices.test.ts (9), AdminShare.test.tsx (3), rozszerzony
+  rest-contract.test.ts (1) = 100 testow / 13 plikow
+
 [0.1.125] - 2026-07-31
 - feat(history): filtr typu pozycji w Historii sprzedazy (Wszystko/Uslugi/Produkty)
 - feat(cash): przycisk "Zasilenie kasy" (typ top_up) - koniec z workaroundem przez

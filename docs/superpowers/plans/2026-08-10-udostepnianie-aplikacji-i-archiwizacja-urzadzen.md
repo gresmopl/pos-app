@@ -689,7 +689,7 @@ git commit -m "feat(db): archive/restore urzadzen + test ksztaltu sciezek URL"
   - `pluralize(count, one, few, many)` z `@/lib/constants`
 - Produces: nic dla dalszych zadań (ostatnie zadanie planu).
 
-- [ ] **Step 1: Rozszerz importy**
+- [x] **Step 1: Rozszerz importy**
 
 W `src/pages/AdminDevices.tsx` zamień **cały blok importów (linie 1-27)** na poniższy. Nowe względem oryginału: `Modal`, `Collapse`, `UnstyledButton`, cztery ikony, `useDevice`, `checkArchiveGuard`, `pluralize`.
 
@@ -733,7 +733,7 @@ import { pluralize } from "@/lib/constants";
 import type { DeviceRegistration } from "@/lib/types";
 ```
 
-- [ ] **Step 2: Dodaj obsługę archiwizacji w `DeviceCard`**
+- [x] **Step 2: Dodaj obsługę archiwizacji w `DeviceCard`**
 
 Zamień sygnaturę i początek `DeviceCard` (linie 62-72) na:
 
@@ -755,7 +755,7 @@ function DeviceCard({
   const isCurrent = device.deviceId === currentDeviceId;
 ```
 
-- [ ] **Step 3: Dodaj handler archiwizacji**
+- [x] **Step 3: Dodaj handler archiwizacji**
 
 W `DeviceCard`, po `handleBlock` (kończy się w linii 101), dopisz:
 
@@ -777,7 +777,7 @@ const handleArchive = async (): Promise<void> => {
 };
 ```
 
-- [ ] **Step 4: Oznacz bieżące urządzenie w nagłówku karty**
+- [x] **Step 4: Oznacz bieżące urządzenie w nagłówku karty**
 
 W `DeviceCard`, w `<Group justify="space-between" mb="xs">` (linie 105-115), zamień blok badge'a na:
 
@@ -796,7 +796,7 @@ W `DeviceCard`, w `<Group justify="space-between" mb="xs">` (linie 105-115), zam
 
 Dzięki temu brak przycisku „Archiwizuj" na własnej karcie wygląda na zamierzony, a nie na błąd.
 
-- [ ] **Step 5: Dodaj przycisk i modal**
+- [x] **Step 5: Dodaj przycisk i modal**
 
 W `DeviceCard`, bezpośrednio przed zamykającym `</Card>` (linia 195), wstaw:
 
@@ -853,7 +853,7 @@ W `DeviceCard`, bezpośrednio przed zamykającym `</Card>` (linia 195), wstaw:
 </Modal>;
 ```
 
-- [ ] **Step 6: Dodaj komponent karty archiwalnej**
+- [x] **Step 6: Dodaj komponent karty archiwalnej**
 
 Po całym `DeviceCard` (przed `export default function AdminDevicesPage`, linia 199), dopisz:
 
@@ -909,7 +909,7 @@ function ArchivedCard({
 }
 ```
 
-- [ ] **Step 7: Przepisz komponent strony**
+- [x] **Step 7: Przepisz komponent strony**
 
 Zamień całe `export default function AdminDevicesPage` (linie 199-263) na:
 
@@ -1029,14 +1029,14 @@ export default function AdminDevicesPage(): React.JSX.Element {
 }
 ```
 
-- [ ] **Step 8: Weryfikacja typów i lintu**
+- [x] **Step 8: Weryfikacja typów i lintu**
 
 Run: `npx tsc --noEmit && npm run lint`
 Expected: brak błędów.
 
 Częsta pułapka: TypeScript zawęża unię `ArchiveGuard` dopiero po sprawdzeniu `guard.allowed`. Dlatego w modalu warunek brzmi `guard.allowed && guard.level === "warn"`, a nie samo `guard.level === "warn"` — bez tego `tsc` zgłosi, że `level` nie istnieje na wariancie `{ allowed: false }`.
 
-- [ ] **Step 9: Sprawdzenie w działającej aplikacji**
+- [x] **Step 9: Sprawdzenie w działającej aplikacji**
 
 Run: `npm run dev`
 
@@ -1051,12 +1051,12 @@ Sprawdź na `/admin/devices`:
 
 Sprawdź też `/admin/share` na telefonie: zeskanuj kod QR realnym aparatem (nie tylko obejrzyj na ekranie) — w trybie ciemnym błąd tła objawia się wyłącznie tym, że czytnik nie reaguje.
 
-- [ ] **Step 10: Pełna weryfikacja repo**
+- [x] **Step 10: Pełna weryfikacja repo**
 
 Run: `npm run lint && npx tsc --noEmit && npm test`
 Expected: wszystko zielone.
 
-- [ ] **Step 11: Commit**
+- [x] **Step 11: Commit**
 
 ```bash
 git add src/pages/AdminDevices.tsx
@@ -1067,7 +1067,7 @@ git commit -m "feat(devices): archiwizacja urzadzen z ostrzezeniem + sekcja Arch
 
 ## Po wykonaniu planu
 
-- [ ] Dopisz wpis do `changelog.txt` zgodnie z konwencją pliku (bez podbijania wersji w `package.json` — wersja zostaje `0.1.125`, chyba że użytkownik poprosi inaczej).
+- [x] Dopisz wpis do `changelog.txt` zgodnie z konwencją pliku (bez podbijania wersji w `package.json` — wersja zostaje `0.1.125`, chyba że użytkownik poprosi inaczej).
 - [ ] Zgłoś użytkownikowi wynik `npm test` (liczba testów) i poinformuj, że commity czekają lokalnie na `main`, niewypchnięte.
 
 ## Świadomie poza zakresem tego planu
