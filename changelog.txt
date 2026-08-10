@@ -1,7 +1,7 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
-[Niewydane] - 2026-08-10
+[0.1.126] - 2026-08-11
 - feat(admin): strona "Udostepnij aplikacje" (/admin/share) - duzy kod QR z linkiem do
   aplikacji, przycisk "Skopiuj link" oraz "Wyslij" (Web Share API, tylko gdy przegladarka
   wspiera). Adres budowany z window.location.origin + import.meta.env.BASE_URL, wiec
