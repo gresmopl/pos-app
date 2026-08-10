@@ -12,6 +12,7 @@ import {
   Select,
   Button,
   Loader,
+  Paper,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
 import { IconDeviceMobile, IconClock, IconShieldOff, IconLock } from "@tabler/icons-react";
@@ -126,7 +127,7 @@ function RegisterScreen(): React.JSX.Element {
 }
 
 function PendingScreen(): React.JSX.Element {
-  const { device, refetch } = useDevice();
+  const { device, deviceId, refetch } = useDevice();
 
   return (
     <Box mih="100vh">
@@ -146,6 +147,11 @@ function PendingScreen(): React.JSX.Element {
           <Button variant="light" size="lg" fullWidth onClick={refetch}>
             Sprawdź status
           </Button>
+
+          {/* ID, zeby szef trafil na wlasciwe zgloszenie - nazwy potrafia sie powtarzac. */}
+          <Text fz={10} c="dimmed" ta="center">
+            ID: {deviceId.slice(0, 8)}... · v{APP_VERSION}
+          </Text>
         </Stack>
       </Container>
     </Box>
@@ -153,6 +159,8 @@ function PendingScreen(): React.JSX.Element {
 }
 
 function BlockedScreen(): React.JSX.Element {
+  const { device, deviceId } = useDevice();
+
   return (
     <Box mih="100vh">
       <Container size="xs">
@@ -162,7 +170,26 @@ function BlockedScreen(): React.JSX.Element {
             Urządzenie zablokowane
           </Text>
           <Text fz="sm" c="dimmed" ta="center">
-            To urządzenie zostało zablokowane przez administratora. Skontaktuj się z szefem salonu.
+            To urządzenie zostało zablokowane przez administratora. Podaj szefowi poniższe dane,
+            żeby mógł je odblokować.
+          </Text>
+
+          {/* Bez tych danych pracownik nie ma jak powiedziec, ktore urzadzenie odblokowac:
+              po zablokowaniu strona "Wiecej" z nazwa urzadzenia jest nieosiagalna.
+              ID jest wazniejsze od nazwy - w bazie potrafia byc dwa rekordy o tej samej. */}
+          <Paper withBorder p="md" radius="md" w="100%">
+            <Stack gap={4} align="center">
+              <Text fw={600} fz="md">
+                {device?.deviceName || "Urządzenie bez nazwy"}
+              </Text>
+              <Text fz="sm" c="dimmed">
+                ID: {deviceId.slice(0, 8)}...
+              </Text>
+            </Stack>
+          </Paper>
+
+          <Text fz={10} c="dimmed" ta="center">
+            v{APP_VERSION}
           </Text>
         </Stack>
       </Container>
