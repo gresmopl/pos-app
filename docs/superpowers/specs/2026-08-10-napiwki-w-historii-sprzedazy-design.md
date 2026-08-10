@@ -89,9 +89,8 @@ export function summarizeHistory(
 ```
 
 Funkcja przejmuje logikę z `History.tsx:107-123`, łącznie z regułą, że przy aktywnym
-filtrze typu `totalRevenue` liczy sumę samych pozycji danego typu (dziś `displayAmount`
-
-- `lineSum`), a nie pełne kwoty transakcji.
+filtrze typu `totalRevenue` liczy sumę samych pozycji danego typu — dziś realizuje to
+`displayAmount` w oparciu o `lineSum` — a nie pełne kwoty transakcji.
 
 ### Ponowne użycie istniejących pomocników
 
