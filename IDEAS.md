@@ -716,6 +716,31 @@ ADR-003 wspomina o PWA docelowo. Kiedy POS dziala offline (padl internet w salon
 
 Jak nie ma Supabase w stacku, nie ma tez fajnego GUI do przegladania bazy. Alternatywy na VPS: pgAdmin 4 (ciezki), Adminer (lekki, jeden plik PHP), Directus (ciezki ale ladny).
 
+### transaction.device_id nigdy nie jest zapisywane (znalezione 2026-08-10)
+
+Kolumna `transaction.device_id` istnieje w `src/db/schema.sql:155`, ale insert transakcji
+(`src/db/adapters/supabase.ts`, `transactions.create`) nigdy jej nie wypelnia - jest pusta dla
+calej historii sprzedazy. Skutek: nie da sie odpowiedziec na pytanie "z ktorego urzadzenia poszla
+ta transakcja", a przy sporze (np. transakcja przypisana nie temu fryzjerowi) nie ma sladu.
+
+Wyplynelo przy projektowaniu archiwizacji urzadzen: chcielismy kryterium "urzadzenie, ktore nigdy
+nic nie sprzedalo, jest smieciem", ale bez tych danych bylo nie do zrobienia i zostal sam
+`last_seen_at`. Naprawa to jedna linia w inserice (`device_id: deviceId` z DeviceContext), ale
+historyczne transakcje zostana puste na zawsze - im pozniej, tym wieksza dziura.
+
+### Kazdy kto zna PIN 1234 rejestruje sie jako urzadzenie szefa (znalezione 2026-08-10)
+
+`DeviceGate` przy wyborze typu "admin" prosi o PIN i porownuje go z `DEVICE_ADMIN_PIN = "1234"`
+zaszytym w `src/components/DeviceGate.tsx`. Ten sam PIN otwiera Panel szefa i autoryzuje cofniecie
+transakcji. W praktyce: 17 z 34 rekordow w bazie mialo typ `admin` (wiecej niz telefonow
+pracownikow, ktorych bylo 11).
+
+Urzadzenie typu admin widzi cale `/admin/*` - cennik, prowizje pracownikow, raporty miesieczne,
+zarzadzanie urzadzeniami. Do rozwazenia: osobny PIN dla rejestracji urzadzen admin, badz
+zatwierdzanie takiej rejestracji przez istniejace urzadzenie szefa (jak przy `pending`), zamiast
+auto-approve. Powiazane: Faza 2 zaklada hashowane PIN-y w `salon.admin_pin_hash` zamiast stalej
+w kodzie - warto zrobic to jednym ruchem.
+
 ---
 
 _Plik aktualizowany spontanicznie - nie trzeba trzymac stricte chronologii._

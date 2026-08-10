@@ -284,4 +284,4 @@ i `BASE_URL` (nie samego `origin`).
   wart rozważenia, bo dałby mocniejsze kryterium „czy to urządzenie kiedykolwiek
   cokolwiek sprzedało".
 - Ograniczenie rejestracji urządzeń typu `admin` — dziś każdy, kto zna PIN 1234,
-  rejestruje się jako urządzenie szefa (14 z 34 rekordów w bazie to typ `admin`).
+  rejestruje się jako urządzenie szefa (17 z 34 rekordów w bazie to typ `admin`).
