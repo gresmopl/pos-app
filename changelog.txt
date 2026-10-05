@@ -1,7 +1,10 @@
 CHANGELOG - FORMEN POS App
 ==========================
 
-[Niewydane]
+[0.1.127] - 2026-10-05
+- fix(ci): CI i deploy instaluja paczki przez npm ci (z lockfile) zamiast
+  rm package-lock.json && npm install - instalacja bez lockfile wywracala sie na
+  bledzie npm "Cannot read properties of null (reading 'edgesOut')".
 - feat(history): filtry "Napiwki" i "Rabat" (drugi rzad przelacznika - piec przyciskow
   nie miesci sie w jednym rzedzie na telefonie). Pokazuja tylko transakcje z napiwkiem /
   rabatem, w wierszu kwote napiwku / rabatu, w belce liczbe transakcji i sume (Rabat

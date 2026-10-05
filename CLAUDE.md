@@ -43,6 +43,7 @@ docs/analytical.md (biznes), docs/technical.md (architektura), docs/decisions.md
 - Centralne stale: src/lib/constants.ts (VOUCHER_EXPIRY_MONTHS=12, pluralize())
 - Code splitting: React.lazy + Suspense + PageSkeleton
 - Walidacja: @mantine/form (useForm + getInputProps)
+- Kazdy push na main = podbicie wersji w package.json (+ lock) i wpis w changelog.txt (CONTRIBUTING.md)
 
 ## Warstwa bazy danych
 
