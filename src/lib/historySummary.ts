@@ -1,9 +1,27 @@
 import type { Transaction } from "./types";
 import { lineSum, countItems } from "./reports";
 
-export type HistoryTypeFilter = "all" | "service" | "product";
+export type HistoryTypeFilter = "all" | "service" | "product" | "tip" | "discount";
+
+/**
+ * Czy transakcja przechodzi przez filtr typu. "Napiwki" i "Rabat" pokazuja tylko
+ * transakcje, w ktorych napiwek/rabat faktycznie wystapil.
+ */
+export function matchesTypeFilter(tx: Transaction, typeFilter: HistoryTypeFilter): boolean {
+  switch (typeFilter) {
+    case "all":
+      return true;
+    case "tip":
+      return tx.tipAmount > 0;
+    case "discount":
+      return tx.discountAmount > 0;
+    default:
+      return tx.items.some((i) => i.type === typeFilter);
+  }
+}
 
 export interface HistorySummary {
+  transactionCount: number;
   serviceCount: number;
   productCount: number;
   tipsTotal: number;
@@ -20,7 +38,16 @@ export interface HistorySummary {
  * dlatego regula mieszka tutaj, a nie w komponencie.
  */
 export function transactionAmountFor(tx: Transaction, typeFilter: HistoryTypeFilter): number {
-  return typeFilter === "all" ? tx.totalAmount : lineSum(tx, typeFilter);
+  switch (typeFilter) {
+    case "all":
+      return tx.totalAmount;
+    case "tip":
+      return tx.tipAmount;
+    case "discount":
+      return tx.discountAmount;
+    default:
+      return lineSum(tx, typeFilter);
+  }
 }
 
 /**
@@ -45,9 +72,9 @@ export function transactionAmountFor(tx: Transaction, typeFilter: HistoryTypeFil
  * lepsza niz po cichu zamaskowana.
  */
 export function revenueFor(tx: Transaction, typeFilter: HistoryTypeFilter): number {
-  return typeFilter === "all"
-    ? tx.totalAmount - tx.tipAmount
-    : lineSum(tx, typeFilter) - tx.discountAmount;
+  return typeFilter === "service" || typeFilter === "product"
+    ? lineSum(tx, typeFilter) - tx.discountAmount
+    : tx.totalAmount - tx.tipAmount;
 }
 
 /**
@@ -55,7 +82,7 @@ export function revenueFor(tx: Transaction, typeFilter: HistoryTypeFilter): numb
  *
  * tipsTotal celowo NIE zalezy od typeFilter - napiwek nalezy do calej transakcji,
  * nie do pozycji, wiec nie da sie go podzielic miedzy uslugi i produkty. Komponent
- * ukrywa to pole przy aktywnym filtrze typu zamiast pokazywac mylaca liczbe.
+ * pokazuje go tylko przy filtrze "Napiwki" (analogicznie discountsTotal - "Rabat").
  *
  * totalRevenue liczy przychod BEZ napiwkow, wiec suma kwot z wierszy nie jest
  * rowna Utargowi - rozni sie o dokladnie tipsTotal. To celowe: wiersz pokazuje,
@@ -79,5 +106,12 @@ export function summarizeHistory(
     totalRevenue += revenueFor(tx, typeFilter);
   }
 
-  return { serviceCount, productCount, tipsTotal, discountsTotal, totalRevenue };
+  return {
+    transactionCount: transactions.length,
+    serviceCount,
+    productCount,
+    tipsTotal,
+    discountsTotal,
+    totalRevenue,
+  };
 }

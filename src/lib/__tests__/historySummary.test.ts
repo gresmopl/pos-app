@@ -1,5 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { summarizeHistory, transactionAmountFor, revenueFor } from "../historySummary";
+import {
+  summarizeHistory,
+  transactionAmountFor,
+  revenueFor,
+  matchesTypeFilter,
+} from "../historySummary";
 import type { Transaction } from "../types";
 
 function tx(over: Partial<Transaction> = {}): Transaction {
@@ -100,6 +105,7 @@ describe("revenueFor", () => {
 describe("summarizeHistory", () => {
   it("dla pustej listy zwraca same zera", () => {
     expect(summarizeHistory([], "all")).toEqual({
+      transactionCount: 0,
       serviceCount: 0,
       productCount: 0,
       tipsTotal: 0,
@@ -173,5 +179,39 @@ describe("summarizeHistory", () => {
     const service = summarizeHistory([mixed], "service").tipsTotal;
     const product = summarizeHistory([mixed], "product").tipsTotal;
     expect([all, service, product]).toEqual([20, 20, 20]);
+  });
+});
+
+describe("filtry Napiwki i Rabat", () => {
+  const plain = tx();
+
+  it('"tip" przepuszcza tylko transakcje z napiwkiem', () => {
+    expect(matchesTypeFilter(mixed, "tip")).toBe(true);
+    expect(matchesTypeFilter(plain, "tip")).toBe(false);
+  });
+
+  it('"discount" przepuszcza tylko transakcje z rabatem', () => {
+    expect(matchesTypeFilter(mixed, "discount")).toBe(true);
+    expect(matchesTypeFilter(plain, "discount")).toBe(false);
+  });
+
+  it("filtry typu pozycji dzialaja jak dotad", () => {
+    expect(matchesTypeFilter(mixed, "product")).toBe(true);
+    expect(matchesTypeFilter(plain, "product")).toBe(false);
+    expect(matchesTypeFilter(plain, "all")).toBe(true);
+  });
+
+  it("kwota w wierszu to napiwek / rabat transakcji", () => {
+    expect(transactionAmountFor(mixed, "tip")).toBe(20);
+    expect(transactionAmountFor(mixed, "discount")).toBe(10);
+  });
+
+  it('utarg przy "tip" i "discount" liczy sie jak przy "all"', () => {
+    expect(revenueFor(mixed, "tip")).toBe(revenueFor(mixed, "all"));
+    expect(revenueFor(mixed, "discount")).toBe(revenueFor(mixed, "all"));
+  });
+
+  it("transactionCount to liczba transakcji, nie pozycji", () => {
+    expect(summarizeHistory([mixed, plain], "all").transactionCount).toBe(2);
   });
 });

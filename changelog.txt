@@ -2,6 +2,11 @@ CHANGELOG - FORMEN POS App
 ==========================
 
 [Niewydane]
+- feat(history): filtry "Napiwki" i "Rabat" (drugi rzad przelacznika - piec przyciskow
+  nie miesci sie w jednym rzedzie na telefonie). Pokazuja tylko transakcje z napiwkiem /
+  rabatem, w wierszu kwote napiwku / rabatu, w belce liczbe transakcji i sume (Rabat
+  dodatkowo Utarg). Belka pokazuje tylko to, czego dotyczy filtr: "Wszystko" - Uslugi,
+  Produkty, Utarg (bez Napiwkow); "Uslugi" - Uslugi, Utarg; "Produkty" - Produkty, Utarg.
 - fix(pos): zapis transaction.device_id przy sprzedazy. Kolumna istniala w schemacie od
   poczatku (schema.sql:155), ale insert nigdy jej nie wypelnial - wszystkie 3384
   dotychczasowe transakcje maja ja pusta i nie da sie ustalic, z ktorego urzadzenia

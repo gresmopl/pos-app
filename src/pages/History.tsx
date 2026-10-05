@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import { useEmployees } from "@/hooks/useDbData";
 import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { db } from "@/db";
-import { summarizeHistory, transactionAmountFor } from "@/lib/historySummary";
+import {
+  matchesTypeFilter,
+  summarizeHistory,
+  transactionAmountFor,
+  type HistoryTypeFilter,
+} from "@/lib/historySummary";
 import type { Transaction } from "@/lib/types";
 import {
   Text,
@@ -72,7 +77,7 @@ export default function HistoryPage() {
   const PAGE_SIZE = 50;
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
   const [filter, setFilter] = useState("all");
-  const [typeFilter, setTypeFilter] = useState<"all" | "service" | "product">("all");
+  const [typeFilter, setTypeFilter] = useState<HistoryTypeFilter>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [undoModal, setUndoModal] = useState(false);
   const [undoPin, setUndoPin] = useState("");
@@ -93,7 +98,7 @@ export default function HistoryPage() {
   const filtered = transactions.filter((t) => {
     if (lockedEmployee && t.employeeName !== lockedEmployee.name) return false;
     if (!lockedEmployee && filter !== "all" && t.employeeName !== filter) return false;
-    if (typeFilter !== "all" && !t.items.some((i) => i.type === typeFilter)) return false;
+    if (!matchesTypeFilter(t, typeFilter)) return false;
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       const matchesName = t.employeeName.toLowerCase().includes(q);
@@ -168,16 +173,29 @@ export default function HistoryPage() {
 
         {/* ===== FILTER: TYPE ===== */}
         <Box pb="sm">
-          <SegmentedControl
-            fullWidth
-            value={typeFilter}
-            onChange={(v) => setTypeFilter(v as "all" | "service" | "product")}
-            data={[
-              { label: "Wszystko", value: "all" },
-              { label: "Usługi", value: "service" },
-              { label: "Produkty", value: "product" },
-            ]}
-          />
+          {/* Jeden filtr w dwoch rzedach - piec przyciskow w jednym rzedzie nie
+              miesci sie na telefonie. Aktywny jest zawsze tylko jeden. */}
+          <Stack gap={6}>
+            <SegmentedControl
+              fullWidth
+              value={typeFilter}
+              onChange={(v) => setTypeFilter(v as HistoryTypeFilter)}
+              data={[
+                { label: "Wszystko", value: "all" },
+                { label: "Usługi", value: "service" },
+                { label: "Produkty", value: "product" },
+              ]}
+            />
+            <SegmentedControl
+              fullWidth
+              value={typeFilter}
+              onChange={(v) => setTypeFilter(v as HistoryTypeFilter)}
+              data={[
+                { label: "Napiwki", value: "tip" },
+                { label: "Rabat", value: "discount" },
+              ]}
+            />
+          </Stack>
         </Box>
 
         {/* ===== FILTER: EMPLOYEE ===== */}
@@ -278,7 +296,8 @@ export default function HistoryPage() {
                         </div>
                       </Group>
                       <Group gap="sm" wrap="nowrap" style={{ flexShrink: 0 }}>
-                        <Text fw={600} fz="md">
+                        <Text fw={600} fz="md" c={typeFilter === "discount" ? "red" : undefined}>
+                          {typeFilter === "discount" ? "-" : ""}
                           {transactionAmountFor(transaction, typeFilter).toLocaleString("pl-PL")} zł
                         </Text>
                         {isExpanded ? (
@@ -392,14 +411,26 @@ export default function HistoryPage() {
         p="md"
       >
         <Container size="lg">
+          {/* Belka pokazuje tylko to, czego dotyczy filtr: napiwki i rabaty maja
+              wlasne filtry, bo naleza do calej transakcji, nie do pozycji. */}
           <Group justify="space-between">
-            <div>
-              <SectionLabel>Usługi</SectionLabel>
-              <Text fw={700} fz="xl">
-                {summary.serviceCount}
-              </Text>
-            </div>
-            {summary.productCount > 0 && (
+            {(typeFilter === "tip" || typeFilter === "discount") && (
+              <div>
+                <SectionLabel>Transakcje</SectionLabel>
+                <Text fw={700} fz="xl">
+                  {summary.transactionCount}
+                </Text>
+              </div>
+            )}
+            {(typeFilter === "all" || typeFilter === "service") && (
+              <div>
+                <SectionLabel>Usługi</SectionLabel>
+                <Text fw={700} fz="xl">
+                  {summary.serviceCount}
+                </Text>
+              </div>
+            )}
+            {(typeFilter === "product" || (typeFilter === "all" && summary.productCount > 0)) && (
               <div style={{ textAlign: "center" }}>
                 <SectionLabel>Produkty</SectionLabel>
                 <Text fw={700} fz="xl">
@@ -407,18 +438,15 @@ export default function HistoryPage() {
                 </Text>
               </div>
             )}
-            {/* Napiwek nalezy do calej transakcji, nie do pozycji - przy filtrze
-                typu ta sama kwota liczylaby sie i do uslug, i do produktow.
-                Przy filtrze typu to pole ustepuje miejsca Rabatowi, dzieki czemu
-                belka nigdy nie ma wiecej niz cztery pozycje. */}
-            {typeFilter === "all" ? (
-              <div style={{ textAlign: "center" }}>
+            {typeFilter === "tip" && (
+              <div style={{ textAlign: "right" }}>
                 <SectionLabel>Napiwki</SectionLabel>
-                <Text fw={700} fz="xl">
+                <Text fw={700} fz="xl" c="green">
                   {summary.tipsTotal.toLocaleString("pl-PL")} zł
                 </Text>
               </div>
-            ) : (
+            )}
+            {typeFilter === "discount" && (
               <div style={{ textAlign: "center" }}>
                 <SectionLabel>Rabat</SectionLabel>
                 <Text fw={700} fz="xl" c="red">
@@ -427,12 +455,14 @@ export default function HistoryPage() {
                 </Text>
               </div>
             )}
-            <div style={{ textAlign: "right" }}>
-              <SectionLabel>Utarg</SectionLabel>
-              <Text fw={700} fz="xl" c="green">
-                {summary.totalRevenue.toLocaleString("pl-PL")} zł
-              </Text>
-            </div>
+            {typeFilter !== "tip" && (
+              <div style={{ textAlign: "right" }}>
+                <SectionLabel>Utarg</SectionLabel>
+                <Text fw={700} fz="xl" c="green">
+                  {summary.totalRevenue.toLocaleString("pl-PL")} zł
+                </Text>
+              </div>
+            )}
           </Group>
         </Container>
       </Box>
