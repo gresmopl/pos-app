@@ -26,7 +26,7 @@ jobs:
             node-version: 22
             cache: npm
 
-        - run: rm package-lock.json && npm install
+        - run: npm ci
         - run: npx tsc --noEmit && npx vite build --mode development
 
         - uses: actions/configure-pages@v5
