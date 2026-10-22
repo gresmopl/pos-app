@@ -84,7 +84,7 @@ Klucz `anon` Supabase jest publiczny - trafia do bundla JS w przegladarce. Bezpi
 - Node.js + PostgreSQL 16 + nginx/Caddy (self-hosted)
 - Pelny dostep SSH, rsync/scp deploy
 - SSL Let's Encrypt (Caddy/Certbot)
-- Backupy: snapshoty Hetzner + pg_dump cron
+- Backupy: GitHub Actions `backup.yml` (pg_dump + GPG, artifact 90 dni), patrz `docs/backup.md`
 - Lokalizacja: Falkenstein / Helsinki / Nurnberg (do wyboru)
 
 ---

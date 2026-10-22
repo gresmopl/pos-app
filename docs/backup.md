@@ -5,96 +5,41 @@ np. `increment_tip_balance`, typy ENUM). Aplikacja nie uzywa Supabase Storage an
 Supabase Auth, wiec `public` to cala zawartosc biznesowa.
 
 ```
-Supabase (Postgres) --pg_dump 03:00--> VPS ~/backups/pos-app/{daily,weekly}/*.dump.gpg
-                                          |
-                     laptop (Task Scheduler) --scp--> C:\Users\<user>\backups\pos-app\
+GitHub Actions (cron 01:00 UTC) --pg_dump--> gpg (haslo) --> artifact (90 dni)
 ```
 
-- **Szyfrowanie:** GPG kluczem publicznym. Klucz prywatny jest tylko na laptopie, VPS
-  potrafi szyfrowac, ale nie odszyfruje kopii.
-- **Rotacja:** VPS trzyma 7 dziennych + 4 tygodniowe (niedziela), laptop 60 ostatnich plikow.
-- **Skrypty:** `scripts/backup-db.sh` (VPS, cron), `scripts/backup-pull.sh` (laptop, Git Bash).
+- **Workflow:** `.github/workflows/backup.yml`, uruchamiany codziennie i recznie (Run workflow).
+- **Szyfrowanie:** GPG symetryczne (AES256) haslem z sekretu `BACKUP_PASSWORD`. Repo jest
+  publiczne, wiec artifact moze pobrac kazdy zalogowany uzytkownik GitHub: bez hasla
+  plik jest bezuzyteczny.
+- **Rotacja:** GitHub sam usuwa artifacty po 90 dniach.
 
-## Setup
+## Setup (jednorazowo, w przegladarce)
 
-### 1. Laptop: klucz GPG (Git Bash)
+1. Supabase -> Connect -> connection string **Session pooler** (port 5432).
+   Polaczenie direct jest tylko po IPv6, a runnery GitHub nie maja IPv6.
+2. GitHub -> repo -> Settings -> Secrets and variables -> Actions -> New repository secret:
+   - `DATABASE_URL` = connection string z punktu 1 (z haslem),
+   - `BACKUP_PASSWORD` = dlugie losowe haslo. **Zapisz je w Vaultwarden.** Bez niego
+     kopie sa nie do odczytania.
+3. Workflow musi byc na `main` (GitHub uruchamia cron i reczne odpalenie tylko z
+   domyslnej galezi). Po merge: Actions -> DB Backup -> Run workflow, sprawdz czy
+   przebieg jest zielony i ma artifact.
 
-```bash
-gpg --quick-gen-key "pos-app backup" default default never   # ustaw haslo i zapisz w menedzerze hasel
-gpg --armor --export "pos-app backup" > pos-backup-public.asc
-gpg --armor --export-secret-keys "pos-app backup" > pos-backup-PRIVATE.asc
-```
-
-`pos-backup-PRIVATE.asc` przechowuj poza laptopem (np. pendrive / menedzer hasel).
-**Bez klucza prywatnego i hasla kopie sa nie do odczytania.**
-
-Skopiuj klucz publiczny na VPS:
-
-```bash
-scp -P 2222 pos-backup-public.asc ai@178.104.140.104:~
-```
-
-### 2. VPS: konfiguracja i cron
-
-```bash
-gpg --import ~/pos-backup-public.asc && rm ~/pos-backup-public.asc
-mkdir -p ~/.config/pos-backup && chmod 700 ~/.config/pos-backup
-nano ~/.config/pos-backup/env && chmod 600 ~/.config/pos-backup/env
-```
-
-Zawartosc `env`:
-
-```bash
-DATABASE_URL='postgresql://postgres:<HASLO>@db.<ref>.supabase.co:5432/postgres'
-GPG_RECIPIENT='pos-app backup'
-PG_IMAGE=postgres:17
-```
-
-- Connection string: panel Supabase -> Connect. Polaczenie bezposrednie (direct) jest
-  w Supabase domyslnie po IPv6; VPS ma IPv6, a skrypt uzywa `--network host`. Gdyby
-  nie dzialalo, uzyj connection stringa "Session pooler" (port 5432).
-- `PG_IMAGE`: wersja glowna `pg_dump` musi byc >= wersji serwera Supabase
-  (sprawdz: `select version();` w SQL Editorze).
-
-Test reczny, potem cron (03:00 czasu Europe/Warsaw, salon zamkniety):
-
-```bash
-bash /code/pos-app/scripts/backup-db.sh && ls -la ~/backups/pos-app/daily
-mkdir -p ~/backups/pos-app
-( crontab -l 2>/dev/null; echo '0 3 * * * bash /code/pos-app/scripts/backup-db.sh >> $HOME/backups/pos-app/backup.log 2>&1' ) | crontab -
-```
-
-### 3. Laptop: automatyczne pobieranie
-
-Wymaga logowania SSH do VPS kluczem bez pytania o haslo (`ssh -p 2222 -o BatchMode=yes ai@178.104.140.104 true`
-musi przejsc). Test reczny w Git Bash:
-
-```bash
-bash /c/code/pos-app/scripts/backup-pull.sh
-```
-
-Harmonogram zadan Windows (cmd/PowerShell):
-
-```
-schtasks /create /tn "pos-app backup pull" /sc daily /st 09:00 /tr "\"C:\Program Files\Git\bin\bash.exe\" -lc 'bash /c/code/pos-app/scripts/backup-pull.sh >> ~/backups/pos-app/pull.log 2>&1'"
-```
-
-Potem w GUI Harmonogramu zadan -> wlasciwosci zadania -> Ustawienia: zaznacz
-"Uruchom zadanie jak najszybciej po pominieciu zaplanowanego uruchomienia"
-(laptop o 09:00 moze byc wylaczony).
+Uwaga: w publicznym repo GitHub wylacza zaplanowane workflow po 60 dniach bez zadnej
+aktywnosci w repo (dostaniesz maila). Wtedy wystarczy wlaczyc je ponownie w Actions.
 
 ## Odtwarzanie
 
-Przetestowane 2026-10-05 na Postgres 16 -> 17 (liczba wierszy we wszystkich tabelach zgodna).
-
 ```bash
-# 1. Odszyfruj (laptop, pyta o haslo klucza)
+# 1. Pobierz artifact (Actions -> przebieg -> Artifacts) i rozpakuj zip
+# 2. Odszyfruj (Git Bash, pyta o BACKUP_PASSWORD)
 gpg --decrypt pos-app_YYYY-MM-DD_HHMMSS.dump.gpg > restore.dump
 
-# 2. Odtworz do pustej bazy (nowy projekt Supabase albo lokalny Postgres)
+# 3. Odtworz do pustej bazy (nowy projekt Supabase albo lokalny Postgres)
 pg_restore -d '<DATABASE_URL docelowej bazy>' --clean --if-exists --no-owner --no-privileges --exit-on-error restore.dump
 
-# 3. Usun odszyfrowany plik (dane osobowe)
+# 4. Usun odszyfrowany plik (dane osobowe)
 rm restore.dump
 ```
 
@@ -108,6 +53,5 @@ rm restore.dump
 
 ## Kontrola
 
-- Log VPS: `tail ~/backups/pos-app/backup.log` (kazdy przebieg konczy sie linia `done`).
-- Log laptopa: `~/backups/pos-app/pull.log`.
+- Nieudany przebieg = mail od GitHub (domyslne powiadomienia o failed workflow).
 - Raz na kwartal: test odtworzenia ostatniej kopii (sekcja wyzej).
