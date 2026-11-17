@@ -168,7 +168,7 @@ Niezaadresowane obawy z review zmian codexa (2026-05-13):
 - [x] **`npm run build`** - zweryfikowane 2026-06-15: production bundle wstaje (tsc --noEmit + vite build OK)
 - [x] **Edge case: cena produktu = 0 zl** - zmieniono `min={0.01}` w modalu POS + guard w `applyPriceEdit` (odrzuca puste pole i wartosci < 0.01). Produkt za darmo nie do zapisania - 2026-05-13
 - [x] **Edge case: badge bez `retentionPercent`** - zweryfikowane: `getRetentionRank(null)` zwraca `RANK_DEVELOPMENT` (gray, "ROZWOJ"), `RetentionAvatarIcon` ma fallback na `IconTrendingUp`. Pracownik bez retencji ma ikone wykresu na szarym tle - dziala - 2026-05-13
-- [ ] **Migracja PROD (Hetzner)** - po merge do `main` wykonac na produkcji:
+- [x] **Migracja PROD** - PROD to ta sama baza Supabase co DEV (potwierdzone 2026-11-17), kolumny sa na zywej bazie (sprawdzone REST 2026-11-17). Przy migracji na Hetzner (ADR-015) wejda ze schema.sql. Pierwotnie:
       `sql
 ALTER TABLE employee ADD COLUMN IF NOT EXISTS display_order INT NOT NULL DEFAULT 0;
 ALTER TABLE employee ADD COLUMN IF NOT EXISTS show_retention_badge BOOLEAN NOT NULL DEFAULT true;
@@ -182,7 +182,7 @@ zwracal 400 PGRST204. Odczyt dzialal, bo mapSalon ma fallbacki (95/85/75) - mask
 Migracja: `src/db/migrations/2026-06-16-salon-retention-thresholds.sql`. Kod byl poprawny.
 
 - [x] **DEV/Supabase** - zmigrowane i zweryfikowane na zywo 2026-06-16 (zapis 400 -> 200)
-- [ ] **PROD (kazda baza per salon)** - uruchomic ta sama migracje:
+- [x] **PROD** - ta sama baza co DEV (potwierdzone 2026-11-17), kolumny obecne (sprawdzone REST 2026-11-17). Pierwotnie dla bazy per salon:
       `sql
 ALTER TABLE salon ADD COLUMN IF NOT EXISTS retention_threshold_top  NUMERIC(5,2) NOT NULL DEFAULT 95;
 ALTER TABLE salon ADD COLUMN IF NOT EXISTS retention_threshold_high NUMERIC(5,2) NOT NULL DEFAULT 85;
