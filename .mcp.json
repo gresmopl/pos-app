@@ -3,6 +3,10 @@
     "context7": {
       "command": "cmd",
       "args": ["/c", "npx", "-y", "@upstash/context7-mcp"]
+    },
+    "supabase": {
+      "type": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=dxistjmksjtezcxutfpd&read_only=true&features=database,docs"
     }
   }
 }
